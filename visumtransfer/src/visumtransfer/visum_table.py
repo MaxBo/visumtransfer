@@ -207,7 +207,7 @@ class VisumTable(metaclass=MetaClass):
         cols = columns or ';'.join(c for c in df.columns)
         fobj.writeln('${m}{t}:{c}'.format(m=self._mode, t=self.code, c=cols))
 
-        df.to_csv(fobj.fobj, sep=';', header=False, index=False)
+        df.to_csv(fobj.fobj, sep=';', header=False, index=False, line_terminator='\n')
         fobj.writeln('')
 
     @property
