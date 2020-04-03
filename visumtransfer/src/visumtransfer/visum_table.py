@@ -151,8 +151,8 @@ class VisumTable(metaclass=MetaClass):
         defined by the column names and the default values
         """
         self.Row = recordclass(typename=self.code,
-                               field_names=[c.lower().translate(self.trantab)
-                                            for c in self.cols])
+                               fields=[c.lower().translate(self.trantab)
+                                       for c in self.cols])
         self.Row.__new__.__defaults__ = tuple(self._defaults.get(c.upper(), '')
                                               for c in self.cols)
 

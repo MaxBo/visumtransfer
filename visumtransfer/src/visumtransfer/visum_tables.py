@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from visumtransfer.visum_demand import (VisumTable)
+from visumtransfer.visum_table import (VisumTable)
 
 
 class Gebiete(VisumTable):

@@ -83,7 +83,7 @@ class TestVisumTransfer:
         #  duplicate primary key should raise a ValueError
         new_row = tbl.Row(id=2, name='EEE')
         with pytest.raises(ValueError,
-                           message='Expecting violation of primary key'):
+                           match=r'Indexes have overlapping values'):
             tbl.add_row(new_row)
         assert len(tbl) == 2
 

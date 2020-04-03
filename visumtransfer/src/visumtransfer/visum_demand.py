@@ -7,13 +7,10 @@ from copy import copy
 import warnings
 import os
 import io
-import tables
 import numpy as np
 import datetime
-from recordclass import recordclass
 import xarray as xr
 import pandas as pd
-import openpyxl
 from visumtransfer.visum_table import VisumTable, VisumTables
 
 folder = r'E:\GGR\1643 Oberhausen Mobilitätskonzept\60 Modell\68 Personengruppen\681 Nachfragemodell'
@@ -2002,7 +1999,7 @@ class Nachfragesegment(VisumTable):
         nachfrage_beschr.add_rows(rows_nachfragebeschreibung)
 
 
-def write_modification_iv_matrices(modification_number=12, modifications):
+def write_modification_iv_matrices(modifications, modification_number=12):
     v = VisumTransfer.new_transfer()
 
     matrices = Matrix()
@@ -2011,16 +2008,16 @@ def write_modification_iv_matrices(modification_number=12, modifications):
     v.write(fn=v.get_modification(modification_number, modifications))
 
 
-def write_modification_ov_matrices(modification_number=14, modifications):
+def write_modification_ov_matrices(modifications, modification_number=14):
     v = VisumTransfer.new_transfer()
 
     matrices = Matrix()
     matrices.add_ov_demand()
     v.tables['Matrizen'] = matrices
-    v.write(fn=v.get_modification(modification_number, modifications))
+    v.write(fn=v.get_modification(modifications, modification_number))
 
 
-def main(modification_number=5, modifications):
+def main(modifications, modification_number=5):
     add_nsegs_userdefined()
 
 
@@ -2133,7 +2130,7 @@ def main(modification_number=5, modifications):
 
     v.write(fn=v.get_modification(modification_number, modifications))
 
-def add_nsegs_userdefined(modification_no:int = 4, modifications):
+def add_nsegs_userdefined(modifications, modification_no:int = 4):
     v = VisumTransfer.new_transfer()
     userdefined0 = BenutzerdefiniertesAttribut()
     v.tables['BenutzerdefinierteAttribute0'] = userdefined0
