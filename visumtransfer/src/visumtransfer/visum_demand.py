@@ -81,6 +81,8 @@ class BenutzerdefiniertesAttribut(VisumTable):
     'STANDARDWERT;STRINGSTANDARDWERT;KOMMENTAR;MAXSTRINGLAENGE;ANZDEZSTELLEN;'
     'DATENQUELLENTYP;FORMEL;QUERSCHNITTSLOGIK')
 
+    _pkey = 'OBJID;ATTID'
+
     _defaults = {'DATENTYP': 'Double',
                  'QUERSCHNITTSLOGIK': 'SUM',
                  'ANZDEZSTELLEN': 3,
