@@ -33,5 +33,7 @@ setup(
         'xarray',
         'openpyxl',
         'recordclass',
+        'tables',
+        'pytest',
     ],
 )
