@@ -2,11 +2,10 @@ import os
 import pytest
 import numpy as np
 import pandas as pd
-import tempfile
-from recordclass import RecordClass
 from visumtransfer.visum_table import (VisumTable, VisumTables,
-                                       Version, VisumTransfer)
+                                       Version)
 from visumtransfer.visum_attributes import VisumAttributes
+
 
 @pytest.fixture
 def dataframe() -> pd.DataFrame:
@@ -33,7 +32,7 @@ class DummyTable(VisumTable):
     code = 'DUMMY'
     _cols = 'ID;NAME;VALUE'
     _pkey = 'ID'
-    _defaults = {'VALUE': -11,}
+    _defaults = {'VALUE': -11, }
 
 
 class TestVisumTableCreation:

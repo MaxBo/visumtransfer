@@ -32,6 +32,7 @@ class VisumTables:
         except IOError:
             cls.visum_attributes = VisumAttributes.from_excel(fn_attrs_h5)
 
+
 class WriteLine:
     """Wrapper around file object"""
     def __init__(self, fobj: io.TextIOWrapper):
@@ -499,4 +500,3 @@ class VisumTransfer(object):
                                  converters=table.converters,
                                  )
                 table.df = df
-
