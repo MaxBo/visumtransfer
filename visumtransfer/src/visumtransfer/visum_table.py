@@ -431,6 +431,15 @@ class VisumTransfer(object):
             for table in self.tables.values():
                 table.write_block(fobj)
 
+    def append(self, fn):
+        with open(fn, 'a') as f:
+            fobj = WriteLine(f)
+            for table in self.tables.values():
+                #  skip Version when appending to existing tra-file
+                if table.code == 'VERSION':
+                    continue
+                table.write_block(fobj)
+
     def get_modification(self, number: int, modification_folder: str) -> str:
         """return the modification file"""
         fn = f'M{number:06d}.tra'
