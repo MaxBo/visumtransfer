@@ -156,6 +156,12 @@ class BenutzerdefiniertesAttribut(VisumTable):
         self.add_row(row)
 
 
+class Gebiet(VisumTable):
+    name = 'Gebiete'
+    code = 'GEBIET'
+    _cols = 'NR;XKOORD;YKOORD'
+
+
 class Oberbezirk(VisumTable):
     name = 'Oberbezirke'
     code = 'OBERBEZIRK'
@@ -1206,12 +1212,14 @@ class Strukturgroessenwert(VisumTable):
     name = 'Strukturgrößenwerte'
     code = 'STRUKTURGROESSENWERT'
     _cols = 'BEZNR;STRUKTURGROESSENCODE;WERT'
+    _longformat = True
 
 
 class PersonengruppeJeBezirk(VisumTable):
     name = 'Personengruppe je Bezirk'
     code = 'PERSONENGRUPPEJEBEZIRK'
     _cols = 'BEZNR;PGRUPPENCODE;ANZPERSONEN'
+    _longformat = True
 
 
 class Nachfragebeschreibung(VisumTable):

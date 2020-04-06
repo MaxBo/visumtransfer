@@ -66,6 +66,7 @@ class VisumTable(metaclass=MetaClass):
               }
     _mode = '+'
     _defaults = {}
+    _longformat = False
 
     # map Umlaute to normal letters
     _intab = "-()äöüÄÖÜß"
