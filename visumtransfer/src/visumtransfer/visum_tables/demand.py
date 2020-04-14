@@ -68,7 +68,6 @@ class Personengruppe(VisumTable):
 
     def create_groups_destmode(self,
                                params: Params,
-                               file_aufteilung_arbeitswege: str,
                                activities: 'Aktivitaet'):
         """"""
         assert isinstance(activities, Aktivitaet)
@@ -231,6 +230,9 @@ class Strukturgr(VisumTable):
                       suffix=''):
         rows = []
         for a in params.activities:
+            # Heimataktivität hat keine Strukturgröße
+            if a['home']:
+                continue
             row = self.Row(nachfragemodellcode=model)
             row.code = a['potential'] + suffix
             row.name = a['name']
@@ -800,9 +802,10 @@ class Aktivitaetenpaar(VisumTable):
         rows = []
         for a in params.activitypairs:
             ap_code = a['code']
-            origin_code = ap_code[0] + suffix
-            dest_code = ap_code[1] + suffix
-            ap_new_code = origin_code + dest_code
+            ap_tuple = ap_code.split('_')
+            origin_code = ap_tuple[0] + suffix
+            dest_code = ap_tuple[1] + suffix
+            ap_new_code = '_'.join([origin_code, dest_code])
             row = self.Row(code=ap_new_code,
                            name=ap_code,
                            nachfragemodellcode=model,
