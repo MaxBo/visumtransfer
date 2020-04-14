@@ -28,216 +28,213 @@ from visumtransfer.visum_tables import (
 from visumtransfer.params import Params
 
 
+class VisemDemandModel:
+    """create a transfer file for a VisemModel"""
+    def __init__(self,
+                 modifications: str,
+                 param_excel_fp: str):
+        self.modifications = modifications
+        self.params_excel_fp = param_excel_fp
+
+    def create_transfer(self, modification_number: int):
+
+        v = VisumTransfer.new_transfer()
+
+        # use the data from the excel-file
+        params = Params.from_excel(param_excel_fp)
+
+        userdefined1 = BenutzerdefiniertesAttribut()
+        v.tables['BenutzerdefinierteAttribute1'] = userdefined1
+        userdefined2 = BenutzerdefiniertesAttribut()
+
+        matrices = Matrix()
+        matrices_logsum = Matrix()
+
+        m = Nachfragemodell()
+        m.add_model(params, 'VisemGeneration', name='Visem-Erzeugungsmodell')
+        m.add_model(params, 'VisemT', name='Visem Ziel- und Verkehrsmittelwahlmodell')
+        v.tables['Nachfragemodell'] = m
+
+        sg = Strukturgr()
+        sg.create_tables(params, model='VisemT', suffix='')
+        v.tables['Strukturgr'] = sg
+
+        ac = Aktivitaet()
+        userdefined1.add_daten_attribute('Aktivitaet', 'RSA', datentyp='Bool')
+        userdefined1.add_daten_attribute('Aktivitaet', 'Base_Code',
+                                         datentyp='Text')
+
+        ac.create_tables(params, model='VisemT', suffix='')
+        ac.add_benutzerdefinierte_attribute(userdefined2)
+        ac.add_net_activity_ticket_attributes(userdefined2)
+        ac.add_output_matrices(matrices, userdefined2)
+        ac.add_modal_split(userdefined2, matrices, params)
+        ac.add_balancing_output_matrices(matrices, userdefined2, loadmatrix=0)
+        ac.add_parking_matrices(matrices)
+        ac.add_pjt_matrices(matrices)
+        ac.add_kf_logsum(userdefined2)
+        v.tables['Aktivitaet'] = ac
+
+        userdefined1.add_daten_attribute('Personengruppe', 'ACTCHAIN',
+                                         datentyp='Text')
+        userdefined1.add_daten_attribute('Personengruppe', 'CAR_AVAILABILITY',
+                                         datentyp='Text')
+        userdefined1.add_daten_attribute('Personengruppe', 'GROUPDESTMODE',
+                                         datentyp='Text')
+        userdefined1.add_daten_attribute('Personengruppe', 'OCCUPATION',
+                                         datentyp='Text')
+        userdefined1.add_daten_attribute('Personengruppe', 'VOTT')
+        pgg = Personengruppe()
+        pgg.create_groups_generation(params)
+        pgg.create_table()
+        v.tables['PersonGroupsGeneration'] = pgg
+
+        pgd = Personengruppe()
+        pgd.create_groups_destmode(params, ac)
+        pgd.create_table()
+        pgd.add_calibration_matrices_and_attributes(params, matrices, userdefined2)
+        v.tables['PersonGroupsDestModechoice'] = pgd
+
+        ap = Aktivitaetenpaar()
+        ap.create_tables(params, model='VisemT', suffix='')
+        v.tables['Aktivitaetenpaar'] = ap
+
+        ak = Aktivitaetenkette()
+        ak.create_tables(params, model='VisemT', suffix='')
+        v.tables['Aktivitaetenkette'] = ak
+
+        ns = Nachfrageschicht()
+        ns.create_tables_gd(params,
+                            personengruppe=pgd,
+                            model='VisemT')
+        v.tables['Nachfrageschicht'] = ns
+
+        # Kenngrößenmatrizen
+        matrices.add_ov_kg_matrices(params, userdefined1)
+        matrices.add_iv_kg_matrices(userdefined1)
+        matrices.add_iv_demand(loadmatrix=1)
+        matrices.add_ov_demand(loadmatrix=1)
+        matrices.add_other_demand_matrices(params, loadmatrix=0)
+        matrices.add_commuter_matrices(userdefined1)
+
+        # Verkehrssysteme mit FV-Präferenz
+        vsys = Verkehrssystem(mode='*')
+        self.define_vsys_fv_preference(vsys, userdefined2)
+
+        # add matrices later
+        v.tables['Matrizen'] = matrices
+        v.tables['BenutzerdefinierteAttribute2'] = userdefined2
+        v.tables['Verkehrssysteme'] = vsys
+
+        #userdefined2.add_logsum_kf(userdefined2)
+        #matrices_logsum.add_logsum_matrices(ns, ak)
+        #v.tables['MatrizenLogsum'] = matrices_logsum
+
+        gl = Ganglinie()
+        gle = Ganglinienelement()
+        ngl = Nachfrageganglinie()
+        vgl = VisemGanglinie()
+        gl.create_tables(params, gle, ngl, vgl, pgd)
+
+        v.tables['Ganglinie'] = gl
+        v.tables['Ganglinienelement'] = gle
+        v.tables['VisemGanglinien'] = vgl
+
+        v.write(fn=v.get_modification(modification_number, self.modifications))
+
+    def write_modification_iv_matrices(self, modification_number: int):
+        v = VisumTransfer.new_transfer()
+
+        matrices = Matrix()
+        matrices.add_iv_demand()
+        v.tables['Matrizen'] = matrices
+        v.write(fn=v.get_modification(modification_number, self.modifications))
 
 
-def write_modification_iv_matrices(modifications, modification_number=12):
-    v = VisumTransfer.new_transfer()
+    def write_modification_ov_matrices(self, modification_number: int):
+        v = VisumTransfer.new_transfer()
 
-    matrices = Matrix()
-    matrices.add_iv_demand()
-    v.tables['Matrizen'] = matrices
-    v.write(fn=v.get_modification(modification_number, modifications))
-
-
-def write_modification_ov_matrices(modifications, modification_number=14):
-    v = VisumTransfer.new_transfer()
-
-    matrices = Matrix()
-    matrices.add_ov_demand()
-    v.tables['Matrizen'] = matrices
-    v.write(fn=v.get_modification(modifications, modification_number))
+        matrices = Matrix()
+        matrices.add_ov_demand()
+        v.tables['Matrizen'] = matrices
+        v.write(fn=v.get_modification(self.modifications, modification_number))
 
 
-def main(modifications: str,
-         param_excel_fp: str,
-         file_aufteilung_arbeitswege: str,
-         modification_number: int = 5):
-    add_nsegs_userdefined(modifications)
+    def add_nsegs_userdefined(self, modification_no: int):
+        v = VisumTransfer.new_transfer()
+        userdefined0 = BenutzerdefiniertesAttribut()
+        v.tables['BenutzerdefinierteAttribute0'] = userdefined0
+
+        # Matrizen
+        userdefined0.add_daten_attribute('Matrix', 'INITMATRIX', datentyp='Bool')
+        userdefined0.add_daten_attribute('Matrix', 'LOADMATRIX', datentyp='Bool')
+        userdefined0.add_daten_attribute('Matrix', 'SAVEMATRIX', datentyp='Bool')
+        userdefined0.add_daten_attribute('Matrix', 'MATRIXFOLDER',
+                                         datentyp='Text')
+        userdefined0.add_daten_attribute('Matrix', 'CALIBRATIONCODE',
+                                         datentyp='Text')
+
+        # Netzattribute
+        userdefined0.add_daten_attribute('Netz', 'COST_PER_KM_PKW',
+                                         standardwert=0.15)
+        userdefined0.add_daten_attribute('Netz',
+                                         'FilenameFactorsCommuters',
+                                         datentyp='Text',
+                                         stringstandardwert="Factors_Commuters.csv")
+        userdefined0.add_daten_attribute('Netz',
+                                         'FilenameTripChainRates',
+                                         datentyp='Text',
+                                         stringstandardwert="tcr_gg.csv")
+        userdefined0.add_daten_attribute('Netz', 'MINUS_ONE', standardwert=-1)
+
+        # Aktivitäten
+        userdefined0.add_daten_attribute('Aktivitaet', 'HRF_EINZEL2ZEITKARTE',
+                                         standardwert=1.0)
+        userdefined0.add_daten_attribute('Aktivitaet', 'HRF_COST_MITFAHRER',
+                                         standardwert=1.0)
+        userdefined0.add_daten_attribute('Aktivitaet', 'LS',
+                                         standardwert=1.0)
+
+        # Bezirk
+        userdefined0.add_daten_attribute('Bezirk', 'OBERBEZIRK_SRV')
+        userdefined0.add_daten_attribute('Bezirk', 'ANTEIL_FERNAUSPENDLER',
+                                         standardwert=0.0)
 
 
-    v = VisumTransfer.new_transfer()
+        # Nachfragesegmente
+        nseg = Nachfragesegment()
+        v.tables['Nachfragesegment'] = nseg
+        #nseg.add_row(nseg.Row(code='O', name='ÖV Region', modus='O'))
+        nseg.add_row(nseg.Row(code='OFern', name='ÖV Fernverkehr', modus='O'))
+        nseg.add_row(nseg.Row(code='B_P', name='Pkw-Wirtschaftsverkehr',
+                              modus='P'))
+        nseg.add_row(nseg.Row(code='B_Li', name='Lieferfahrzeug',
+                              modus='P'))
+        nseg.add_row(nseg.Row(code='B_L1', name='Lkw bis 12 to',
+                              modus='L'))
+        nseg.add_row(nseg.Row(code='B_L2', name='Lkw 12-40 to',
+                              modus='L'))
+        nseg.add_row(nseg.Row(code='LkwFern', name='Lkw Fernverkehr',
+                              modus='L'))
+        nseg.add_row(nseg.Row(code='PkwFern', name='Pkw Fernverkehr',
+                              modus='P'))
+        nseg.add_row(nseg.Row(code='SV', name='Schwerverkehr',
+                              modus='L'))
+        nseg.add_row(nseg.Row(code='Kfz_35', name='Kfz bis 3,5 to',
+                              modus='P'))
 
-    ## read original data from hdf5
-    #params = read_params(param_file)
-    ## convert to Excel
-    #params.save2excel(param_excel_fp)
-
-    # use the data from the excel-file
-    params = Params.from_excel(param_excel_fp)
-
-    userdefined1 = BenutzerdefiniertesAttribut()
-    v.tables['BenutzerdefinierteAttribute1'] = userdefined1
-    userdefined2 = BenutzerdefiniertesAttribut()
-
-    matrices = Matrix()
-    matrices_logsum = Matrix()
-
-    m = Nachfragemodell()
-    m.add_model(params, 'VisemGeneration', name='Visem-Erzeugungsmodell')
-    m.add_model(params, 'VisemT', name='Visem Ziel- und Verkehrsmittelwahlmodell')
-    v.tables['Nachfragemodell'] = m
-
-    sg = Strukturgr()
-    sg.create_tables(params, model='VisemGeneration', suffix='_')
-    sg.create_tables(params, model='VisemT', suffix='')
-    v.tables['Strukturgr'] = sg
-
-    ac = Aktivitaet()
-    userdefined1.add_daten_attribute('Aktivitaet', 'RSA', datentyp='Bool')
-    userdefined1.add_daten_attribute('Aktivitaet', 'Base_Code',
-                                     datentyp='Text')
-
-    ac.create_tables(params, model='VisemGeneration', suffix='_')
-    ac.create_tables(params, model='VisemT', suffix='')
-    ac.add_benutzerdefinierte_attribute(userdefined2)
-    ac.add_net_activity_ticket_attributes(userdefined2)
-    ac.add_output_matrices(matrices, userdefined2)
-    ac.add_modal_split(userdefined2, matrices, params)
-    ac.add_balancing_output_matrices(matrices, userdefined2, loadmatrix=0)
-    ac.add_parking_matrices(matrices)
-    ac.add_pjt_matrices(matrices)
-    ac.add_kf_logsum(userdefined2)
-    v.tables['Aktivitaet'] = ac
-
-    pg = Personengruppe()
-    userdefined1.add_daten_attribute('Personengruppe', 'ACTCHAIN',
-                                     datentyp='Text')
-    userdefined1.add_daten_attribute('Personengruppe', 'CAR_AVAILABILITY',
-                                     datentyp='Text')
-    userdefined1.add_daten_attribute('Personengruppe', 'GROUPDESTMODE',
-                                     datentyp='Text')
-    userdefined1.add_daten_attribute('Personengruppe', 'OCCUPATION',
-                                     datentyp='Text')
-    userdefined1.add_daten_attribute('Personengruppe', 'VOTT')
-    pg.create_groups_generation(params)
-    pg.create_groups_destmode(params, file_aufteilung_arbeitswege, ac)
-    pg.create_table()
-    pg.add_calibration_matrices_and_attributes(params, matrices, userdefined2)
-    v.tables['PersonGroups'] = pg
-
-    ap = Aktivitaetenpaar()
-    ap.create_tables(params, model='VisemGeneration', suffix='_')
-    ap.create_tables(params, model='VisemT', suffix='')
-    v.tables['Aktivitaetenpaar'] = ap
-
-    ak = Aktivitaetenkette()
-    ak.create_tables(params, model='VisemGeneration', suffix='_')
-    ak.create_tables(params, model='VisemT', suffix='')
-    v.tables['Aktivitaetenkette'] = ak
-
-    ns = Nachfrageschicht()
-    ns.create_tables_gd(params,
-                        personengruppe=pg,
-                        model='VisemT')
-    v.tables['Nachfrageschicht'] = ns
-
-    # Kenngrößenmatrizen
-    matrices.add_ov_kg_matrices(params, userdefined1)
-    matrices.add_iv_kg_matrices(userdefined1)
-    matrices.add_iv_demand(loadmatrix=1)
-    matrices.add_ov_demand(loadmatrix=1)
-    matrices.add_other_demand_matrices(params, loadmatrix=0)
-    matrices.add_commuter_matrices(userdefined1)
-
-    # Verkehrssysteme mit FV-Präferenz
-    vsys = Verkehrssystem(mode='*')
-    define_vsys_fv_preference(vsys, userdefined2)
-
-    # add matrices later
-    v.tables['Matrizen'] = matrices
-    v.tables['BenutzerdefinierteAttribute2'] = userdefined2
-    v.tables['Verkehrssysteme'] = vsys
-
-    #userdefined2.add_logsum_kf(userdefined2)
-    #matrices_logsum.add_logsum_matrices(ns, ak)
-    #v.tables['MatrizenLogsum'] = matrices_logsum
-
-    gl = Ganglinie()
-    gle = Ganglinienelement()
-    ngl = Nachfrageganglinie()
-    vgl = VisemGanglinie()
-    gl.create_tables(params, gle, ngl, vgl, pg)
-
-    v.tables['Ganglinie'] = gl
-    v.tables['Ganglinienelement'] = gle
-    v.tables['VisemGanglinien'] = vgl
-
-    v.write(fn=v.get_modification(modification_number, modifications))
-
-def add_nsegs_userdefined(modifications, modification_no:int = 4):
-    v = VisumTransfer.new_transfer()
-    userdefined0 = BenutzerdefiniertesAttribut()
-    v.tables['BenutzerdefinierteAttribute0'] = userdefined0
-
-    # Matrizen
-    userdefined0.add_daten_attribute('Matrix', 'INITMATRIX', datentyp='Bool')
-    userdefined0.add_daten_attribute('Matrix', 'LOADMATRIX', datentyp='Bool')
-    userdefined0.add_daten_attribute('Matrix', 'SAVEMATRIX', datentyp='Bool')
-    userdefined0.add_daten_attribute('Matrix', 'MATRIXFOLDER',
-                                     datentyp='Text')
-    userdefined0.add_daten_attribute('Matrix', 'CALIBRATIONCODE',
-                                     datentyp='Text')
-
-    # Netzattribute
-    userdefined0.add_daten_attribute('Netz', 'COST_PER_KM_PKW',
-                                     standardwert=0.15)
-    userdefined0.add_daten_attribute('Netz',
-                                     'FilenameFactorsCommuters',
-                                     datentyp='Text',
-                                     stringstandardwert="Factors_Commuters.csv")
-    userdefined0.add_daten_attribute('Netz',
-                                     'FilenameTripChainRates',
-                                     datentyp='Text',
-                                     stringstandardwert="tcr_gg.csv")
-    userdefined0.add_daten_attribute('Netz', 'MINUS_ONE', standardwert=-1)
-
-    # Aktivitäten
-    userdefined0.add_daten_attribute('Aktivitaet', 'HRF_EINZEL2ZEITKARTE',
-                                     standardwert=1.0)
-    userdefined0.add_daten_attribute('Aktivitaet', 'HRF_COST_MITFAHRER',
-                                     standardwert=1.0)
-    userdefined0.add_daten_attribute('Aktivitaet', 'LS',
-                                     standardwert=1.0)
-
-    # Bezirk
-    userdefined0.add_daten_attribute('Bezirk', 'OBERBEZIRK_SRV')
-    userdefined0.add_daten_attribute('Bezirk', 'ANTEIL_FERNAUSPENDLER',
-                                     standardwert=0.0)
+        v.write(fn=v.get_modification(modification_no, self.modifications))
 
 
-    # Nachfragesegmente
-    nseg = Nachfragesegment()
-    v.tables['Nachfragesegment'] = nseg
-    #nseg.add_row(nseg.Row(code='O', name='ÖV Region', modus='O'))
-    nseg.add_row(nseg.Row(code='OFern', name='ÖV Fernverkehr', modus='O'))
-    nseg.add_row(nseg.Row(code='B_P', name='Pkw-Wirtschaftsverkehr',
-                          modus='P'))
-    nseg.add_row(nseg.Row(code='B_Li', name='Lieferfahrzeug',
-                          modus='P'))
-    nseg.add_row(nseg.Row(code='B_L1', name='Lkw bis 12 to',
-                          modus='L'))
-    nseg.add_row(nseg.Row(code='B_L2', name='Lkw 12-40 to',
-                          modus='L'))
-    nseg.add_row(nseg.Row(code='LkwFern', name='Lkw Fernverkehr',
-                          modus='L'))
-    nseg.add_row(nseg.Row(code='PkwFern', name='Pkw Fernverkehr',
-                          modus='P'))
-    nseg.add_row(nseg.Row(code='SV', name='Schwerverkehr',
-                          modus='L'))
-    nseg.add_row(nseg.Row(code='Kfz_35', name='Kfz bis 3,5 to',
-                          modus='P'))
-
-    v.write(fn=v.get_modification(modification_no, modifications))
-
-
-def define_vsys_fv_preference(vsys: Verkehrssystem,
-                              userdefined2: BenutzerdefiniertesAttribut):
-    userdefined2.add_daten_attribute('VSYS', 'VSYS_FV_PREFERENCE', standardwert=1)
-    vsys.add_cols(['VSYS_FV_PREFERENCE'])
-    #row = vsys.Row(code='FAE', typ='OV', vsys_fv_preference=0.2)
-    #vsys.add_row(row)
-    row = vsys.Row(code='S', typ='OV', vsys_fv_preference=0.5)
-    vsys.add_row(row)
+    def define_vsys_fv_preference(self,
+                                  vsys: Verkehrssystem,
+                                  userdefined2: BenutzerdefiniertesAttribut):
+        userdefined2.add_daten_attribute('VSYS', 'VSYS_FV_PREFERENCE', standardwert=1)
+        vsys.add_cols(['VSYS_FV_PREFERENCE'])
+        # row = vsys.Row(code='FAE', typ='OV', vsys_fv_preference=0.2)
+        # vsys.add_row(row)
+        row = vsys.Row(code='S', typ='OV', vsys_fv_preference=0.5)
+        vsys.add_row(row)
 
 if __name__ == '__main__':
     argpase = ArgumentParser()
@@ -249,15 +246,12 @@ if __name__ == '__main__':
     param_excel_fp = os.path.join(options.infolder, options.param_excel_fp)
     modifications = os.path.join(options.visum_folder, 'Modifications')
     shared_data = os.path.join(options.visum_folder, 'SharedData')
-    file_aufteilung_arbeitswege = os.path.join(shared_data, 'Factors_Commuters.csv')
 
+    dm = VisemDemandModel(modifications,
+                          param_excel_fp,
+                          )
 
-
-
-    add_nsegs_userdefined(modifications, modification_no=444)
-    main(modifications,
-         param_excel_fp,
-         file_aufteilung_arbeitswege,
-         modification_number=555, )
-    #write_modification_iv_matrices(modifications, modification_no=12)
-    #write_modification_ov_matrices(modifications, modification_no=14)
+    dm.add_nsegs_userdefined(modification_no=444)
+    dm.create_transfer(modification_number=555)
+    #dm.write_modification_iv_matrices(modification_no=12)
+    #dm.write_modification_ov_matrices(modification_no=14)

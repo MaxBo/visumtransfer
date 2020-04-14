@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import xarray as xr
+import pandas as pd
 from .demand import Nachfragebeschreibung, Personengruppe
 from visumtransfer.params import Params
 from visumtransfer.visum_table import (VisumTable)
@@ -8,9 +9,10 @@ from visumtransfer.visum_table import (VisumTable)
 
 
 class Ganglinienelement(VisumTable):
-    name = 'Ganglinieneinträge'
+    name = 'Ganglinienelemente'
     code = 'GANGLINIENELEMENT'
     _cols = 'GANGLINIENNR;STARTZEIT;ENDZEIT;GEWICHT;MATRIX'
+    _pkey = 'GANGLINIENNR;STARTZEIT;ENDZEIT'
 
 
 class Nachfrageganglinie(VisumTable):
@@ -23,6 +25,7 @@ class VisemGanglinie(VisumTable):
     name = 'VISEM-Ganglinien'
     code = 'VISEMGANGLINIE'
     _cols = 'AKTPAARCODE;PGRUPPENCODE;GANGLINIENNR'
+    _pkey = 'AKTPAARCODE;PGRUPPENCODE'
 
 
 class Ganglinie(VisumTable):
@@ -47,10 +50,12 @@ class Ganglinie(VisumTable):
         aps = params.activitypairs
         time_series = params.time_series
         ap_timeseries_recarray = params.activitypair_time_series
-        ap_timeseries = ap_timeseries_recarray.view(dtype='f8').\
-            reshape(-1, 25)[:, 1:]
+        ap_timeseries = pd.DataFrame.from_records(ap_timeseries_recarray,
+                                                  index=['index', 'activitypair'])
+
         for a, ap in enumerate(aps):
             ap_code = ap['code']
+            ap_tuple = ap_code.split('_')
             idx = ap['idx']
             nr = idx + start_idx
             row = self.Row(nr=nr, name=ap_code)
@@ -62,7 +67,7 @@ class Ganglinie(VisumTable):
             rows_nachfrageganglinien.append(row_nachfrageganglinie)
 
             # Ganglinie
-            ap_timeserie = ap_timeseries[idx]
+            ap_timeserie = ap_timeseries.iloc[idx]
             for ts in time_series:
                 from_hour = ts['from_hour']
                 to_hour = ts['to_hour']
@@ -79,10 +84,7 @@ class Ganglinie(VisumTable):
             for pg in personengruppe.table:
                 row_visem_ganglinie = visem_ganglinie.Row(
                     pgruppencode=pg['CODE'], gangliniennr=nr)
-                if pg['NACHFRAGEMODELLCODE'] == 'VisemGeneration':
-                    apg_code = '{}_{}_'.format(ap_code[0], ap_code[1])
-                    row_visem_ganglinie.aktpaarcode = apg_code
-                else:
+                if not pg['NACHFRAGEMODELLCODE'] == 'VisemGeneration':
                     row_visem_ganglinie.aktpaarcode = ap_code
                 rows_visem_nachfrageganglinien.append(row_visem_ganglinie)
 
