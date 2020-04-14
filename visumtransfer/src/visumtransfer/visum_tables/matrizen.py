@@ -207,7 +207,7 @@ class Matrix(VisumTable):
                            ):
         """Add OV Kenngrößen-Matrizen für Zeitscheiben"""
         time_series = params.time_series
-        nsegcode = 'O'
+        nsegcode = 'A'
         self.set_range('OV_TimeSeries_Skims')
         for ts in time_series:
             ts_code = ts['code']
@@ -216,85 +216,85 @@ class Matrix(VisumTable):
             self.add_daten_matrix(
                 code='PJT',
                 matrixtyp='Kenngröße',
-                name='Empfundene Reisezeit {}'.format(nsegcode),
-                datname='PJT_{}'.format(ts_code),
+                name=f'Empfundene Reisezeit {nsegcode}',
+                datname=f'PJT_{ts_code}',
                 nsegcode=nsegcode,
                 tag=1,
                 vonzeit=vonzeit,
                 biszeit=biszeit,
                 zeitbezug='Abfahrtszeit',
                 initmatrix=1,
-                #moduscode='O'
+                # moduscode='O'
             )
             self.add_daten_matrix(
                 code='FAR',
                 matrixtyp='Kenngröße',
-                name='Fahrpreis {}'.format(nsegcode),
-                datname='FAR_{}'.format(ts_code),
+                name=f'Fahrpreis {nsegcode}',
+                datname=f'FAR_{ts_code}',
                 nsegcode=nsegcode,
                 tag=1,
                 vonzeit=vonzeit,
                 biszeit=biszeit,
                 initmatrix=1,
                 zeitbezug='Abfahrtszeit',
-                #moduscode='O',
+                # moduscode='O',
             )
             self.add_daten_matrix(
                 code='XADT',
                 matrixtyp='Kenngröße',
-                name='Erweiterte Anpassungszeit {}'.format(nsegcode),
-                datname='XADT_{}'.format(ts_code),
+                name=f'Erweiterte Anpassungszeit {nsegcode}',
+                datname=f'XADT_{ts_code}',
                 nsegcode=nsegcode,
                 tag=1,
                 vonzeit=vonzeit,
                 biszeit=biszeit,
                 initmatrix=1,
                 zeitbezug='Abfahrtszeit',
-                #moduscode='O',
+                # moduscode='O',
             )
             self.add_daten_matrix(
                 code='JRD',
                 matrixtyp='Kenngröße',
-                name='Reiseweite {}'.format(nsegcode),
-                datname='JRD_{}'.format(ts_code),
+                name=f'Reiseweite {nsegcode}',
+                datname=f'JRD_{ts_code}',
                 nsegcode=nsegcode,
                 tag=1,
                 vonzeit=vonzeit,
                 biszeit=biszeit,
                 initmatrix=1,
                 zeitbezug='Abfahrtszeit',
-                #moduscode='O',
+                # moduscode='O',
             )
 
         self.add_daten_matrix(
             code='PJT',
             matrixtyp='Kenngröße',
-            name='Empfundene Reisezeit {}'.format(nsegcode),
+            name=f'Empfundene Reisezeit {nsegcode}',
             nsegcode=nsegcode,
             vonzeit='',
             biszeit='',
             zeitbezug='Abfahrtszeit',
-            #moduscode='O',
+            # moduscode='O',
         )
         self.add_daten_matrix(
             code='FAR',
             matrixtyp='Kenngröße',
-            name='Fahrpreis {}'.format(nsegcode),
+            name=f'Fahrpreis {nsegcode}',
             nsegcode=nsegcode,
             vonzeit='',
             biszeit='',
             zeitbezug='Abfahrtszeit',
-            #moduscode='O',
+            # moduscode='O',
         )
         self.add_daten_matrix(
             code='XADT',
             matrixtyp='Kenngröße',
-            name='Erweiterte Anpassungszeit {}'.format(nsegcode),
+            name=f'Erweiterte Anpassungszeit {nsegcode}',
             nsegcode=nsegcode,
             vonzeit='',
             biszeit='',
             zeitbezug='Abfahrtszeit',
-            #moduscode='O',
+            # moduscode='O',
         )
 
         self.set_range('OV_TimeSeries_Skims_Formula')
@@ -339,13 +339,13 @@ class Matrix(VisumTable):
         self.add_daten_matrix(
             code='JRD',
             matrixtyp='Kenngröße',
-            name='Reiseweite {}'.format(nsegcode),
+            name=f'Reiseweite {nsegcode}',
             nsegcode=nsegcode,
             vonzeit='',
             biszeit='',
-            #initmatrix=1,
+            # initmatrix=1,
             zeitbezug='Abfahrtszeit',
-            #moduscode='O',
+            # moduscode='O',
         )
 
         self.add_daten_matrix(
@@ -384,15 +384,12 @@ class Matrix(VisumTable):
         vonzeit = self.get_time_seconds(ts['from_hour'])
         biszeit = self.get_time_seconds(ts['to_hour'])
         formula = (
-            'Matrix([CODE] = "PJT" & [FROMTIME]={f} & [TOTIME]={t}) + '
-            '{factor} * POW('
-            '(Matrix([CODE] = "XADT" & [FROMTIME]={f} & [TOTIME]={t}) * 4 + 1)'
-            ', {exponent})')
-        formula2 = formula.format(f=vonzeit,
-                                  t=biszeit,
-                                  factor=factor,
-                                  exponent=exponent)
-        complete_formula = '(({f}) + TRANSPOSE({f})) * 0.5'.format(f=formula2)
+            f'Matrix([CODE] = "PJT" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit}) + '
+            f'{factor} * POW('
+            f'(Matrix([CODE] = "XADT" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit}) * 4 + 1)'
+            f', {exponent})')
+
+        complete_formula = f'(({formula}) + TRANSPOSE({formula})) * 0.5'
 
         self.add_formel_matrix(
             code='PJT_All',
@@ -496,6 +493,8 @@ class Matrix(VisumTable):
 
     def add_iv_demand(self, savematrix=0, loadmatrix=1):
         """Add PrT Demand Matrices"""
+        mode_lkw = 'X'
+
         self.set_range('Visem_Demand')
         self.add_daten_matrix(code='Visem_P', name='Pkw regional',
                               loadmatrix=loadmatrix,
@@ -521,12 +520,12 @@ class Matrix(VisumTable):
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
                               nsegcode='B_L1',
-                              moduscode='L')
+                              moduscode=mode_lkw)
         self.add_daten_matrix(code='Lkw_über_12to', name='Lkw > 3,5 to',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
                               nsegcode='B_L2',
-                              moduscode='L')
+                              moduscode=mode_lkw)
         self.add_daten_matrix(code='FernverkehrPkw',
                               name='Pkw-Fernverkehr',
                               loadmatrix=loadmatrix,
@@ -538,7 +537,7 @@ class Matrix(VisumTable):
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
                               nsegcode='LkwFern',
-                              moduscode='L')
+                              moduscode=mode_lkw)
 
         # Summen Schwerverkehr und Kfz bis 3.5 to
         nsegs = ['Lkw_bis_12to',
@@ -551,7 +550,7 @@ class Matrix(VisumTable):
                                name='Schwerverkehr ohne Busse',
                                matrixtyp='Nachfrage',
                                nsegcode='SV',
-                               moduscode='L')
+                               moduscode=mode_lkw)
 
         nsegs = ['Visem_P',
                  'Pkw_Wirtschaftsverkehr',
@@ -563,7 +562,7 @@ class Matrix(VisumTable):
                                formel=formel,
                                name='Kfz bis 3,5 to',
                                matrixtyp='Nachfrage',
-                               nsegcode='Kfz_35',
+                               nsegcode='PG',
                                moduscode='P')
 
     def add_ov_demand(self, savematrix=0, loadmatrix=1):
@@ -572,7 +571,7 @@ class Matrix(VisumTable):
         self.add_daten_matrix(code='Visem_O', name='ÖPNV',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='O',
+                              nsegcode='A',
                               moduscode='O',
                               savematrix=savematrix)
         self.set_range('OV_Demand')

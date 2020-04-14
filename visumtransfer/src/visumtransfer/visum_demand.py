@@ -201,6 +201,7 @@ class VisemDemandModel:
                                          standardwert=0.0)
 
 
+        mode_lkw = 'X'
         # Nachfragesegmente
         nseg = Nachfragesegment()
         v.tables['Nachfragesegment'] = nseg
@@ -211,16 +212,16 @@ class VisemDemandModel:
         nseg.add_row(nseg.Row(code='B_Li', name='Lieferfahrzeug',
                               modus='P'))
         nseg.add_row(nseg.Row(code='B_L1', name='Lkw bis 12 to',
-                              modus='L'))
+                              modus=mode_lkw))
         nseg.add_row(nseg.Row(code='B_L2', name='Lkw 12-40 to',
-                              modus='L'))
+                              modus=mode_lkw))
         nseg.add_row(nseg.Row(code='LkwFern', name='Lkw Fernverkehr',
-                              modus='L'))
+                              modus=mode_lkw))
         nseg.add_row(nseg.Row(code='PkwFern', name='Pkw Fernverkehr',
                               modus='P'))
         nseg.add_row(nseg.Row(code='SV', name='Schwerverkehr',
-                              modus='L'))
-        nseg.add_row(nseg.Row(code='Kfz_35', name='Kfz bis 3,5 to',
+                              modus=mode_lkw))
+        nseg.add_row(nseg.Row(code='PG', name='Kfz bis 3,5 to',
                               modus='P'))
 
         v.write(fn=v.get_modification(modification_no, self.modifications))

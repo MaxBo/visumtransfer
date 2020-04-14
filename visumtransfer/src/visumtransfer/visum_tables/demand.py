@@ -282,7 +282,7 @@ class Aktivitaet(VisumTable):
             row.rsa = a['balance']
             row.istheimataktivitaet = is_home_activity
             row.kopplungziel = is_home_activity
-            row.base_code = row.code[0]
+            row.base_code = a['composite_activity']
             rows.append(row)
         self.add_rows(rows)
 
@@ -826,13 +826,13 @@ class Aktivitaetenkette(VisumTable):
                       suffix=''):
         rows = []
         activity_chains = np.unique(params.trip_chain_rates['code'])
-        for activity_chain in activity_chains:
-            ac = activity_chain
-            act_seq = ['{c}{s}'.format(c=a, s=suffix) for a in ac]
-            code = ''.join(act_seq)
+        for ac_code in activity_chains:
+            ac_tuple = ac_code.split('_')
+            act_seq = ['{c}{s}'.format(c=a, s=suffix) for a in ac_tuple]
+            code = '_'.join(act_seq)
             act_chain_sequence = ','.join(act_seq)
             row = self.Row(code=code,
-                           name=ac,
+                           name=ac_code,
                            nachfragemodellcode=model,
                            aktivcodes=act_chain_sequence)
             rows.append(row)
@@ -842,7 +842,7 @@ class Aktivitaetenkette(VisumTable):
 class Nachfrageschicht(VisumTable):
     name = 'Nachfrageschichten'
     code = 'NACHFRAGESCHICHT'
-    _cols = 'CODE;NAME;NACHFRAGEMODELLCODE;AKTKETTENCODE;PGRUPPENCODES'
+    _cols = 'CODE;NAME;NACHFRAGEMODELLCODE;AKTKETTENCODE;PGRUPPENCODES;NSEGSET'
 
     def create_tables_gg(self,
                          params: Params,
@@ -868,6 +868,7 @@ class Nachfrageschicht(VisumTable):
     def create_tables_gd(self,
                          params: Params,
                          personengruppe: Personengruppe,
+                         nsegset: str = 'A,F,M,P,R',
                          model='VisemT'):
         rows = []
         pg_table = personengruppe.table
@@ -882,5 +883,6 @@ class Nachfrageschicht(VisumTable):
                                aktkettencode=ac_code)
                 row.code = '_'.join((pgr_code, ac_code))
                 row.name = row.code
+                row.nsegset = nsegset
                 rows.append(row)
         self.add_rows(rows)
