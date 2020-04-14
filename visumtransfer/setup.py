@@ -6,22 +6,20 @@ Created on Fri Jun 10 20:33:08 2016
 """
 import numpy as np
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 
 setup(
     name="visumtransfer",
     version="0.1",
     description="Write Visum-Transfer Files",
-
-    packages=find_packages('src', exclude=['ez_setup']),
-    namespace_packages=['visumtransfer'],
+    packages=find_namespace_packages(include=['visumtransfer.*']),
 
     package_dir={'': 'src'},
     include_package_data=True,
     zip_safe=False,
     data_files=[
-        ],
+    ],
 
     extras_require=dict(
         extra=[],
