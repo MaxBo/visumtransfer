@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import csv
 from collections import OrderedDict
 from typing import Dict, Iterable
 from copy import copy
@@ -208,7 +209,12 @@ class VisumTable(metaclass=MetaClass):
         cols = columns or ';'.join(c for c in df.columns)
         fobj.writeln('${m}{t}:{c}'.format(m=self._mode, t=self.code, c=cols))
 
-        df.to_csv(fobj.fobj, sep=';', header=False, index=False, line_terminator='\n')
+        df.to_csv(fobj.fobj,
+                  sep=';',
+                  quoting=csv.QUOTE_NONE,
+                  header=False,
+                  index=False,
+                  line_terminator='\n')
         fobj.writeln('')
 
     @property
