@@ -21,6 +21,11 @@ class Params:
     validation_activities: recarray
     validation_activities_hauptweg: recarray
     validation_modes: recarray
+
+    activities_rsa: recarray
+    activitypairs_rsa: recarray
+    gd_rsa: recarray
+    trip_chain_rates_rsa: recarray
     """"""
     attr2tablename = dict(
         gg='groups.groups_generation',
@@ -36,7 +41,12 @@ class Params:
         validation_activities='activities.validation_activities',
         validation_activities_hauptweg='activities.hauptweg',
         validation_modes='groups.validation_mode',
-        modes='modes.modes', )
+        modes='modes.modes',
+        activities_rsa='activities.rsa',
+        activitypairs_rsa='activities.activitypairs_rsa',
+        gd_rsa='groups.groups_dest_mode_rsa',
+        trip_chain_rates_rsa='acts.trip_chain_rates_rsa',
+    )
 
     def __init__(self, h5: tables.File):
         for k, v in self.attr2tablename.items():

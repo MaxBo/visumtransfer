@@ -36,6 +36,52 @@ class VisemDemandModel:
         self.modifications = modifications
         self.params_excel_fp = param_excel_fp
 
+    def create_transfer_rsa(self, modification_number: int):
+        v = VisumTransfer.new_transfer()
+        params = Params.from_excel(param_excel_fp)
+
+        # Nachfragemodell
+        m = Nachfragemodell()
+        model_code = 'VisemRSA'
+        m.add_model(params, code=model_code,
+                    name='Visem-Modell zum Randsummenabgleich')
+        v.tables['Nachfragemodell'] = m
+
+        # Strukturgrößen
+        sg = Strukturgr()
+        sg.create_tables(params.activities_rsa, model=model_code, suffix='')
+        v.tables['Strukturgr'] = sg
+
+        # Aktivitäten
+        ac = Aktivitaet()
+        ac.create_tables(params.activities_rsa, model=model_code, suffix='')
+        v.tables['Aktivitaet'] = ac
+
+        # Personengruppen
+        pgd = Personengruppe()
+        pgd.create_groups_rsa(params.gd_rsa,
+                              params.trip_chain_rates_rsa,
+                              model_code=model_code)
+        v.tables['PersonGroupsDestModechoice'] = pgd
+
+        # Aktivitätenpaar
+        ap = Aktivitaetenpaar()
+        ap.create_tables(params.activitypairs_rsa, model=model_code)
+        v.tables['Aktivitaetenpaar'] = ap
+
+        ak = Aktivitaetenkette()
+        ak.create_tables(params.trip_chain_rates_rsa, model=model_code)
+        v.tables['Aktivitaetenkette'] = ak
+
+        ns = Nachfrageschicht()
+        ns.create_tables_gd(personengruppe=pgd,
+                            model=model_code)
+        v.tables['Nachfrageschicht'] = ns
+        # write to transfer file
+        fn = v.get_modification(modification_number, self.modifications)
+        v.write(fn=fn)
+
+
     def create_transfer(self, modification_number: int):
 
         v = VisumTransfer.new_transfer()
@@ -50,16 +96,19 @@ class VisemDemandModel:
         matrices = Matrix()
 
         m = Nachfragemodell()
-        m.add_model(params, 'VisemGeneration', name='Visem-Erzeugungsmodell')
-        m.add_model(params, 'VisemT', name='Visem Ziel- und Verkehrsmittelwahlmodell')
+        m.add_model(params, code='VisemGeneration', name='Visem-Erzeugungsmodell')
+        m.add_model(params, code='VisemT',
+                    name='Visem Ziel- und Verkehrsmittelwahlmodell')
         v.tables['Nachfragemodell'] = m
 
         sg = Strukturgr()
-        sg.create_tables(params, model='VisemT', suffix='')
+        sg.create_tables(params.activities, model='VisemT', suffix='')
         v.tables['Strukturgr'] = sg
 
         ac = Aktivitaet()
         userdefined1.add_daten_attribute('Aktivitaet', 'RSA', datentyp='Bool')
+        userdefined1.add_daten_attribute('Aktivitaet', 'Base_Code',
+                                         datentyp='Text')
         userdefined1.add_daten_attribute('Aktivitaet', 'Autocalibrate',
                                          datentyp='Bool')
         userdefined1.add_daten_attribute('Aktivitaet', 'Composite_Activities',
@@ -71,7 +120,7 @@ class VisemDemandModel:
                                          name='CalculateDestinationAndModeChoice',
                                          datentyp='Bool')
 
-        ac.create_tables(params, model='VisemT', suffix='')
+        ac.create_tables(params.activities, model='VisemT', suffix='')
         ac.add_benutzerdefinierte_attribute(userdefined2)
         ac.add_net_activity_ticket_attributes(userdefined2)
         ac.add_output_matrices(matrices, userdefined2)
@@ -103,16 +152,15 @@ class VisemDemandModel:
         v.tables['PersonGroupsDestModechoice'] = pgd
 
         ap = Aktivitaetenpaar()
-        ap.create_tables(params, model='VisemT', suffix='')
+        ap.create_tables(params.activitypairs, model='VisemT', suffix='')
         v.tables['Aktivitaetenpaar'] = ap
 
         ak = Aktivitaetenkette()
-        ak.create_tables(params, model='VisemT', suffix='')
+        ak.create_tables(params.trip_chain_rates, model='VisemT', suffix='')
         v.tables['Aktivitaetenkette'] = ak
 
         ns = Nachfrageschicht()
-        ns.create_tables_gd(params,
-                            personengruppe=pgd,
+        ns.create_tables_gd(personengruppe=pgd,
                             model='VisemT')
         v.tables['Nachfrageschicht'] = ns
 
@@ -241,7 +289,7 @@ class VisemDemandModel:
     def define_vsys_fv_preference(self,
                                   vsys: Verkehrssystem,
                                   userdefined2: BenutzerdefiniertesAttribut):
-        userdefined2.add_daten_attribute('VSYS', 'VSYS_FV_PREFERENCE', standardwert=1)
+        #userdefined2.add_daten_attribute('VSYS', 'VSYS_FV_PREFERENCE', standardwert=1)
         vsys.add_cols(['VSYS_FV_PREFERENCE'])
         # row = vsys.Row(code='FAE', typ='OV', vsys_fv_preference=0.2)
         # vsys.add_row(row)
@@ -263,7 +311,8 @@ if __name__ == '__main__':
                           param_excel_fp,
                           )
 
-    dm.add_nsegs_userdefined(modification_no=444)
+    #dm.add_nsegs_userdefined(modification_no=444)
     dm.create_transfer(modification_number=22)
+    dm.create_transfer_rsa(modification_number=23)
     #dm.write_modification_iv_matrices(modification_no=12)
     #dm.write_modification_ov_matrices(modification_no=14)

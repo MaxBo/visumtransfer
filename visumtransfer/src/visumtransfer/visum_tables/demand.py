@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import pandas as pd
 import warnings
 from collections import defaultdict
 from .matrizen import Matrix
@@ -36,7 +37,7 @@ class Personengruppe(VisumTable):
     def __init__(self):
         super(Personengruppe, self).__init__()
         self.groups = []
-        self.gd_codes = {}
+        self.gd_codes = defaultdict(list)
 
     def add_group(self, code: str, modellcode: str, **kwargs):
         row = self.Row(code=code,
@@ -58,6 +59,7 @@ class Personengruppe(VisumTable):
 
     def create_table(self):
         self.table = self.table_from_array(self.groups)
+        self.set_df_from_table()
 
     def create_groups_generation(self, params: Params):
         # sort person group by code
@@ -83,7 +85,7 @@ class Personengruppe(VisumTable):
         gds = np.unique(np.rec.fromarrays([ggd, trip_chain_rates['code']],
                                           names=['gd', 'actcode']),)
         gd_idx = np.searchsorted(person_groups['code'], gds['gd'])
-        self.gd_codes = {}
+
         for g, tc in enumerate(gds):
             gd_code = tc['gd']
             act_code = tc['actcode']
@@ -102,6 +104,28 @@ class Personengruppe(VisumTable):
                     actchain=main_act)
             else:
                 self.gd_codes[code].append(act_code)
+
+    def create_groups_rsa(self,
+                          person_groups: np.recarray,
+                          trip_chain_rates: np.recarray,
+                          model_code: str = 'VisemRSA'):
+        """"""
+        tcr = pd.DataFrame(trip_chain_rates)
+        for g, gdd in enumerate(person_groups):
+            gd_code = gdd['code']
+            name = gdd['name']
+            self.add_group(
+                code=gd_code,
+                name=name,
+                modellcode=model_code,
+                car_availability=gdd['car_availability'],
+                occupation=gdd['occupation'],
+                groupdestmode=gd_code,
+            )
+            tc_group = tcr.loc[tcr.group == gd_code]
+            for idx, tc in tc_group.iterrows():
+                self.gd_codes[gd_code].append(tc.code)
+        self.create_table()
 
     def add_calibration_matrices_and_attributes(
           self,
@@ -163,28 +187,6 @@ class Personengruppe(VisumTable):
                     )
 
         # Wege nach Modus und Modal Split Gesamt
-        userdefined.add_formel_attribute(
-            objid='MODUS',
-            name='Trips_Region',
-            formel='TableLookup(MATRIX Mat: Mat[CODE]="Demand_"+[CODE]: Mat[SUMME])',
-            kommentar='Gesamtzahl der Wege der Regionsbewohner',
-        )
-        # Wege Gesamt der Regionsbewohner
-        userdefined.add_formel_attribute(
-            objid='NETZ',
-            name='Trips_Region',
-            formel='[SUM:MODI\Trips_Region]',
-            kommentar='Gesamtzahl der Wege der Regionsbewohner',
-        )
-        # Modal Split der Regionsbewohner
-        userdefined.add_formel_attribute(
-            objid='MODUS',
-            name='MS_Regionsbewohner',
-            formel='[Trips_Region] / [NETZ\Trips_Region]',
-            kommentar='Modal Split der Regionsbewohner',
-        )
-
-        # Wege nach Modus und Modal Split Gesamt
         gr_code = 'Demand'
         userdefined.add_formel_attribute(
             objid='MODUS',
@@ -222,11 +224,11 @@ class Strukturgr(VisumTable):
     _cols = 'CODE;NAME;NACHFRAGEMODELLCODE'
 
     def create_tables(self,
-                      params: Params,
+                      activities: np.recarray,
                       model: str,
                       suffix=''):
         rows = []
-        for a in params.activities:
+        for a in activities:
             # Heimataktivität hat keine Strukturgröße
             if not a['potential']:
                 continue
@@ -262,15 +264,15 @@ class Aktivitaet(VisumTable):
     name = 'Aktivitäten'
     code = 'AKTIVITAET'
     _cols = ('CODE;RANG;NAME;NACHFRAGEMODELLCODE;ISTHEIMATAKTIVITAET;'
-             'STRUKTURGROESSENCODES;KOPPLUNGZIEL;RSA;'
+             'STRUKTURGROESSENCODES;KOPPLUNGZIEL;RSA;BASE_CODE;'
              'COMPOSITE_ACTIVITIES;AUTOCALIBRATE;CALCDESTMODE;AKTIVITAETSET')
 
     def create_tables(self,
-                      params: Params,
+                      activities: np.recarray,
                       model: str,
                       suffix=''):
         rows = []
-        for a in params.activities:
+        for a in activities:
             row = self.Row(nachfragemodellcode=model)
             row.code = a['code'] + suffix
             row.name = a['name']
@@ -283,6 +285,7 @@ class Aktivitaet(VisumTable):
             row.kopplungziel = is_home_activity
             row.composite_activities = a['composite_activities']
             row.calcdestmode = a['calcdestmode']
+            row.base_code = a['base_code']
             rows.append(row)
         self.add_rows(rows)
         self.set_activityset()
@@ -382,12 +385,6 @@ class Aktivitaet(VisumTable):
             name='TripDistance',
             formel='TableLookup(MATRIX Mat: '
             'Mat[CODE]="VL_"+[CODE]: Mat[SUMME]) / [Trips_RegionMitEinpendler]',
-        )
-        userdefined.add_formel_attribute(
-            objid='MODUS',
-            name='TripDistanceRegion',
-            formel='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="VL_Region_"+[CODE]: Mat[SUMME]) / [Trips_Region]',
         )
 
         userdefined.add_daten_attribute(
@@ -510,7 +507,7 @@ class Aktivitaet(VisumTable):
                 if t.RSA:
                     matrices.set_category('Commuters')
                     matrices.add_daten_matrix(
-                        code=f'Pendler_{t.CODE}_OBB',
+                        code=f'Pendlermatrix_{t.CODE}_OBB',
                         name=f'Oberbezirks-Matrix Pendleraktivität {name}',
                         aktivcode=t.CODE,
                         bezugstyp='Oberbezirk',
@@ -543,7 +540,7 @@ class Aktivitaet(VisumTable):
                 if t.RSA:
                     matrices.set_category('Commuters')
                     nr = matrices.add_daten_matrix(
-                        code=f'Pendler_{code}',
+                        code=f'Pendlermatrix_{code}',
                         name=f'Gesamtzahl der PendlerGesamtwege zu Aktivität {name}',
                         aktivcode=code,
                         savematrix=savematrix,
@@ -855,15 +852,14 @@ class Aktivitaetenpaar(VisumTable):
                  }
 
     def create_tables(self,
-                      params: Params,
+                      activitypairs: np.recarray,
                       model: str,
                       suffix=''):
         rows = []
-        for a in params.activitypairs:
+        for a in activitypairs:
             ap_code = a['code']
-            ap_tuple = ap_code.split('_')
-            origin_code = ap_tuple[0] + suffix
-            dest_code = ap_tuple[1] + suffix
+            origin_code = a['qa'] + suffix
+            dest_code = a['za'] + suffix
             ap_new_code = '_'.join([origin_code, dest_code])
             row = self.Row(code=ap_new_code,
                            name=ap_code,
@@ -880,20 +876,18 @@ class Aktivitaetenkette(VisumTable):
     _cols = 'CODE;NAME;NACHFRAGEMODELLCODE;AKTIVCODES'
     _pkey = 'CODE'
 
-    def create_tables(self, params: Params,
+    def create_tables(self,
+                      trip_chain_rates: np.recarray,
                       model: str,
                       suffix=''):
         rows = []
-        activity_chains = np.unique(params.trip_chain_rates['code'])
-        for ac_code in activity_chains:
-            ac_tuple = ac_code.split('_')
-            act_seq = [f'{a}{suffix}' for a in ac_tuple]
-            code = '_'.join(act_seq)
-            act_chain_sequence = ','.join(act_seq)
-            row = self.Row(code=code,
+        tcr = pd.DataFrame(trip_chain_rates)
+        activity_chains = tcr.groupby('code').first()
+        for ac_code, ac in activity_chains.iterrows():
+            row = self.Row(code=ac_code,
                            name=ac_code,
                            nachfragemodellcode=model,
-                           aktivcodes=act_chain_sequence)
+                           aktivcodes=ac.Sequence)
             rows.append(row)
         self.add_rows(rows)
 
@@ -904,15 +898,15 @@ class Nachfrageschicht(VisumTable):
     _cols = 'CODE;NAME;NACHFRAGEMODELLCODE;AKTKETTENCODE;PGRUPPENCODES;NSEGSET'
 
     def create_tables_gg(self,
-                         params: Params,
+                         trip_chain_rates: np.recarray,
                          model='VisemGeneration',
                          suffix='_'):
         rows = []
-        for tcr in params.trip_chain_rates:
+        for tcr in trip_chain_rates:
             row = self.Row(nachfragemodellcode=model)
             pgr_code = tcr['group']
             ac = tcr['code']
-            act_seq = (f'{a}{suffix}' for a in ac)
+            act_seq = tcr['Sequence']
             ac_code = ''.join(act_seq)
             row.name = '_'.join((pgr_code, ac))
             if model == 'VisemT':
@@ -925,7 +919,6 @@ class Nachfrageschicht(VisumTable):
         self.add_rows(rows)
 
     def create_tables_gd(self,
-                         params: Params,
                          personengruppe: Personengruppe,
                          nsegset: str = 'A,F,M,P,R',
                          model='VisemT'):

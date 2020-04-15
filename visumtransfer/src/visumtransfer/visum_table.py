@@ -277,6 +277,9 @@ class VisumTable(metaclass=MetaClass):
         df = pd.DataFrame(data_arr, columns=self.cols).set_index(self.pkey)
         return df
 
+    def set_df_from_table(self):
+        self.df = self.df_from_array(self.table)
+
     def table_from_string(self, data_str: str) -> np.recarray:
         data_arr = [r.split(';') for r in data_str.split(os.linesep)]
         table = self.table_from_array(data_arr)

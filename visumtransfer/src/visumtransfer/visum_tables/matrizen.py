@@ -609,7 +609,7 @@ class Matrix(VisumTable):
         existing_codes = self.table.CODE
 
         self.add_daten_matrix(code='Visem_Gesamt',
-                              name='Fahrten incl. Einpendler',
+                              name='Gesamtwege Visem Region',
                               loadmatrix=loadmatrix,
                               savematrix=savematrix,
                               matrixtyp='Nachfrage')
@@ -617,7 +617,7 @@ class Matrix(VisumTable):
         for mode in params.modes:
             code = mode['code']
             mode_name = mode['name']
-            matname = 'Fahrten {} incl. Einpendler'.format(mode_name)
+            matname = 'Wege {}'.format(mode_name)
             matcode = 'Visem_{}'.format(code)
             if matcode not in existing_codes:
                 self.add_daten_matrix(code=matcode,
@@ -628,30 +628,6 @@ class Matrix(VisumTable):
                                       savematrix=savematrix,
                                       )
 
-        self.add_daten_matrix(code='Demand_Total',
-                              name='Fahrten Regionsbewohner',
-                              loadmatrix=loadmatrix,
-                              matrixtyp='Nachfrage')
-
-
-        for mode in params.modes:
-            code = mode['code']
-            matcode = 'Demand_{}'.format(code)
-            mode_name = mode['name']
-            name = 'Fahrten {} Regionsbewohner'.format(mode_name)
-            if matcode not in existing_codes:
-                self.add_daten_matrix(code=matcode,
-                                      name=name,
-                                      loadmatrix=loadmatrix,
-                                      matrixtyp='Nachfrage',
-                                      moduscode=code,
-                                      )
-
-        self.add_daten_matrix(code='Demand_Total_OBB',
-                              name='Fahrten Regionsbewohner Oberbezirk',
-                              loadmatrix=loadmatrix,
-                              matrixtyp='Nachfrage',
-                              bezugstyp='Oberbezirk')
 
         for mode in params.modes:
             code = mode['code']
@@ -672,7 +648,7 @@ class Matrix(VisumTable):
             code = mode['code']
             matcode = 'VL_{}'.format(code)
             mode_name = mode['name']
-            matname = 'Verkehrsleistung incl. Einpendler{}'.format(mode_name)
+            matname = 'Verkehrsleistung {}'.format(mode_name)
             if matcode not in existing_codes:
                 formel = 'Matrix([CODE]="Visem_{c}") * Matrix([CODE]="{dm}")'.\
                     format(c=code, dm=distance_matrix)
@@ -682,20 +658,6 @@ class Matrix(VisumTable):
                                        matrixtyp='Nachfrage',
                                        moduscode=code,
                                        )
-            # add Verkehrsleistungs-Formelmatrix ohne Einpendler
-            matcode = 'VL_Region_{}'.format(code)
-            mode_name = mode['name']
-            matname = 'Verkehrsleistung ohne Einpendler {}'.format(mode_name)
-            if matcode not in existing_codes:
-                formel = 'Matrix([CODE]="Demand_{c}") * Matrix([CODE]="{dm}")'.\
-                    format(c=code, dm=distance_matrix)
-                self.add_formel_matrix(code=matcode,
-                                       name=matname,
-                                       formel=formel,
-                                       matrixtyp='Nachfrage',
-                                       moduscode=code,
-                                       )
-
 
     def add_ov_haupt_ap_demand_matrices(self,
                                         ds_tagesgang: xr.Dataset,
