@@ -303,6 +303,10 @@ class VisumTable(metaclass=MetaClass):
         rows = df.to_records().tolist()
         self.add_rows(rows)
 
+    def update_table_from_df(self):
+        """update the table from the dataframe"""
+        self.table = self.table_from_array(self.df.to_records().tolist())
+
     def add_cols(self, new_cols: list):
         """Add columns to the columns definition"""
         self._cols = ';'.join(np.concatenate([self.cols, new_cols]))

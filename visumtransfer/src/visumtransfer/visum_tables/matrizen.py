@@ -4,39 +4,43 @@ import datetime
 from collections import defaultdict
 import xarray as xr
 from visumtransfer.params import Params
+from typing import Dict
 from .basis import BenutzerdefiniertesAttribut
 from visumtransfer.visum_table import (VisumTable)
 
 
 class MatrixCategories(dict):
-    _end_block = {'Visem_Demand': 20,
-                  'Visem_OV_Stunden': 30,
-                  'Other_Demand': 90,
-                  'OV_Demand': 100,
-                  'DestinationChoiceSkims': 110,
-                  'IV_Skims': 150,
-                  'IV_Skims_Parking': 200,
-                  'OV_Skims_Fare': 250,
-                  'OV_Skims_PJT': 700,
-                  'Activities': 750,
-                  'Activities_Balancing': 780,
-                  'Commuters': 800,
-                  'VL_Activities': 850,
-                  'VL_Activities_OBB': 900,
-                  'Activities_OBB': 1000,
-                  'OV_TimeSeries_Skims_Formula': 1010,
-                  'OV_TimeSeries_Skims': 2000,
-                  'Demand_Pgr': 4000,
-                  'Demand_Wiver': 4500,
-                  'Demand_Wiver_OBB': 5000,
-                  'OV_Demand_Activities': 5500,
-                  'Modes_Demand_Activities': 6000,
-                  'Demand_OV_Tagesgang': 6100,
-                  'Demand_Verkehrsleistung': 7000,
-                  'LogsumsPendler': 7500,
-                  'Logsums': 9000,
-                  'Accessibilities': 10000,
-                  }
+    _end_block: Dict[str, int] = {
+        'Visem_Demand': 20,
+        'Visem_OV_Stunden': 30,
+        'Other_Demand': 90,
+        'OV_Demand': 100,
+        'DestinationChoiceSkims': 110,
+        'IV_Skims': 150,
+        'IV_Skims_Parking': 200,
+        'OV_Skims_Fare': 250,
+        'OV_Skims_PJT': 700,
+        'Activities': 800,
+        'Activities_Homebased': 900,
+        'Activities_Balancing': 1000,
+        'Commuters': 1100,
+        'VL_Activities': 1200,
+        'VL_Activities_Homebased': 1300,
+        'VL_Activities_OBB': 1600,
+        'Activities_OBB': 1700,
+        'OV_TimeSeries_Skims_Formula': 1800,
+        'OV_TimeSeries_Skims': 2000,
+        'Demand_Pgr': 4000,
+        'Demand_Wiver': 4500,
+        'Demand_Wiver_OBB': 5000,
+        'OV_Demand_Activities': 5500,
+        'Modes_Demand_Activities': 6000,
+        'Demand_OV_Tagesgang': 6100,
+        'Demand_Verkehrsleistung': 7000,
+        'LogsumsPendler': 7500,
+        'Logsums': 9000,
+        'Accessibilities': 10000,
+    }
 
     def __init__(self):
         start_idx = 1
@@ -51,13 +55,14 @@ class MatrixCategories(dict):
 class Matrix(VisumTable):
     name = 'Matrizen'
     code = 'MATRIX'
+    matrix_category = ''
 
     _cols = ('NR;CODE;NAME;MATRIXTYP;BEZUGSTYP;NSEGCODE;NSCHICHTSET;DATNAME;'
     'ANZDEZSTELLEN;DATENQUELLENTYP;FORMEL;TAG;VONZEIT;BISZEIT;ZEITBEZUG;'
     'MODUSCODE;MODUSSET;PERSONENGRUPPENSET;PGRUPPENCODE;AKTIVCODE;'
     'QUELLAKTIVITAETSET;ZIELAKTIVITAETSET;'
     'INITMATRIX;SAVEMATRIX;LOADMATRIX;MATRIXFOLDER;'
-    'CALIBRATIONCODE;NACHFRMODELLCODE')
+    'CALIBRATIONCODE;NACHFRMODELLCODE;CATEGORY')
 
     _defaults = {'ANZDEZSTELLEN': 2,
                  'MATRIXTYP': 'Nachfrage',
@@ -71,9 +76,13 @@ class Matrix(VisumTable):
         super().__init__()
         self._number_block = MatrixCategories()
 
-    def set_range(self, matrix_category: str):
-        """Set of matrix numbers matrix_category"""
-        self.matrix_numbers = self._number_block[matrix_category]
+    def set_category(self, matrix_category: str):
+        """Set set matrix_category"""
+        self.matrix_category = matrix_category
+
+    @property
+    def matrix_numbers(self) -> MatrixCategories:
+        return self._number_block[self.matrix_category]
 
     def next_number(self) -> int:
         """Return next matrix number in range"""
@@ -89,6 +98,7 @@ class Matrix(VisumTable):
                          loadmatrix=0,
                          matrixfolder='',
                          datname='',
+                         category: str = None,
                          **kwargs) -> int:
         """
         add Daten-Matrix
@@ -106,6 +116,9 @@ class Matrix(VisumTable):
         datname : str, optional
             the filename of the matrix on disk.
             If not provided, the code is taken as name
+        category : str, optional
+            the matrix category. If not given,
+            use the category last set by set_category()
 
         Returns
         -------
@@ -122,7 +135,8 @@ class Matrix(VisumTable):
                        loadmatrix=loadmatrix,
                        matrixfolder=matrixfolder,
                        datname=datname,
-                       **kwargs)
+                       category=category or self.matrix_category,
+                       ** kwargs)
         self.add_row(row)
         return nr
 
@@ -131,6 +145,7 @@ class Matrix(VisumTable):
                           formel: str,
                           name='',
                           datname='',
+                          category: str = None,
                           **kwargs) -> int:
         """
         add Formel-Matrix
@@ -146,6 +161,9 @@ class Matrix(VisumTable):
         datname : str, optional
             the filename of the matrix if it is stored on disk.
             If not provided, the code is taken as name
+        category : str, optional
+            the matrix category. If not given,
+            use the category last set by set_category()
         **kwargs
             other columns
 
@@ -164,6 +182,7 @@ class Matrix(VisumTable):
                        loadmatrix=0,
                        datenquellentyp='FORMEL',
                        datname=datname,
+                       category=category or self.matrix_category,
                        **kwargs)
         self.add_row(row)
         return nr
@@ -208,7 +227,7 @@ class Matrix(VisumTable):
         """Add OV Kenngrößen-Matrizen für Zeitscheiben"""
         time_series = params.time_series
         nsegcode = 'A'
-        self.set_range('OV_TimeSeries_Skims')
+        self.set_category('OV_TimeSeries_Skims')
         for ts in time_series:
             ts_code = ts['code']
             vonzeit = self.get_timestring(ts['from_hour'])
@@ -297,7 +316,7 @@ class Matrix(VisumTable):
             # moduscode='O',
         )
 
-        self.set_range('OV_TimeSeries_Skims_Formula')
+        self.set_category('OV_TimeSeries_Skims_Formula')
 
         self.add_formel_matrix(
             code='No_Connection_Forward',
@@ -324,7 +343,7 @@ class Matrix(VisumTable):
             formel=''
         )
         # ÖV-Kosten
-        self.set_range('OV_Skims_Fare')
+        self.set_category('OV_Skims_Fare')
         self.add_daten_matrix(
             code='SINGLETICKET',
             matrixtyp='Kenngröße',
@@ -376,7 +395,7 @@ class Matrix(VisumTable):
         )
 
         # ÖV-Nachfragematrizen nach Zeitscheiben
-        self.set_range('OV_TimeSeries_Skims_Formula')
+        self.set_category('OV_TimeSeries_Skims_Formula')
 
         # PJT_All-Matrix für nur eine Zeitscheibe
         ts = time_series[time_interval]
@@ -403,7 +422,7 @@ class Matrix(VisumTable):
                            userdefined: BenutzerdefiniertesAttribut,
                            savematrix=0):
         """Add PrT Skim Matrices"""
-        self.set_range('IV_Skims')
+        self.set_category('IV_Skims')
         self.add_daten_matrix(code='DIS', name='Fahrweite Pkw', loadmatrix=1,
                               matrixtyp='Kenngröße',
                               nsegcode='P',
@@ -495,7 +514,7 @@ class Matrix(VisumTable):
         """Add PrT Demand Matrices"""
         mode_lkw = 'X'
 
-        self.set_range('Visem_Demand')
+        self.set_category('Visem_Demand')
         self.add_daten_matrix(code='Visem_P', name='Pkw regional',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
@@ -503,7 +522,7 @@ class Matrix(VisumTable):
                               moduscode='P',
                               savematrix=savematrix)
 
-        self.set_range('Other_Demand')
+        self.set_category('Other_Demand')
         self.add_daten_matrix(code='Pkw_Wirtschaftsverkehr',
                               name='Pkw-Wirtschaftsverkehr',
                               loadmatrix=loadmatrix,
@@ -567,14 +586,14 @@ class Matrix(VisumTable):
 
     def add_ov_demand(self, savematrix=0, loadmatrix=1):
         """Add PrT Demand Matrices"""
-        self.set_range('Visem_Demand')
+        self.set_category('Visem_Demand')
         self.add_daten_matrix(code='Visem_O', name='ÖPNV',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
                               nsegcode='A',
                               moduscode='O',
                               savematrix=savematrix)
-        self.set_range('OV_Demand')
+        self.set_category('OV_Demand')
         self.add_daten_matrix(code='FernverkehrBahn', name='Fernverkehr Bahn',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
@@ -586,7 +605,7 @@ class Matrix(VisumTable):
                                   loadmatrix=1,
                                   savematrix=1):
         """Add Demand Matrices for other modes"""
-        self.set_range('Visem_Demand')
+        self.set_category('Visem_Demand')
         existing_codes = self.table.CODE
 
         self.add_daten_matrix(code='Visem_Gesamt',
@@ -647,7 +666,7 @@ class Matrix(VisumTable):
                                       moduscode=code,
                                       bezugstyp='Oberbezirk')
 
-        self.set_range('Demand_Verkehrsleistung')
+        self.set_category('Demand_Verkehrsleistung')
         for mode in params.modes:
             distance_matrix = mode['distance_matrix']
             code = mode['code']
@@ -683,7 +702,7 @@ class Matrix(VisumTable):
                                         loadmatrix=0,
                                         savematrix=1):
         """Add Demand Matrices for other modes"""
-        self.set_range('Demand_OV_Tagesgang')
+        self.set_category('Demand_OV_Tagesgang')
         for hap in ds_tagesgang.hap:
             matcode = 'Visem_OV_{}'.format(hap.lab_hap.values)
             self.add_daten_matrix(code=matcode,
@@ -697,7 +716,7 @@ class Matrix(VisumTable):
                               loadmatrix=1,
                               savematrix=1):
         """Add Commuter Matrices"""
-        self.set_range('Commuters')
+        self.set_category('Commuters')
         self.add_daten_matrix(code='Pendlermatrix_modelliert',
                               name='Pendlermatrix modelliert',
                               loadmatrix=loadmatrix,
@@ -744,7 +763,7 @@ class Matrix(VisumTable):
             savematrix=1,
             formel=formel)
 
-        self.set_range('DestinationChoiceSkims')
+        self.set_category('DestinationChoiceSkims')
         self.add_formel_matrix(
             code='Aussen2Aussen',
             matrixtyp='Kenngröße',
@@ -761,7 +780,7 @@ class Matrix(VisumTable):
                             ):
         """Add logsum matrices for each person group and main activity"""
 
-        self.set_range(matrix_range)
+        self.set_category(matrix_range)
         ketten = {a['CODE']: a['AKTIVCODES'].split(',')[1: -1]
                   for a in actchains.table}
         pgr_activities = defaultdict(set)

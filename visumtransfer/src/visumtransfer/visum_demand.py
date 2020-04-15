@@ -48,7 +48,6 @@ class VisemDemandModel:
         userdefined2 = BenutzerdefiniertesAttribut()
 
         matrices = Matrix()
-        matrices_logsum = Matrix()
 
         m = Nachfragemodell()
         m.add_model(params, 'VisemGeneration', name='Visem-Erzeugungsmodell')
@@ -61,8 +60,16 @@ class VisemDemandModel:
 
         ac = Aktivitaet()
         userdefined1.add_daten_attribute('Aktivitaet', 'RSA', datentyp='Bool')
-        userdefined1.add_daten_attribute('Aktivitaet', 'Base_Code',
+        userdefined1.add_daten_attribute('Aktivitaet', 'Autocalibrate',
+                                         datentyp='Bool')
+        userdefined1.add_daten_attribute('Aktivitaet', 'Composite_Activities',
                                          datentyp='Text')
+        userdefined1.add_daten_attribute('Aktivitaet', 'Aktivitaetset',
+                                         datentyp='Text')
+        userdefined1.add_daten_attribute('Aktivitaet',
+                                         code='CalcDestMode',
+                                         name='CalculateDestinationAndModeChoice',
+                                         datentyp='Bool')
 
         ac.create_tables(params, model='VisemT', suffix='')
         ac.add_benutzerdefinierte_attribute(userdefined2)
@@ -126,6 +133,7 @@ class VisemDemandModel:
         v.tables['BenutzerdefinierteAttribute2'] = userdefined2
         v.tables['Verkehrssysteme'] = vsys
 
+        #matrices_logsum = Matrix()
         #userdefined2.add_logsum_kf(userdefined2)
         #matrices_logsum.add_logsum_matrices(ns, ak)
         #v.tables['MatrizenLogsum'] = matrices_logsum
@@ -140,7 +148,8 @@ class VisemDemandModel:
         v.tables['Ganglinienelement'] = gle
         v.tables['VisemGanglinien'] = vgl
 
-        v.write(fn=v.get_modification(modification_number, self.modifications))
+        fn = v.get_modification(modification_number, self.modifications)
+        v.write(fn=fn)
 
     def write_modification_iv_matrices(self, modification_number: int):
         v = VisumTransfer.new_transfer()
@@ -172,6 +181,8 @@ class VisemDemandModel:
         userdefined0.add_daten_attribute('Matrix', 'MATRIXFOLDER',
                                          datentyp='Text')
         userdefined0.add_daten_attribute('Matrix', 'CALIBRATIONCODE',
+                                         datentyp='Text')
+        userdefined0.add_daten_attribute('Matrix', 'CATEGORY',
                                          datentyp='Text')
 
         # Netzattribute
@@ -253,6 +264,6 @@ if __name__ == '__main__':
                           )
 
     dm.add_nsegs_userdefined(modification_no=444)
-    dm.create_transfer(modification_number=555)
+    dm.create_transfer(modification_number=22)
     #dm.write_modification_iv_matrices(modification_no=12)
     #dm.write_modification_ov_matrices(modification_no=14)

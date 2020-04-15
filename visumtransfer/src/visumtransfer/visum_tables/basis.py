@@ -38,15 +38,16 @@ class BenutzerdefiniertesAttribut(VisumTable):
         objid : str
             the network type like NETZ, AKTIVITAET etc.
         name : str
-            the name of the attribute, will be used as code and attid, too
+            the name of the attribute, will be used as code and attid, too,
+            if they are not explicitely specified
         formel : str
             the formula
         attid : str, optional
-            the attid. If None, the name will be taken
+            the attid. If None, the code, and if the code is None, name will be taken
         code : str, optional
             the code. If None, the name will be taken
         """
-        attid = attid or name
+        attid = attid or code or name
         code = code or name
         row = self.Row(objid=objid,
                        datenquellentyp='FORMEL',
@@ -71,13 +72,14 @@ class BenutzerdefiniertesAttribut(VisumTable):
         objid : str
             the network type like NETZ, AKTIVITAET etc.
         name : str
-            the name of the attribute, will be used as code and attid, too
+            the name of the attribute, will be used as code and attid, too,
+            if they are not explicitely specified
         attid : str, optional
-            the attid. If None, the name will be taken
+            the attid. If None, the code, and if the code is None, name will be taken
         code : str, optional
             the code. If None, the name will be taken
         """
-        attid = attid or name
+        attid = attid or code or name
         code = code or name
         row = self.Row(objid=objid,
                        datenquellentyp='DATEN',
