@@ -562,7 +562,7 @@ class Matrix(VisumTable):
         nsegs = ['Lkw_bis_12to',
                  'Lkw_über_12to',
                  'FernverkehrLkw']
-        formel = ' + '.join(('Matrix([CODE]="{}")'.format(nseg)
+        formel = ' + '.join((f'Matrix([CODE]="{nseg}")'
                             for nseg in nsegs))
         self.add_formel_matrix(code='Schwerverkehr',
                                formel=formel,
@@ -575,7 +575,7 @@ class Matrix(VisumTable):
                  'Pkw_Wirtschaftsverkehr',
                  'Lieferfahrzeuge',
                  'FernverkehrPkw']
-        formel = ' + '.join(('Matrix([CODE]="{}")'.format(nseg)
+        formel = ' + '.join((f'Matrix([CODE]="{nseg}")'
                              for nseg in nsegs))
         self.add_formel_matrix(code='Kfz_35',
                                formel=formel,
@@ -631,9 +631,9 @@ class Matrix(VisumTable):
 
         for m, mode in params.modes.iterrows():
             code = mode['code']
-            matcode = 'Demand_{}_OBB'.format(code)
+            matcode = f'Visem_{code}_OBB'
             mode_name = mode['name']
-            name = f'Fahrten {mode_name} Regionsbewohner Oberbezirk'
+            name = f'Wege {mode_name} Oberbezirk Region'
             if matcode not in existing_codes:
                 self.add_daten_matrix(code=matcode,
                                       name=name,

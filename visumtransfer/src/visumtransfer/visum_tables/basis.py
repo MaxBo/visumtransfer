@@ -113,7 +113,7 @@ class Bezirke(VisumTable):
         r = np.recfromtxt(open(fn, mode='rb').readlines(), delimiter=',',
                           names=True, filling_values=0)
         names = r.dtype.names[2:]
-        attrs = ['NumPersons({})'.format(pg) for pg in names]
+        attrs = [f'NumPersons({pg})' for pg in names]
         self._cols = ';'.join(['NO'] + attrs)
 
         values = r[['vz_id']+list(names)]
@@ -124,7 +124,7 @@ class Bezirke(VisumTable):
         r = np.recfromtxt(open(fn, mode='rb').readlines(), delimiter=',',
                           names=True, filling_values=0)
         names = r.dtype.names[2:]
-        attrs = ['ValStructuralProp({})'.format(sg.lstrip('ValStructuralProp'))
+        attrs = [f'ValStructuralProp({sg.lstrip("ValStructuralProp")})'
                  if sg.startswith('ValStructuralProp')
                  else sg
                  for sg in names]

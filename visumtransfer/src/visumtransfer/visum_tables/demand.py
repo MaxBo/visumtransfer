@@ -604,7 +604,7 @@ class Aktivitaet(VisumTable):
                 )
                 converged_attributes.append(attid)
 
-        formel = ' | '.join(("[{}]".format(c) for c in converged_attributes))
+        formel = ' | '.join((f"[{c}]" for c in converged_attributes))
         attid = 'NOT_CONVERGED_ANY_ACTIVITY'
         userdefined.add_formel_attribute(
             objid='NETZ',

@@ -118,14 +118,14 @@ class Nachfragesegment(VisumTable):
 
         for hap in ds_ganglinie.hap:
             hap_name = hap.lab_hap.values
-            mat_code = 'Visem_OV_{}'.format(hap_name)
+            mat_code = f'Visem_OV_{hap_name}'
 
-            nsg_code = 'OV_{}'.format(hap_name)
-            nseg_name = 'OV {}'.format(hap_name)
+            nsg_code = f'OV_{hap_name}'
+            nseg_name = f'OV {hap_name}'
 
             hap_id = hap.hap.values
             nachfr_gl_nr = gl_nr = hap_id + start_idx
-            gl_name = 'OV_{}'.format(hap_name)
+            gl_name = f'OV_{hap_name}'
             rows_ganglinie.append(ganglinie.Row(nr=gl_nr, name=gl_name))
 
             row_nachfrageganglinie = nachfrageganglinie.Row(
@@ -147,7 +147,7 @@ class Nachfragesegment(VisumTable):
                         gewicht=stunde)
                     rows_ganglinienelement.append(row_ganglinienelement)
 
-            matrix_descr = 'MATRIX([CODE]="{}")'.format(mat_code)
+            matrix_descr = f'MATRIX([CODE]="{mat_code}")'
             rows_nseg.append(self.Row(code=nsg_code,
                                       name=nseg_name,
                                       modus=modus))

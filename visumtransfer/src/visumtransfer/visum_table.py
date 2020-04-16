@@ -205,7 +205,7 @@ class VisumTable(metaclass=MetaClass):
         df = self.unconvert(df)
 
         cols = columns or ';'.join(c for c in df.columns)
-        fobj.writeln('${m}{t}:{c}'.format(m=self._mode, t=self.code, c=cols))
+        fobj.writeln(f'${self._mode}{self.code}:{cols}')
 
         df.to_csv(fobj.fobj,
                   sep=';',
@@ -239,8 +239,7 @@ class VisumTable(metaclass=MetaClass):
     def write_block_header(self, fobj: WriteLine):
         """Write header for block to `fobj`"""
         fobj.writeln('*')
-        fobj.writeln('* Tabelle: {n}{m}'.format(n=self.name,
-                                                m=self._modes[self._mode]))
+        fobj.writeln(f'* Tabelle: {self.name}{self._modes[self._mode]}')
         fobj.writeln('*')
 
     def df_from_array(self, data_arr) -> pd.DataFrame:
@@ -448,7 +447,7 @@ class VisumTransfer:
                     i = 1
                     section_name = section
                     while section_name in self.tables:
-                        section_name = '{}_{}'.format(section, i)
+                        section_name = f'{section}_{i}'
                         i += 1
                     self.current_table = self.visum_tables[section](mode=mode)
                     self.current_cols = cols.translate(
