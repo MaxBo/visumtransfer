@@ -1,12 +1,11 @@
 import json
-import tables
 import pandas as pd
 import openpyxl
 from typing import List
 
 
 class Params:
-    modes: tables.Table
+    modes: pd.DataFrame
     gg: pd.DataFrame
     gd: pd.DataFrame
     g_cali: pd.DataFrame

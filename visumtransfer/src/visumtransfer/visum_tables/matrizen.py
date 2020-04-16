@@ -4,13 +4,13 @@ import datetime
 from collections import defaultdict
 import xarray as xr
 from visumtransfer.params import Params
-from typing import Dict
+from typing import Mapping
 from .basis import BenutzerdefiniertesAttribut
 from visumtransfer.visum_table import (VisumTable)
 
 
 class MatrixCategories(dict):
-    _end_block: Dict[str, int] = {
+    _end_block: Mapping[str, int] = {
         'Visem_Demand': 20,
         'Visem_OV_Stunden': 30,
         'Other_Demand': 90,
@@ -228,10 +228,10 @@ class Matrix(VisumTable):
         time_series = params.time_series
         nsegcode = 'A'
         self.set_category('OV_TimeSeries_Skims')
-        for ts in time_series:
-            ts_code = ts['code']
-            vonzeit = self.get_timestring(ts['from_hour'])
-            biszeit = self.get_timestring(ts['to_hour'])
+        for idx, ts in time_series.iterrows():
+            ts_code = ts.code
+            vonzeit = self.get_timestring(ts.from_hour)
+            biszeit = self.get_timestring(ts.to_hour)
             self.add_daten_matrix(
                 code='PJT',
                 matrixtyp='Kenngröße',
@@ -398,7 +398,7 @@ class Matrix(VisumTable):
         self.set_category('OV_TimeSeries_Skims_Formula')
 
         # PJT_All-Matrix für nur eine Zeitscheibe
-        ts = time_series[time_interval]
+        ts = time_series.loc[time_interval]
         ts_code = ts['code']
         vonzeit = self.get_time_seconds(ts['from_hour'])
         biszeit = self.get_time_seconds(ts['to_hour'])
@@ -606,7 +606,7 @@ class Matrix(VisumTable):
                                   savematrix=1):
         """Add Demand Matrices for other modes"""
         self.set_category('Visem_Demand')
-        existing_codes = self.table.CODE
+        existing_codes = self.df['CODE']
 
         self.add_daten_matrix(code='Visem_Gesamt',
                               name='Gesamtwege Visem Region',
@@ -614,11 +614,11 @@ class Matrix(VisumTable):
                               savematrix=savematrix,
                               matrixtyp='Nachfrage')
 
-        for mode in params.modes:
+        for m, mode in params.modes.iterrows():
             code = mode['code']
             mode_name = mode['name']
-            matname = 'Wege {}'.format(mode_name)
-            matcode = 'Visem_{}'.format(code)
+            matname = f'Wege {mode_name}'
+            matcode = f'Visem_{code}'
             if matcode not in existing_codes:
                 self.add_daten_matrix(code=matcode,
                                       name=matname,
@@ -629,11 +629,11 @@ class Matrix(VisumTable):
                                       )
 
 
-        for mode in params.modes:
+        for m, mode in params.modes.iterrows():
             code = mode['code']
             matcode = 'Demand_{}_OBB'.format(code)
             mode_name = mode['name']
-            name = 'Fahrten {} Regionsbewohner Oberbezirk'.format(mode_name)
+            name = f'Fahrten {mode_name} Regionsbewohner Oberbezirk'
             if matcode not in existing_codes:
                 self.add_daten_matrix(code=matcode,
                                       name=name,
@@ -643,15 +643,15 @@ class Matrix(VisumTable):
                                       bezugstyp='Oberbezirk')
 
         self.set_category('Demand_Verkehrsleistung')
-        for mode in params.modes:
+        for m, mode in params.modes.iterrows():
             distance_matrix = mode['distance_matrix']
             code = mode['code']
-            matcode = 'VL_{}'.format(code)
+            matcode = f'VL_{code}'
             mode_name = mode['name']
-            matname = 'Verkehrsleistung {}'.format(mode_name)
+            matname = f'Verkehrsleistung {mode_name}'
             if matcode not in existing_codes:
-                formel = 'Matrix([CODE]="Visem_{c}") * Matrix([CODE]="{dm}")'.\
-                    format(c=code, dm=distance_matrix)
+                formel = f'Matrix([CODE]="Visem_{code}") * '\
+                    f'Matrix([CODE]="{distance_matrix}")'
                 self.add_formel_matrix(code=matcode,
                                        name=matname,
                                        formel=formel,
@@ -666,7 +666,7 @@ class Matrix(VisumTable):
         """Add Demand Matrices for other modes"""
         self.set_category('Demand_OV_Tagesgang')
         for hap in ds_tagesgang.hap:
-            matcode = 'Visem_OV_{}'.format(hap.lab_hap.values)
+            matcode = f'Visem_OV_{hap.lab_hap.values}'
             self.add_daten_matrix(code=matcode,
                                   loadmatrix=loadmatrix,
                                   matrixtyp='Nachfrage',
@@ -736,28 +736,29 @@ class Matrix(VisumTable):
             formel='-999999 * ((FROM[TYPNR] <= 3) * (TO[TYPNR] <= 3) + (FROM[TYPNR] > 3) * (TO[TYPNR] > 3))')
 
     def add_logsum_matrices(self,
-                            demand_strata:'Nachfrageschicht',
-                            actchains:'AKTIVITAETENKETTE',
+                            demand_strata: 'Nachfrageschicht',
+                            actchains: 'Aktivitaetenkette',
                             matrix_range='Logsums',
                             ):
         """Add logsum matrices for each person group and main activity"""
 
         self.set_category(matrix_range)
-        ketten = {a['CODE']: a['AKTIVCODES'].split(',')[1: -1]
-                  for a in actchains.table}
-        pgr_activities = defaultdict(set)
-        for ns in demand_strata.table:
-            pgr = ns['PGRUPPENCODES']
-            nachfragemodellcode = ns['NACHFRAGEMODELLCODE']
+        ketten = {ac_code: act['AKTIVCODES'].split(',')[1: -1]
+                  for ac_code, act
+                  in actchains.df.iterrows()}  # type: Mapping[str, List[str]]
+        pgr_activities = defaultdict(set)  # type: Mapping[Tuple[str, str], set]
+        for ds_code, ds in demand_strata.df.iterrows():
+            pgr = ds['PGRUPPENCODES']
+            nachfragemodellcode = ds['NACHFRAGEMODELLCODE']
             if nachfragemodellcode in ('VisemT', 'Pendler'):
                 activities = pgr_activities[(nachfragemodellcode, pgr)]
-                new_activities = ketten[ns['AKTKETTENCODE']]
+                new_activities = ketten[ds['AKTKETTENCODE']]
                 for activity in new_activities:
                     activities.add(activity)
         for (nmc, pgr), activities in pgr_activities.items():
             for activity in activities:
                 code = 'LogsumMatrix'
-                name = 'Logsum {p} {a}'.format(p=pgr, a=activity)
+                name = f'Logsum {pgr} {activity}'
                 self.add_daten_matrix(
                     code,
                     name,

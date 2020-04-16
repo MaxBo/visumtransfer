@@ -16,7 +16,7 @@ from visumtransfer.visum_attributes import VisumAttributes
 class VisumTables:
     """Singleton to store all tables"""
     _instance = None  # Keep instance reference
-    tables: Dict[str, VisumTable]
+    tables: Dict[str, 'VisumTable']
     visum_attributes: VisumAttributes
 
     def __new__(cls, *args, **kwargs):
@@ -255,7 +255,7 @@ class VisumTable(metaclass=MetaClass):
     def add_row(self, row: recordclass):
         self.add_rows([row])
 
-    def add_rows(self, rows: list[recordclass]):
+    def add_rows(self, rows: List[recordclass]):
         df2append = self.df_from_array(rows)
         self.df = self.df.append(df2append, verify_integrity=True)
 

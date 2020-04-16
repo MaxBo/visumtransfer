@@ -97,12 +97,13 @@ class VisemDemandModel:
 
         m = Nachfragemodell()
         m.add_model(params, code='VisemGeneration', name='Visem-Erzeugungsmodell')
-        m.add_model(params, code='VisemT',
+        model_code = 'VisemT'
+        m.add_model(params, code=model_code,
                     name='Visem Ziel- und Verkehrsmittelwahlmodell')
         v.tables['Nachfragemodell'] = m
 
         sg = Strukturgr()
-        sg.create_tables(params.activities, model='VisemT', suffix='')
+        sg.create_tables(params.activities, model=model_code, suffix='')
         v.tables['Strukturgr'] = sg
 
         ac = Aktivitaet()
@@ -120,7 +121,7 @@ class VisemDemandModel:
                                          name='CalculateDestinationAndModeChoice',
                                          datentyp='Bool')
 
-        ac.create_tables(params.activities, model='VisemT', suffix='')
+        ac.create_tables(params.activities, model=model_code, suffix='')
         ac.add_benutzerdefinierte_attribute(userdefined2)
         ac.add_net_activity_ticket_attributes(userdefined2)
         ac.add_output_matrices(matrices, userdefined2)
@@ -152,16 +153,16 @@ class VisemDemandModel:
         v.tables['PersonGroupsDestModechoice'] = pgd
 
         ap = Aktivitaetenpaar()
-        ap.create_tables(params.activitypairs, model='VisemT', suffix='')
+        ap.create_tables(params.activitypairs, model=model_code, suffix='')
         v.tables['Aktivitaetenpaar'] = ap
 
         ak = Aktivitaetenkette()
-        ak.create_tables(params.trip_chain_rates, model='VisemT', suffix='')
+        ak.create_tables(params.trip_chain_rates, model=model_code, suffix='')
         v.tables['Aktivitaetenkette'] = ak
 
         ns = Nachfrageschicht()
         ns.create_tables_gd(personengruppe=pgd,
-                            model='VisemT')
+                            model=model_code)
         v.tables['Nachfrageschicht'] = ns
 
         # Kenngrößenmatrizen
@@ -226,20 +227,13 @@ class VisemDemandModel:
         userdefined0.add_daten_attribute('Matrix', 'INITMATRIX', datentyp='Bool')
         userdefined0.add_daten_attribute('Matrix', 'LOADMATRIX', datentyp='Bool')
         userdefined0.add_daten_attribute('Matrix', 'SAVEMATRIX', datentyp='Bool')
-        userdefined0.add_daten_attribute('Matrix', 'MATRIXFOLDER',
-                                         datentyp='Text')
-        userdefined0.add_daten_attribute('Matrix', 'CALIBRATIONCODE',
-                                         datentyp='Text')
-        userdefined0.add_daten_attribute('Matrix', 'CATEGORY',
-                                         datentyp='Text')
+        userdefined0.add_daten_attribute('Matrix', 'MATRIXFOLDER', datentyp='Text')
+        userdefined0.add_daten_attribute('Matrix', 'CALIBRATIONCODE', datentyp='Text')
+        userdefined0.add_daten_attribute('Matrix', 'CATEGORY', datentyp='Text')
 
         # Netzattribute
         userdefined0.add_daten_attribute('Netz', 'COST_PER_KM_PKW',
                                          standardwert=0.15)
-        userdefined0.add_daten_attribute('Netz',
-                                         'FilenameFactorsCommuters',
-                                         datentyp='Text',
-                                         stringstandardwert="Factors_Commuters.csv")
         userdefined0.add_daten_attribute('Netz',
                                          'FilenameTripChainRates',
                                          datentyp='Text',
@@ -283,7 +277,8 @@ class VisemDemandModel:
         nseg.add_row(nseg.Row(code='PG', name='Kfz bis 3,5 to',
                               modus='P'))
 
-        v.write(fn=v.get_modification(modification_no, self.modifications))
+        fn = v.get_modification(modification_no, self.modifications)
+        v.write(fn=fn)
 
 
     def define_vsys_fv_preference(self,

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import xarray as xr
-import pandas as pd
 from .demand import Nachfragebeschreibung, Personengruppe
 from visumtransfer.params import Params
 from visumtransfer.visum_table import (VisumTable)
@@ -49,13 +48,12 @@ class Ganglinie(VisumTable):
         rows_visem_nachfrageganglinien = []
         aps = params.activitypairs
         time_series = params.time_series
-        ap_timeseries_recarray = params.activitypair_time_series
-        ap_timeseries = pd.DataFrame.from_records(ap_timeseries_recarray,
-                                                  index=['index', 'activitypair'])
+        ap_timeseries = params.activitypair_time_series\
+            .reset_index()\
+            .set_index(['index', 'activitypair'])
 
-        for a, ap in enumerate(aps):
+        for a, ap in aps.iterrows():
             ap_code = ap['code']
-            ap_tuple = ap_code.split('_')
             idx = ap['idx']
             nr = idx + start_idx
             row = self.Row(nr=nr, name=ap_code)
@@ -68,7 +66,7 @@ class Ganglinie(VisumTable):
 
             # Ganglinie
             ap_timeserie = ap_timeseries.iloc[idx]
-            for ts in time_series:
+            for t, ts in time_series.iterrows():
                 from_hour = ts['from_hour']
                 to_hour = ts['to_hour']
                 anteil = ap_timeserie[from_hour:to_hour].sum()
@@ -81,9 +79,9 @@ class Ganglinie(VisumTable):
                     rows_ganglinienelement.append(row_ganglinienelement)
 
             # Personengruppen
-            for pg in personengruppe.table:
+            for pg_code, pg in personengruppe.df.iterrows():
                 row_visem_ganglinie = visem_ganglinie.Row(
-                    pgruppencode=pg['CODE'], gangliniennr=nr)
+                    pgruppencode=pg_code, gangliniennr=nr)
                 if not pg['NACHFRAGEMODELLCODE'] == 'VisemGeneration':
                     row_visem_ganglinie.aktpaarcode = ap_code
                 rows_visem_nachfrageganglinien.append(row_visem_ganglinie)
