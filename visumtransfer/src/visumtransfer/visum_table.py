@@ -3,7 +3,7 @@
 import datetime
 import csv
 from collections import OrderedDict
-from typing import Dict, Iterable
+from typing import Dict, Iterable, List
 from copy import copy
 import os
 import io
@@ -16,6 +16,8 @@ from visumtransfer.visum_attributes import VisumAttributes
 class VisumTables:
     """Singleton to store all tables"""
     _instance = None  # Keep instance reference
+    tables: Dict[str, VisumTable]
+    visum_attributes: VisumAttributes
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -86,7 +88,6 @@ class VisumTable(metaclass=MetaClass):
         """
         if mode is not None:
             self._mode = mode
-        self.table = []
         self.df = pd.DataFrame()
 
         # define the trantab for the column names
@@ -159,7 +160,7 @@ class VisumTable(metaclass=MetaClass):
                                               for c in self.cols)
 
     @property
-    def cols(self):
+    def cols(self) -> List[str]:
         return self._cols.replace('\\', '_').split(';')
 
     @property
@@ -181,10 +182,7 @@ class VisumTable(metaclass=MetaClass):
             the columns to write
         """
         self.write_block_header(fobj)
-        if self.df.empty:
-            self.write_table(fobj, columns)
-        else:
-            self.write_df(fobj, columns)
+        self.write_df(fobj, columns)
 
     def write_df(self, fobj: WriteLine, columns: str = None):
         """
@@ -219,7 +217,7 @@ class VisumTable(metaclass=MetaClass):
 
     @property
     def tablename(self) -> str:
-        """get then english tablename"""
+        """get the english tablename"""
         visum_attributes = VisumTables().visum_attributes
         tables = visum_attributes.tables.reset_index().set_index('Long(DEU)')
         try:
@@ -238,30 +236,6 @@ class VisumTable(metaclass=MetaClass):
             return False
         return row.ValueType == 'bool'
 
-    def write_table(self, fobj: WriteLine, columns: str = None):
-        """
-        Write .df-Object to open file
-        Parameters
-        ----------
-        fobj: WriteLine-instance
-            holding the open file stream
-        columns: str, optional
-            the columns to write
-        """
-        cols = columns or ';'.join(c for c in self.cols)
-        fobj.writeln('${m}{t}:{c}'.format(m=self._mode, t=self.code, c=cols))
-        for row in self.table:
-            values = (elem if elem is not None
-                      else''
-                      for elem in row)
-
-            str_row = ';'.join(elem.decode('cp1252') if isinstance(elem, bytes)
-                               else '{}'.format(elem)
-                               for elem in values)
-
-            fobj.writeln(str_row)
-        fobj.writeln('')
-
     def write_block_header(self, fobj: WriteLine):
         """Write header for block to `fobj`"""
         fobj.writeln('*')
@@ -269,35 +243,19 @@ class VisumTable(metaclass=MetaClass):
                                                 m=self._modes[self._mode]))
         fobj.writeln('*')
 
-    def table_from_array(self, data_arr) -> np.recarray:
-        table = np.rec.fromrecords(data_arr, names=self.cols)
-        return table
-
     def df_from_array(self, data_arr) -> pd.DataFrame:
         df = pd.DataFrame(data_arr, columns=self.cols).set_index(self.pkey)
         return df
 
-    def set_df_from_table(self):
-        self.df = self.df_from_array(self.table)
-
-    def table_from_string(self, data_str: str) -> np.recarray:
+    def df_from_string(self, data_str: str) -> pd.DataFrame:
         data_arr = [r.split(';') for r in data_str.split(os.linesep)]
-        table = self.table_from_array(data_arr)
-        return table
+        df = self.df_from_array(data_arr)
+        return df
 
-    def add_row(self, row):
+    def add_row(self, row: recordclass):
         self.add_rows([row])
 
-    def add_rows(self, rows):
-        if len(self.table):
-            all_rows = self.table.tolist()
-            if rows:
-                all_rows.extend(rows)
-            table = self.table_from_array(all_rows)
-            self.table = table
-        else:
-            self.table = self.table_from_array(rows)
-
+    def add_rows(self, rows: list[recordclass]):
         df2append = self.df_from_array(rows)
         self.df = self.df.append(df2append, verify_integrity=True)
 
@@ -305,10 +263,6 @@ class VisumTable(metaclass=MetaClass):
         """Add a pandas Dataframe"""
         rows = df.to_records().tolist()
         self.add_rows(rows)
-
-    def update_table_from_df(self):
-        """update the table from the dataframe"""
-        self.table = self.table_from_array(self.df.to_records().tolist())
 
     def add_cols(self, new_cols: list):
         """Add columns to the columns definition"""
@@ -367,13 +321,15 @@ class Version(VisumTable):
         self.add_row(row)
 
 
-class VisumTransfer(object):
+class VisumTransfer:
     """
+    Class VisumTransfer holds the information on the sections in a transfer file
+    in self.tables
     """
     def __init__(self,
-                 user,
+                 user: str,
                  date=None,
-                 sep=';'):
+                 sep: str = ';'):
         self.user = user
         self.date = date or datetime.date.today()
         self.tables = OrderedDict()  # type: TablesDict
@@ -381,10 +337,11 @@ class VisumTransfer(object):
         self.sep = sep
 
     def __repr__(self):
-        return 'VisumTransfer with {} tables'.format(len(self.tables))
+        return f'VisumTransfer with {len(self.tables)} tables'
 
     @classmethod
-    def new_transfer(cls, user: str = 'Gertz Gutsche Rümenapp '
+    def new_transfer(cls,
+                     user: str = 'Gertz Gutsche Rümenapp '
                      'Stadtentwicklung und Mobilität GbR Hamburg'
                      ) -> 'VisumTransfer':
         self = cls(user=user)
@@ -401,7 +358,7 @@ class VisumTransfer(object):
         name = name or table.code
         self.tables[name] = table
 
-    def get_df(self, code: str, mode: str = '') -> pd.DataFrame:
+    def get_dataframes(self, code: str, mode: str = '') -> pd.DataFrame:
         """
         return a dataframe with all tables merged of Visum-Type `code`
         and modification-type `mode`
@@ -422,19 +379,13 @@ class VisumTransfer(object):
                   if table.code == code and table._mode in modes}
         return tables
 
-    def finish_updates(self):
-        """copy the new dataframes over the existing dataframes"""
-        for table in self.tables.values():
-            if hasattr(table, 'new_df'):
-                table.old_df = table.df
-                table.df = table.new_df
-
     def write_modification(self, number: int, modification_folder: str):
         """Write a modification file with the given number"""
         fn = self.get_modification(number, modification_folder)
         self.write(fn)
 
-    def write(self, fn):
+    def write(self, fn: str):
+        """Write transfer file to file `fn`"""
         with open(fn, 'w') as f:
             fobj = WriteLine(f)
             fobj.writeln('$VISION')
@@ -445,7 +396,8 @@ class VisumTransfer(object):
             for table in self.tables.values():
                 table.write_block(fobj)
 
-    def append(self, fn):
+    def append(self, fn: str):
+        """Append tables except the VERSION-section to the existing transfer file `fn`"""
         with open(fn, 'a') as f:
             fobj = WriteLine(f)
             for table in self.tables.values():
@@ -455,25 +407,26 @@ class VisumTransfer(object):
                 table.write_block(fobj)
 
     def get_modification(self, number: int, modification_folder: str) -> str:
-        """return the modification file"""
+        """return the modification file path"""
         fn = f'M{number:06d}.tra'
         fpath = os.path.join(modification_folder, fn)
         return fpath
 
     @property
-    def visum_tables(self):
+    def visum_tables(self) -> Dict[str, VisumTable]:
         return VisumTables().tables
 
-    def read_from_modification(self, filename,
-                               sections_to_read=None,
-                               decimal='.'):
+    def read_from_modification(self,
+                               filename: str,
+                               sections_to_read: List[str] = None,
+                               decimal: str = '.'):
         """read visum-demand from modification file"""
         position = 0
         with open(filename, 'rb') as f:
             li = f.readline().decode('cp1252').strip()
             if not li == '$VISION':
                 raise ValueError(
-                    'file {} is no Visum-Modification file'.format(filename))
+                    f'file {filename} is no Visum-Modification file')
             section = ''
             for line in f:
                 li = line.decode('cp1252').strip()

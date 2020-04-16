@@ -10,7 +10,7 @@ class VisumAttributes:
     purpose is to automatically create the VisumTable classes
     """
     @classmethod
-    def from_excel(cls, h5file: str, visum_version: int = 18, language='Deu'):
+    def from_excel(cls, h5file: str, visum_version: int = 20, language='Deu'):
 
         self = super().__new__(cls)
         visum_attribute_file = 'attribute.xlsx'

@@ -2,7 +2,6 @@ import json
 import tables
 import pandas as pd
 import openpyxl
-from numpy import recarray
 from typing import List
 
 

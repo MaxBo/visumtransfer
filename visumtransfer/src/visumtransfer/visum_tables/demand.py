@@ -315,7 +315,6 @@ class Aktivitaet(VisumTable):
         for code, activityset in activitysets.items():
             self.df.loc[code, 'AKTIVITAETSET'] = ','.join(activityset)
         # write back the data from the dataframe to the table
-        self.update_table_from_df()
 
     def get_main_activity(self, hierarchy, ac_code):
         """get the code of the main activity from ac_code

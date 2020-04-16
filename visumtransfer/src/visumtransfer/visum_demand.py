@@ -38,7 +38,7 @@ class VisemDemandModel:
 
     def create_transfer_rsa(self, modification_number: int):
         v = VisumTransfer.new_transfer()
-        params = Params.from_excel(param_excel_fp)
+        params = Params(param_excel_fp)
 
         # Nachfragemodell
         m = Nachfragemodell()
@@ -87,7 +87,7 @@ class VisemDemandModel:
         v = VisumTransfer.new_transfer()
 
         # use the data from the excel-file
-        params = Params.from_excel(param_excel_fp)
+        params = Params(param_excel_fp)
 
         userdefined1 = BenutzerdefiniertesAttribut()
         v.tables['BenutzerdefinierteAttribute1'] = userdefined1
