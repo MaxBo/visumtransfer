@@ -753,7 +753,7 @@ class Matrix(VisumTable):
         for ds_code, ds in demand_strata.df.iterrows():
             pgr = ds['PGRUPPENCODES']
             nachfragemodellcode = ds['NACHFRAGEMODELLCODE']
-            if nachfragemodellcode in ('VisemT', 'Pendler'):
+            if nachfragemodellcode in ('VisemGGR', 'Pendler'):
                 activities = pgr_activities[(nachfragemodellcode, pgr)]
                 new_activities = ketten[ds['AKTKETTENCODE']]
                 for activity in new_activities:

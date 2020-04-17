@@ -31,58 +31,32 @@ class Nachfragemodell(VisumTable):
 class Personengruppe(VisumTable):
     name = 'Personengruppen'
     code = 'PERSONENGRUPPE'
-    _cols = 'CODE;NAME;NACHFRAGEMODELLCODE;ACTCHAIN;CAR_AVAILABILITY;GROUPDESTMODE;OCCUPATION;VOTT'
-    _defaults = {'VOTT': 10}
+    _cols = 'CODE;NAME;NACHFRAGEMODELLCODE'
 
     def __init__(self):
         super(Personengruppe, self).__init__()
         self.groups = []
         self.gd_codes = defaultdict(list)
 
-    def add_group(self, code: str, modellcode: str, **kwargs):
+    def add_group(self, code: str, model_code: str, **kwargs):
         row = self.Row(code=code,
-                       nachfragemodellcode=modellcode,
+                       nachfragemodellcode=model_code,
                        **kwargs)
         self.groups.append(row)
 
-    def add_group_generation(self, code: str, name: str, groupdestmode):
-        self.add_group(code, name=name, modellcode='VisemGeneration',
-                       groupdestmode=groupdestmode)
-
-    def add_group_destmode(self, code: str, name: str, groupdestmode,
-                           actchain, car_availability, occupation):
-        self.add_group(code, name=name, modellcode='VisemT',
-                       actchain=actchain,
-                       car_availability=car_availability,
-                       occupation=occupation,
-                       groupdestmode=groupdestmode)
-
-    def create_table(self):
-        self.df = self.df_from_array(self.groups)
-
-    def create_groups_generation(self, params: Params):
-        # sort person group by code
-        person_groups = params.gg
-        for idx, p in person_groups.iterrows():
-            self.add_group_generation(code=p['code'],
-                                      name=p['code'],
-                                      groupdestmode=p['group_dest_mode'])
-
-    def create_groups_destmode(self,
-                               params: Params,
-                               activities: 'Aktivitaet'):
+    def create_groups_destmode(self, groups_generation: pd.DataFrame, trip_chain_rates:
+                               pd.DataFrame, activities: 'Aktivitaet', model_code: str):
         """"""
+        category = 'ZielVMWahl'
         assert isinstance(activities, Aktivitaet)
         act_hierarchy = activities.get_hierarchy()
-        person_groups = params.gd
-        trip_chain_rates = params.trip_chain_rates
 
         # merge persongroups to tripchainrates
         gds = trip_chain_rates.groupby(['group', 'code'])\
             .first()\
             .reset_index()\
             .set_index('group')
-        gds = gds.merge(person_groups, left_index=True, right_on='code',
+        gds = gds.merge(groups_generation, left_index=True, right_on='code',
                         suffixes=['_tc', '_person'])
 
         # loop over all tripchains in the groups
@@ -90,29 +64,34 @@ class Personengruppe(VisumTable):
             gd_code = tc['code']
             act_code = tc['code_tc']
             act_sequence = tc['Sequence']
+            tc_name = tc['name']
             main_act = activities.get_main_activity(act_hierarchy, act_sequence)
             code = '_'.join((gd_code, main_act))
             # if the the group occurs the first time ...
             if code not in self.gd_codes:
                 #  create it and add it to self.gd_codes
                 self.gd_codes[code] = [act_code]
-                name = code
-                self.add_group_destmode(
+                name = f'{tc_name} mit Hauptaktivität {main_act}'
+
+                self.add_group(
+                    category=category,
+                    model_code=model_code,
                     code=code,
                     name=name,
-                    groupdestmode=gd_code,
-                    car_availability=tc['car_availability'],
-                    occupation=tc['occupation'],
-                    actchain=main_act)
+                    groups_constants=tc['groups_constants'],
+                    groups_output=tc['groups_output'],
+                    main_act=main_act)
             else:
                 # otherwise just append the activity chain
                 # to the chains the persons makes
                 self.gd_codes[code].append(act_code)
+        df = self.df_from_array(self.groups)
+        self.add_df(df)
 
     def create_groups_rsa(self,
                           person_groups: pd.DataFrame,
                           trip_chain_rates: pd.DataFrame,
-                          model_code: str = 'VisemRSA'):
+                          model_code: str = 'VisemGGR'):
         """"""
         for g, gdd in person_groups.iterrows():
             gd_code = gdd['code']
@@ -120,7 +99,7 @@ class Personengruppe(VisumTable):
             self.add_group(
                 code=gd_code,
                 name=name,
-                modellcode=model_code,
+                model_code=model_code,
                 car_availability=gdd['car_availability'],
                 occupation=gdd['occupation'],
                 groupdestmode=gd_code,
@@ -131,94 +110,48 @@ class Personengruppe(VisumTable):
         self.create_table()
 
     def add_calibration_matrices_and_attributes(
-          self,
-          params: Params,
-          matrices: Matrix,
-          userdefined: BenutzerdefiniertesAttribut):
+            self,
+            modes: pd.DataFrame,
+            matrices: Matrix,
+            userdefined: BenutzerdefiniertesAttribut):
         """
         Add Output Matrices for PersonGroups
         """
         matrices.set_category('Demand_Pgr')
-        calibration_defs = ['occupation', 'car_availability']
-        modes = params.mode_set.split(',')
-        for cg in calibration_defs:
-            calibration_groups = np.unique(self.df[cg.upper()])
-            for group in calibration_groups:
-                if group:
-                    gr_code = f'{cg}_{group}'
-                    for mode in modes:
-                        # add output matrix
-                        str_name = f'Wege mit Verkehrsmittel {mode} der Gruppe {gr_code}'
-                        matrices.add_daten_matrix(
-                            code=f'{gr_code}_{mode}',
-                            name=str_name,
-                            moduscode=mode,
-                            calibrationcode=gr_code)
+        df_groups_output = self.df['GROUPS_OUTPUT'].str.split(',', expand=True)
+        df_groups_output.columns = [f'group{i}'
+                                    for i in df_groups_output.columns]
+        df_out_long = pd.wide_to_long(df_groups_output.reset_index(),
+                                      'group',
+                                      'CODE',
+                                      'gr_id')
+        df_out_long = df_out_long.loc[~df_out_long['group'].isnull()]
+        df_out_long.set_index(df_out_long.index.droplevel(level=1), inplace=True)
 
-                    # Alternativenspezifische Konstante im Modell
-                    userdefined.add_daten_attribute(
-                        objid='MODUS',
-                        name=f'Const_{gr_code}')
-
-                    # Wege nach Modus und Modal Split der Gruppe
-                    formel = f'TableLookup(MATRIX Mat: Mat[CODE]="{gr_code}_"+[CODE]: Mat[SUMME])'
-                    userdefined.add_formel_attribute(
-                        objid='MODUS',
-                        name=f'Trips_{gr_code}',
-                        formel=formel,
-                        kommentar=f'Gesamtzahl der Wege der Gruppe {gr_code}',
-                    )
-                    # Wege Gesamt der Gruppe
-                    userdefined.add_formel_attribute(
-                        objid='NETZ',
-                        name=f'Trips_{gr_code}',
-                        formel=f'[SUM:MODI\Trips_{gr_code}]',
-                        kommentar=f'Gesamtzahl der Wege der Gruppe {gr_code}',
-                    )
-                    # Modal Split der Gruppe
-                    userdefined.add_formel_attribute(
-                        objid='MODUS',
-                        name=f'MS_{gr_code}',
-                        formel=f'[Trips_{gr_code}] / [NETZ\Trips_{gr_code}]',
-                        kommentar=f'Modal Split der Gruppe {gr_code}',
-                    )
-
-                    # Ziel-Modal Split der Gruppe
-                    userdefined.add_daten_attribute(
-                        objid='Modus',
-                        name=f'Target_MS_{gr_code}',
-                    )
-
-        # Wege nach Modus und Modal Split Gesamt
-        gr_code = 'Demand'
-        userdefined.add_formel_attribute(
-            objid='MODUS',
-            name='Trips_RegionMitEinpendler',
-            formel='TableLookup(MATRIX Mat: Mat[CODE]="Visem_"+[CODE]: Mat[SUMME])',
-            kommentar='Gesamtzahl der Wege der Regionsbewohner incl. Einpendler',
-        )
-        # Wege Gesamt der Regionsbewohner
-        gr_code = 'Total'
-        userdefined.add_formel_attribute(
-            objid='NETZ',
-            name='Trips_RegionMitEinpendler',
-            formel='[SUM:MODI\Trips_RegionMitEinpendler]',
-            kommentar='Gesamtzahl der Regionsbewohner',
-        )
-        # Modal Split der Regionsbewohner
-        userdefined.add_formel_attribute(
-            objid='MODUS',
-            name='MS_Trips_RegionMitEinpendler',
-            formel='[Trips_RegionMitEinpendler] / [NETZ\Trips_RegionMitEinpendler]',
-            kommentar='Modal Split incl. Einpendler',
-        )
-
-        # Ziel Entfernung nach Verkehrsmittel
-        userdefined.add_daten_attribute(
-            objid='Modus',
-            name='Target_MEAN_DISTANCE',
-            anzdezstellen=2,
-        )
+        for group_output, detailed_groups in df_out_long.groupby(by='group'):
+            gr = self.df.loc[group_output]
+            str_name = f'Wege der {gr.CATEGORY}-Gruppe {gr.NAME}'
+            code = f'Pgr_{gr.name}'
+            pgrset = ','.join(detailed_groups.index)
+            matrices.add_daten_matrix(
+                code=code,
+                name=str_name,
+                personengruppenset=pgrset,
+                pgruppencode=group_output,
+            )
+            for _, mode in modes.iterrows():
+                mode_name = mode['name']
+                # add output matrix
+                str_name = f'Wege mit Verkehrsmittel {mode_name} der {gr.CATEGORY}-Gruppe {gr.NAME}'
+                code = f'Pgr_{gr.name}_{mode.code}'
+                pgrset = ','.join(detailed_groups.index)
+                matrices.add_daten_matrix(
+                    code=code,
+                    name=str_name,
+                    moduscode=mode.code,
+                    personengruppenset=pgrset,
+                    pgruppencode=group_output,
+                )
 
 
 class Strukturgr(VisumTable):
@@ -379,12 +312,6 @@ class Aktivitaet(VisumTable):
             name='TripDistance',
             formel='TableLookup(MATRIX Mat: '\
             'Mat[CODE]="VL_Activity_"+[CODE]: Mat[SUMME]) / [TotalTripsRegion]',
-        )
-        userdefined.add_formel_attribute(
-            objid='MODUS',
-            name='TripDistance',
-            formel='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="VL_"+[CODE]: Mat[SUMME]) / [Trips_RegionMitEinpendler]',
         )
 
         userdefined.add_daten_attribute(
@@ -905,7 +832,7 @@ class Nachfrageschicht(VisumTable):
             act_seq = tcr['Sequence']
             ac_code = ''.join(act_seq)
             row.name = '_'.join((pgr_code, ac))
-            if model == 'VisemT':
+            if model == 'VisemGGR':
                 row.code = row.name
             else:
                 row.code = '_'.join([pgr_code, ac_code])
@@ -917,17 +844,16 @@ class Nachfrageschicht(VisumTable):
     def create_tables_gd(self,
                          personengruppe: Personengruppe,
                          nsegset: str = 'A,F,M,P,R',
-                         model='VisemT'):
+                         model='VisemGGR'):
         rows = []
         pgroups = personengruppe.df
-        pg_gd = pgroups.loc[pgroups['NACHFRAGEMODELLCODE'] == model]
-        for code, gd in pg_gd.iterrows():
-            pgr_code = gd['GROUPDESTMODE']
-            for ac_code in personengruppe.gd_codes[code]:
+        pg_gd = pgroups.loc[pgroups['CATEGORY'] == 'ZielVMWahl']
+        for pgr_code, gd in pg_gd.iterrows():
+            for ac_code in personengruppe.gd_codes[pgr_code]:
                 row = self.Row(nachfragemodellcode=model,
-                               pgruppencodes=code,
+                               pgruppencodes=pgr_code,
                                aktkettencode=ac_code)
-                row.code = '_'.join((pgr_code, ac_code))
+                row.code = ':'.join((pgr_code, ac_code))
                 row.name = row.code
                 row.nsegset = nsegset
                 rows.append(row)

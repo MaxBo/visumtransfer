@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import xarray as xr
+import pandas as pd
 from .demand import Nachfragebeschreibung, Personengruppe
 from visumtransfer.params import Params
 from visumtransfer.visum_table import (VisumTable)
@@ -34,7 +35,9 @@ class Ganglinie(VisumTable):
     _defaults = {'WERTETYP': 'Anteile'}
 
     def create_tables(self,
-                      params: Params,
+                      activitypairs: pd.DataFrame,
+                      time_series: pd.DataFrame,
+                      ap_timeseries: pd.DataFrame,
                       ganglinienelement: Ganglinienelement,
                       nachfrageganglinie: Nachfrageganglinie,
                       visem_ganglinie: VisemGanglinie,
@@ -46,13 +49,11 @@ class Ganglinie(VisumTable):
         rows_ganglinienelement = []
         rows_nachfrageganglinien = []
         rows_visem_nachfrageganglinien = []
-        aps = params.activitypairs
-        time_series = params.time_series
-        ap_timeseries = params.activitypair_time_series\
+        ap_timeseries = ap_timeseries\
             .reset_index()\
             .set_index(['index', 'activitypair'])
 
-        for a, ap in aps.iterrows():
+        for a, ap in activitypairs.iterrows():
             ap_code = ap['code']
             idx = ap['idx']
             nr = idx + start_idx

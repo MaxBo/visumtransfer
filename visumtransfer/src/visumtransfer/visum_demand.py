@@ -96,8 +96,7 @@ class VisemDemandModel:
         matrices = Matrix()
 
         m = Nachfragemodell()
-        m.add_model(params, code='VisemGeneration', name='Visem-Erzeugungsmodell')
-        model_code = 'VisemT'
+        model_code = 'VisemGGR'
         m.add_model(params, code=model_code,
                     name='Visem Ziel- und Verkehrsmittelwahlmodell')
         v.tables['Nachfragemodell'] = m
@@ -132,25 +131,87 @@ class VisemDemandModel:
         ac.add_kf_logsum(userdefined2)
         v.tables['Aktivitaet'] = ac
 
-        userdefined1.add_daten_attribute('Personengruppe', 'ACTCHAIN',
-                                         datentyp='Text')
-        userdefined1.add_daten_attribute('Personengruppe', 'CAR_AVAILABILITY',
-                                         datentyp='Text')
-        userdefined1.add_daten_attribute('Personengruppe', 'GROUPDESTMODE',
-                                         datentyp='Text')
-        userdefined1.add_daten_attribute('Personengruppe', 'OCCUPATION',
-                                         datentyp='Text')
-        userdefined1.add_daten_attribute('Personengruppe', 'VOTT')
-        pgg = Personengruppe()
-        pgg.create_groups_generation(params)
-        pgg.create_table()
-        v.tables['PersonGroupsGeneration'] = pgg
+        # add userdefined attributes for personsgroups
+        pg = Personengruppe()
+        pg._defaults['NACHFRAGEMODELLCODE'] = model_code
+        v.tables['PersonGroups'] = pg
+        userdefined1.add_daten_attribute('Personengruppe', 'CATEGORY', datentyp='Text',
+                                         kommentar='Kategorie der Personengruppe')
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'CALIBRATION_HIERARCHY', datentyp='Int',
+            kommentar='Hierarchie bei der Kalibrierung des Modal Splits'
+            'Der Modal Split der höchsten Hierarchiestufe wird zuletzt kalibriert'
+            'und wird damit am genauesten getroffen.'
+        )
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'ID_IN_CATEGORY', datentyp='Int',
+            kommentar='Fortlaufende id innerhalb einer Kategorie')
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'GROUPS_CONSTANTS', datentyp='Text',
+            kommentar='Komma-getrennte Liste der Obergruppen, deren '
+            'verkehrsmittelspezifische Konstante in die Nutzenfunktion einer '
+            'Obergruppe einbezogen werden soll.'
+        )
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'GROUPS_OUTPUT', datentyp='Text',
+            kommentar='Komma-getrennte Liste der Obergruppen, in die die Berechnungs-'
+            'Ergebnisse der Gruppe einfließen soll.'
+        )
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'MAIN_ACT', datentyp='Text',
+            kommentar='Hauptaktivität der Personengruppe'
+        )
+        pg.add_cols(['CATEGORY', 'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
+                     'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'MAIN_ACT'])
 
-        pgd = Personengruppe()
-        pgd.create_groups_destmode(params, ac)
-        pgd.create_table()
-        pgd.add_calibration_matrices_and_attributes(params, matrices, userdefined2)
-        v.tables['PersonGroupsDestModechoice'] = pgd
+        # Wege Gesamt der Gruppe
+        formel = f'TableLookup(MATRIX Mat: Mat[CODE]=[CODE]: Mat[SUMME])'
+        userdefined2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'Trips',
+            formel=formel,
+            kommentar=f'Gesamtzahl der Wege der Gruppe',
+        )
+
+        for _, mode in params.modes.iterrows():
+            m = mode.code
+            userdefined1.add_daten_attribute(
+                'Personengruppe', f'CONST_{m}', datentyp='Double',
+                kommentar=f'Konstante für Verkehrsmittel {mode.name}'
+            )
+            userdefined1.add_daten_attribute(
+                'Personengruppe', f'TARGET_MS_{m}', datentyp='Double',
+                kommentar=f'Ziel-ModalSplit für Verkehrsmittel {mode.name}'
+            )
+            pg.add_cols([f'CONST_{m}', f'TARGET_MS_{m}'])
+
+            # Wege nach Modus und Modal Split der Gruppe
+            formel = f'TableLookup(MATRIX Mat: Mat[CODE]=[CODE]+"_{m}": Mat[SUMME])'
+            userdefined2.add_formel_attribute(
+                objid='PERSONENGRUPPE',
+                name=f'Trips_{m}',
+                formel=formel,
+                kommentar=f'Gesamtzahl der Wege mit Verkehrsmittel {mode.name}',
+            )
+            # Modal Split der Gruppe
+            userdefined2.add_formel_attribute(
+                objid='PERSONENGRUPPE',
+                name=f'MS_{m}',
+                formel=f'[Trips_{m}] / [Trips]',
+                kommentar=f'Modal Split-Anteil {mode.name}',
+            )
+
+        pg.add_df(params.group_definitions)
+        gg = params.groups_generation[['code', 'name', 'Category']]
+        pg.add_df(gg)
+        pg.create_groups_destmode(params.groups_generation,
+                                  params.trip_chain_rates,
+                                  ac,
+                                  model_code)
+        pg.add_df(params.groups_rsa)
+
+        pg.add_calibration_matrices_and_attributes(
+            params.modes, matrices, userdefined2)
 
         ap = Aktivitaetenpaar()
         ap.create_tables(params.activitypairs, model=model_code, suffix='')
@@ -161,7 +222,7 @@ class VisemDemandModel:
         v.tables['Aktivitaetenkette'] = ak
 
         ns = Nachfrageschicht()
-        ns.create_tables_gd(personengruppe=pgd,
+        ns.create_tables_gd(personengruppe=pg,
                             model=model_code)
         v.tables['Nachfrageschicht'] = ns
 
@@ -191,7 +252,10 @@ class VisemDemandModel:
         gle = Ganglinienelement()
         ngl = Nachfrageganglinie()
         vgl = VisemGanglinie()
-        gl.create_tables(params, gle, ngl, vgl, pgd)
+        gl.create_tables(params.activitypairs,
+                         params.time_series,
+                         params.activitypair_time_series,
+                         gle, ngl, vgl, pg)
 
         v.tables['Ganglinie'] = gl
         v.tables['Ganglinienelement'] = gle
@@ -308,6 +372,6 @@ if __name__ == '__main__':
 
     #dm.add_nsegs_userdefined(modification_no=444)
     dm.create_transfer(modification_number=22)
-    dm.create_transfer_rsa(modification_number=23)
+    #dm.create_transfer_rsa(modification_number=23)
     #dm.write_modification_iv_matrices(modification_no=12)
     #dm.write_modification_ov_matrices(modification_no=14)

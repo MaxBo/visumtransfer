@@ -260,8 +260,13 @@ class VisumTable(metaclass=MetaClass):
 
     def add_df(self, df: pd.DataFrame):
         """Add a pandas Dataframe"""
-        rows = df.to_records().tolist()
-        self.add_rows(rows)
+        df.columns = df.columns.str.upper()
+        df = df\
+            .reset_index()\
+            .reindex(self.cols, axis='columns')\
+            .set_index(self.pkey)\
+            .fillna(self._defaults)
+        self.df = self.df.append(df, verify_integrity=True)
 
     def add_cols(self, new_cols: list):
         """Add columns to the columns definition"""
@@ -285,7 +290,7 @@ class VisumTable(metaclass=MetaClass):
         """
         # init the new dataframe
         if not hasattr(self, 'new_df'):
-            self.new_df = self.df.iloc[:0].set_index(self.pkey)
+            self.new_df = self.df.reset_index().iloc[:0].set_index(self.pkey)
         columns = self.df.columns
         print(self.df.shape, new_df.shape)
         add_df = new_df.reset_index()[columns].set_index(self.pkey)

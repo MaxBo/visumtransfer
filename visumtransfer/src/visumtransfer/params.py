@@ -6,10 +6,9 @@ from typing import List
 
 class Params:
     modes: pd.DataFrame
-    gg: pd.DataFrame
-    gd: pd.DataFrame
-    g_cali: pd.DataFrame
-    g_pkw: pd.DataFrame
+    group_definitions: pd.DataFrame
+    groups_generation: pd.DataFrame
+    groups_rsa: pd.DataFrame
     activities: pd.DataFrame
     activity_parking: pd.DataFrame
     activitypairs: pd.DataFrame
@@ -22,14 +21,12 @@ class Params:
 
     activities_rsa: pd.DataFrame
     activitypairs_rsa: pd.DataFrame
-    gd_rsa: pd.DataFrame
     trip_chain_rates_rsa: pd.DataFrame
     """"""
     attr2tablename = dict(
-        gg='groups_generation',
-        gd='groups_dest_mode',
-        g_cali='groups_calibration',
-        g_pkw='groups_pkwverf',
+        group_definitions='group_definitions',
+        groups_generation='groups_generation',
+        groups_rsa='groups_rsa',
         activities='activities',
         activity_parking='activity_parking',
         activitypairs='activitypairs',
@@ -42,7 +39,6 @@ class Params:
         modes='modes',
         activities_rsa='activities_rsa',
         activitypairs_rsa='activitypairs_rsa',
-        gd_rsa='groups_dest_mode_rsa',
         trip_chain_rates_rsa='trip_chain_rates_rsa',
     )
 
