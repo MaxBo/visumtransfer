@@ -136,6 +136,7 @@ class Personengruppe(VisumTable):
             matrices.add_daten_matrix(
                 code=code,
                 name=str_name,
+                modusset=','.join(modes['code']),
                 personengruppenset=pgrset,
                 pgruppencode=group_output,
             )
@@ -149,6 +150,7 @@ class Personengruppe(VisumTable):
                     code=code,
                     name=str_name,
                     moduscode=mode.code,
+                    modusset=mode.code,
                     personengruppenset=pgrset,
                     pgruppencode=group_output,
                 )
