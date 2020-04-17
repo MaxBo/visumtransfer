@@ -165,7 +165,7 @@ class VisemDemandModel:
                      'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'MAIN_ACT'])
 
         # Wege Gesamt der Gruppe
-        formel = f'TableLookup(MATRIX Mat: Mat[CODE]=[CODE]: Mat[SUMME])'
+        formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
         userdefined2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'Trips',
@@ -186,7 +186,7 @@ class VisemDemandModel:
             pg.add_cols([f'CONST_{m}', f'TARGET_MS_{m}'])
 
             # Wege nach Modus und Modal Split der Gruppe
-            formel = f'TableLookup(MATRIX Mat: Mat[CODE]=[CODE]+"_{m}": Mat[SUMME])'
+            formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]+"_{m}": Mat[SUMME])'
             userdefined2.add_formel_attribute(
                 objid='PERSONENGRUPPE',
                 name=f'Trips_{m}',
