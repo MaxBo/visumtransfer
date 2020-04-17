@@ -606,7 +606,7 @@ class Matrix(VisumTable):
                                   savematrix=1):
         """Add Demand Matrices for other modes"""
         self.set_category('Visem_Demand')
-        existing_codes = self.df['CODE']
+        existing_codes = self.df['CODE'].tolist()
 
         self.add_daten_matrix(code='Visem_Gesamt',
                               name='Gesamtwege Visem Region',
@@ -619,14 +619,15 @@ class Matrix(VisumTable):
             mode_name = mode['name']
             matname = f'Wege {mode_name}'
             matcode = f'Visem_{code}'
-            if matcode not in existing_codes:
-                self.add_daten_matrix(code=matcode,
-                                      name=matname,
-                                      loadmatrix=loadmatrix,
-                                      matrixtyp='Nachfrage',
-                                      moduscode=code,
-                                      savematrix=savematrix,
-                                      )
+            if matcode in existing_codes:
+                continue
+            self.add_daten_matrix(code=matcode,
+                                  name=matname,
+                                  loadmatrix=loadmatrix,
+                                  matrixtyp='Nachfrage',
+                                  moduscode=code,
+                                  savematrix=savematrix,
+                                  )
 
 
         for m, mode in params.modes.iterrows():
@@ -634,13 +635,14 @@ class Matrix(VisumTable):
             matcode = f'Visem_{code}_OBB'
             mode_name = mode['name']
             name = f'Wege {mode_name} Oberbezirk Region'
-            if matcode not in existing_codes:
-                self.add_daten_matrix(code=matcode,
-                                      name=name,
-                                      loadmatrix=loadmatrix,
-                                      matrixtyp='Nachfrage',
-                                      moduscode=code,
-                                      bezugstyp='Oberbezirk')
+            if matcode in existing_codes:
+                continue
+            self.add_daten_matrix(code=matcode,
+                                  name=name,
+                                  loadmatrix=loadmatrix,
+                                  matrixtyp='Nachfrage',
+                                  moduscode=code,
+                                  bezugstyp='Oberbezirk')
 
         self.set_category('Demand_Verkehrsleistung')
         for m, mode in params.modes.iterrows():
@@ -649,15 +651,16 @@ class Matrix(VisumTable):
             matcode = f'VL_{code}'
             mode_name = mode['name']
             matname = f'Verkehrsleistung {mode_name}'
-            if matcode not in existing_codes:
-                formel = f'Matrix([CODE]="Visem_{code}") * '\
-                    f'Matrix([CODE]="{distance_matrix}")'
-                self.add_formel_matrix(code=matcode,
-                                       name=matname,
-                                       formel=formel,
-                                       matrixtyp='Nachfrage',
-                                       moduscode=code,
-                                       )
+            if matcode in existing_codes:
+                continue
+            formel = f'Matrix([CODE]="Visem_{code}") * '\
+                f'Matrix([CODE]="{distance_matrix}")'
+            self.add_formel_matrix(code=matcode,
+                                   name=matname,
+                                   formel=formel,
+                                   matrixtyp='Nachfrage',
+                                   moduscode=code,
+                                   )
 
     def add_ov_haupt_ap_demand_matrices(self,
                                         ds_tagesgang: xr.Dataset,
