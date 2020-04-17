@@ -298,22 +298,16 @@ class Aktivitaet(VisumTable):
         """
         userdefined.add_formel_attribute(
             objid='AKTIVITAET',
-            name='TotalTripsRegion',
+            name='TotalTrips',
             formel='TableLookup(MATRIX Mat: '
             'Mat[CODE]="Activity_"+[CODE]: Mat[SUMME])',
             kommentar='Gesamtzahl der Wege'
         )
         userdefined.add_formel_attribute(
             objid='AKTIVITAET',
-            name='TotalTrips',
-            formel='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="AllActivity_"+[CODE]: Mat[SUMME])',
-        )
-        userdefined.add_formel_attribute(
-            objid='AKTIVITAET',
             name='TripDistance',
-            formel='TableLookup(MATRIX Mat: '\
-            'Mat[CODE]="VL_Activity_"+[CODE]: Mat[SUMME]) / [TotalTripsRegion]',
+            formel='TableLookup(MATRIX Mat: '
+            'Mat[CODE]="VL_Activity_"+[CODE]: Mat[SUMME]) / [TotalTrips]',
         )
 
         userdefined.add_daten_attribute(
@@ -624,124 +618,124 @@ class Aktivitaet(VisumTable):
                         matrices: Matrix,
                         params: Params):
         """Add userdefined attributes and Matrices for modal split by activity"""
-        formel_trips = 'TableLookup(MATRIX Mat, Mat[CODE]="Activity_{a}_"+[CODE], Mat[SUM])'
-        formel_ms = '[TRIPS_ACTIVITY_{a}] / [NETZ\TRIPS_ACTIVITY_{a}]'
-        formel_netz_trips = '[SUM:MODI\TRIPS_ACTIVITY_{a}]'
-
-        matrices.set_category('Modes_Demand_Activities')
 
         for code, t in self.df.iterrows():
-            if not code.endswith('_'):
-                init_matrix = 0 if t.ISTHEIMATAKTIVITAET else 1
-                for idx, mode in params.modes.iterrows():
-                    matrices.set_category('Modes_Demand_Activities')
+            init_matrix = 0 if t.ISTHEIMATAKTIVITAET else 1
+            for _, mode in params.modes.iterrows():
+                matrices.set_category('Modes_Demand_Activities')
 
-                    mode_code = mode['code']
-                    # add output matrix
-                    str_name = f'Wege mit Verkehrsmittel {mode_code} der für Aktivität {code}'
-                    nr = matrices.add_daten_matrix(
-                        code=f'Activity_{code}_{mode_code}',
+                mode_code = mode['code']
+                # add output matrix
+                str_name = f'Wege mit Verkehrsmittel {mode_code} der für Aktivität {code}'
+                nr = matrices.add_daten_matrix(
+                    code=f'Activity_{code}_{mode_code}',
+                    name=str_name,
+                    moduscode=mode_code,
+                    aktivcode=code,
+                    initmatrix=init_matrix,
+                )
+                ges=self.matrixnummern_activity[code]
+                userdefined.add_formel_attribute(
+                    'BEZIRK',
+                    name=f'MS_{mode_code}_Act_{code}',
+                    formel=f'[MATSPALTENSUMME({nr:d})] / '
+                    f'[MATSPALTENSUMME({ges:d})]',
+                )
+
+                if t.ISTHEIMATAKTIVITAET:
+                    # add output Oberbezirks-Matrix
+                    str_name = f'OBB-Wege mit Verkehrsmittel {mode_code}'
+                    f'für Aktivität {code}'
+                    nr_obb = matrices.add_daten_matrix(
+                        code=f'OBB_Activity_{code}_{mode_code}',
                         name=str_name,
                         moduscode=mode_code,
                         aktivcode=code,
-                        initmatrix=init_matrix,
+                        bezugstyp='Oberbezirk',
+                        initmatrix=0,
                     )
-                    ges=self.matrixnummern_activity[code]
+
+                    ges = self.obbmatrixnummer_activity_w
+                    userdefined.add_formel_attribute(
+                        'OBERBEZIRK',
+                        name=f'MS_Home_Mode_{mode_code}',
+                        formel=f'[MATSPALTENSUMME({nr_obb:d})] / '
+                        f'[MATSPALTENSUMME({ges:d})]',
+                    )
+
+                    ges=self.matrixnummer_activity_w
                     userdefined.add_formel_attribute(
                         'BEZIRK',
-                        name=f'MS_{mode_code}_Act_{code}',
+                        name=f'MS_Home_Mode_{mode_code}',
                         formel=f'[MATSPALTENSUMME({nr:d})] / '
                         f'[MATSPALTENSUMME({ges:d})]',
                     )
 
-                    if t.ISTHEIMATAKTIVITAET:
-                        # add output Oberbezirks-Matrix
-                        str_name = f'OBB-Wege mit Verkehrsmittel {mode_code}'
-                        f'für Aktivität {code}'
-                        nr_obb = matrices.add_daten_matrix(
-                            code=f'OBB_Activity_{code}_{mode_code}',
-                            name=str_name,
-                            moduscode=mode_code,
-                            aktivcode=code,
-                            bezugstyp='Oberbezirk',
-                            initmatrix=0,
-                        )
+                    # add Verkehrsleistung
+                    matrices.set_category('VL_Activities')
+                    formel = f'Matrix([CODE]="Activity_{code}_{mode_code}") '
+                    f'* Matrix([CODE] = "KM")'
+                    nr_vl = matrices.add_formel_matrix(
+                        code=f'VL_Activity_{code}_{mode_code}',
+                        name=f'Verkehrsleistung Aktivität {code} mit {mode_code}',
+                        moduscode=mode_code,
+                        aktivcode=code,
+                        formel=formel,
+                        bezugstyp='Bezirk',
+                        initmatrix=0,
+                    )
+                    matrices.set_category('VL_Activities_OBB')
+                    nr_obb_vl = matrices.add_daten_matrix(
+                        code=f'OBB_VL_Activity_{code}_{mode_code}',
+                        name=f'OBB-Verkehrsleistung Aktivität {code} mit {mode_code}',
+                        moduscode=mode_code,
+                        aktivcode=code,
+                        bezugstyp='Oberbezirk',
+                        initmatrix=0,
+                    )
+                    userdefined.add_formel_attribute(
+                        'OBERBEZIRK',
+                        name=f'Distance_Home_{mode_code}',
+                        formel=f'[MATZEILENSUMME({nr_obb_vl:d})] / '
+                        f'[MATZEILENSUMME({nr_obb:d})]',
+                    )
+                    userdefined.add_formel_attribute(
+                        'BEZIRK',
+                        name=f'Distance_Home_{mode_code}',
+                        formel=f'[MATZEILENSUMME({nr_vl:d})] / '
+                        f'[MATZEILENSUMME({nr:d})]',
+                    )
 
-                        ges = self.obbmatrixnummer_activity_w
-                        userdefined.add_formel_attribute(
-                            'OBERBEZIRK',
-                            name=f'MS_Home_Mode_{mode_code}',
-                            formel=f'[MATSPALTENSUMME({nr_obb:d})] / '
-                            f'[MATSPALTENSUMME({ges:d})]',
-                        )
+        # Add User Defined Attributes for the trips
+        formel_trips_mode = 'TableLookup(MATRIX Mat, Mat[CODE]="Activity_"+[CODE]+"_{m}", Mat[SUM])'
+        formel_trips = 'TableLookup(MATRIX Mat, Mat[CODE]="Activity_"+[CODE], Mat[SUM])'
+        formel_ms = '[TRIPS_{m}] / [TRIPS]'
 
-                        ges=self.matrixnummer_activity_w
-                        userdefined.add_formel_attribute(
-                            'BEZIRK',
-                            name=f'MS_Home_Mode_{mode_code}',
-                            formel=f'[MATSPALTENSUMME({nr:d})] / '
-                            f'[MATSPALTENSUMME({ges:d})]',
-                        )
-
-                        # add Verkehrsleistung
-                        matrices.set_category('VL_Activities')
-                        formel = f'Matrix([CODE]="Activity_{code}_{mode_code}") '
-                        f'* Matrix([CODE] = "KM")'
-                        nr_vl = matrices.add_formel_matrix(
-                            code=f'VL_Activity_{code}_{mode_code}',
-                            name=f'Verkehrsleistung Aktivität {code} mit {mode_code}',
-                            moduscode=mode_code,
-                            aktivcode=code,
-                            formel=formel,
-                            bezugstyp='Bezirk',
-                            initmatrix=0,
-                        )
-                        matrices.set_category('VL_Activities_OBB')
-                        nr_obb_vl = matrices.add_daten_matrix(
-                            code=f'OBB_VL_Activity_{code}_{mode_code}',
-                            name=f'OBB-Verkehrsleistung Aktivität {code} mit {mode_code}',
-                            moduscode=mode_code,
-                            aktivcode=code,
-                            bezugstyp='Oberbezirk',
-                            initmatrix=0,
-                        )
-                        userdefined.add_formel_attribute(
-                            'OBERBEZIRK',
-                            name=f'Distance_Home_{mode_code}',
-                            formel=f'[MATZEILENSUMME({nr_obb_vl:d})] / '
-                            f'[MATZEILENSUMME({nr_obb:d})]',
-                        )
-                        userdefined.add_formel_attribute(
-                            'BEZIRK',
-                            name=f'Distance_Home_{mode_code}',
-                            formel=f'[MATZEILENSUMME({nr_vl:d})] / '
-                            f'[MATZEILENSUMME({nr:d})]',
-                        )
-
-                userdefined.add_daten_attribute(
-                    'MODUS',
-                    name=f'Target_MS_activity_{code}',
-                )
-                userdefined.add_daten_attribute(
-                    'MODUS',
-                    name=f'const_activity_{code}',
-                    standardwert=0,
-                )
-                userdefined.add_formel_attribute(
-                    'MODUS',
-                    name=f'Trips_activity_{code}',
-                    formel=formel_trips.format(a=code)
-                )
-                userdefined.add_formel_attribute(
-                    'Netz',
-                    name=f'TRIPS_ACTIVITY_{code}',
-                    formel=formel_netz_trips.format(a=code)
-                )
-                userdefined.add_formel_attribute(
-                    'MODUS',
-                    name=f'MS_activity_{code}',
-                    formel=formel_ms.format(a=code)
-                )
+        userdefined.add_formel_attribute(
+            'AKTIVITAET',
+            name='Trips',
+            formel=formel_trips.format(m=mode.code)
+        )
+        for _, mode in params.modes.iterrows():
+            userdefined.add_daten_attribute(
+                'AKTIVITAET',
+                name=f'Target_MS_{mode.code}',
+            )
+            userdefined.add_daten_attribute(
+                'AKTIVITAET',
+                name=f'const_{mode.code}',
+                standardwert=0,
+            )
+            userdefined.add_formel_attribute(
+                'AKTIVITAET',
+                name=f'Trips_{mode.code}',
+                formel=formel_trips_mode.format(m=mode.code)
+            )
+            userdefined.add_formel_attribute(
+                'AKTIVITAET',
+                name=f'MS_{mode.code}',
+                formel=formel_ms.format(m=mode.code)
+            )
 
     def add_kf_logsum(self,
                       userdefined: BenutzerdefiniertesAttribut,
