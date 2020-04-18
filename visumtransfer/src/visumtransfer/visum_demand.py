@@ -2,6 +2,7 @@
 
 
 import os
+import pandas as pd
 from argparse import ArgumentParser
 
 from visumtransfer.visum_table import (
@@ -98,10 +99,14 @@ class VisemDemandModel:
                     name='Visem Ziel- und Verkehrsmittelwahlmodell')
         v.tables['Nachfragemodell'] = m
 
+        self.add_params_persongrupmodel(userdefined1)
+        self.add_params_tripgeneration(userdefined1)
+
         sg = Strukturgr()
         sg.create_tables(params.activities, model=model_code, suffix='')
         v.tables['Strukturgr'] = sg
 
+        # Aktivitäten
         ac = Aktivitaet()
         userdefined1.add_daten_attribute('Aktivitaet', 'RSA', datentyp='Bool')
         userdefined1.add_daten_attribute('Aktivitaet', 'Base_Code',
@@ -116,6 +121,15 @@ class VisemDemandModel:
                                          code='CalcDestMode',
                                          name='CalculateDestinationAndModeChoice',
                                          datentyp='Bool')
+        # spezifische Attribute für die Zielwahl
+        userdefined1.add_daten_attribute('Aktivitaet', 'LS',
+                                         standardwert=1.0,
+                                         kommentar='LogSum-Parameter der Aktivität')
+        # Aktivitätenspezifische Koeffizienten für die Verkehrsmittelwahl
+        userdefined1.add_daten_attribute('Aktivitaet', 'HRF_EINZEL2ZEITKARTE',
+                                         standardwert=1.0)
+        userdefined1.add_daten_attribute('Aktivitaet', 'HRF_COST_MITFAHRER',
+                                         standardwert=1.0)
 
         ac.create_tables(params.activities, model=model_code, suffix='')
         ac.add_benutzerdefinierte_attribute(userdefined2)
@@ -132,71 +146,10 @@ class VisemDemandModel:
         pg = Personengruppe()
         pg._defaults['NACHFRAGEMODELLCODE'] = model_code
         v.tables['PersonGroups'] = pg
-        userdefined1.add_daten_attribute('Personengruppe', 'CATEGORY', datentyp='Text',
-                                         kommentar='Kategorie der Personengruppe')
-        userdefined1.add_daten_attribute(
-            'Personengruppe', 'CALIBRATION_HIERARCHY', datentyp='Int',
-            kommentar='Hierarchie bei der Kalibrierung des Modal Splits'
-            'Der Modal Split der höchsten Hierarchiestufe wird zuletzt kalibriert'
-            'und wird damit am genauesten getroffen.'
-        )
-        userdefined1.add_daten_attribute(
-            'Personengruppe', 'ID_IN_CATEGORY', datentyp='Int',
-            kommentar='Fortlaufende id innerhalb einer Kategorie')
-        userdefined1.add_daten_attribute(
-            'Personengruppe', 'GROUPS_CONSTANTS', datentyp='Text',
-            kommentar='Komma-getrennte Liste der Obergruppen, deren '
-            'verkehrsmittelspezifische Konstante in die Nutzenfunktion einer '
-            'Obergruppe einbezogen werden soll.'
-        )
-        userdefined1.add_daten_attribute(
-            'Personengruppe', 'GROUPS_OUTPUT', datentyp='Text',
-            kommentar='Komma-getrennte Liste der Obergruppen, in die die Berechnungs-'
-            'Ergebnisse der Gruppe einfließen soll.'
-        )
-        userdefined1.add_daten_attribute(
-            'Personengruppe', 'MAIN_ACT', datentyp='Text',
-            kommentar='Hauptaktivität der Personengruppe'
-        )
-        pg.add_cols(['CATEGORY', 'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
-                     'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'MAIN_ACT'])
-
-        # Wege Gesamt der Gruppe
-        formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
-        userdefined2.add_formel_attribute(
-            objid='PERSONENGRUPPE',
-            name=f'Trips',
-            formel=formel,
-            kommentar=f'Gesamtzahl der Wege der Gruppe',
-        )
+        self.add_general_pgr_attributes(pg, userdefined1, userdefined2)
 
         for _, mode in params.modes.iterrows():
-            m = mode.code
-            userdefined1.add_daten_attribute(
-                'Personengruppe', f'CONST_{m}', datentyp='Double',
-                kommentar=f'Konstante für Verkehrsmittel {mode.name}'
-            )
-            userdefined1.add_daten_attribute(
-                'Personengruppe', f'TARGET_MS_{m}', datentyp='Double',
-                kommentar=f'Ziel-ModalSplit für Verkehrsmittel {mode.name}'
-            )
-            pg.add_cols([f'CONST_{m}', f'TARGET_MS_{m}'])
-
-            # Wege nach Modus und Modal Split der Gruppe
-            formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]+"_{m}": Mat[SUMME])'
-            userdefined2.add_formel_attribute(
-                objid='PERSONENGRUPPE',
-                name=f'Trips_{m}',
-                formel=formel,
-                kommentar=f'Gesamtzahl der Wege mit Verkehrsmittel {mode.name}',
-            )
-            # Modal Split der Gruppe
-            userdefined2.add_formel_attribute(
-                objid='PERSONENGRUPPE',
-                name=f'MS_{m}',
-                formel=f'[Trips_{m}] / [Trips]',
-                kommentar=f'Modal Split-Anteil {mode.name}',
-            )
+            self.add_mode_specific_pgr_attributes(pg, mode, userdefined1, userdefined2)
 
         pg.add_df(params.group_definitions)
         gg = params.groups_generation[['code', 'name', 'Category']]
@@ -261,6 +214,111 @@ class VisemDemandModel:
         fn = v.get_modification(modification_number, self.modifications)
         v.write(fn=fn)
 
+    def add_general_pgr_attributes(self,
+                                   pg: Personengruppe,
+                                   userdefined1: BenutzerdefiniertesAttribut,
+                                   userdefined2: BenutzerdefiniertesAttribut):
+        """Add general Attributes for the Persongrups"""
+        userdefined1.add_daten_attribute('Personengruppe', 'CATEGORY', datentyp='Text',
+                                         kommentar='Kategorie der Personengruppe')
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'CALIBRATION_HIERARCHY', datentyp='Int',
+            kommentar='Hierarchie bei der Kalibrierung des Modal Splits'
+            'Der Modal Split der höchsten Hierarchiestufe wird zuletzt kalibriert'
+            'und wird damit am genauesten getroffen.'
+        )
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'ID_IN_CATEGORY', datentyp='Int',
+            kommentar='Fortlaufende id innerhalb einer Kategorie')
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'GROUPS_CONSTANTS', datentyp='Text',
+            kommentar='Komma-getrennte Liste der Obergruppen, deren '
+            'verkehrsmittelspezifische Konstante in die Nutzenfunktion einer '
+            'Obergruppe einbezogen werden soll.'
+        )
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'GROUPS_OUTPUT', datentyp='Text',
+            kommentar='Komma-getrennte Liste der Obergruppen, in die die Berechnungs-'
+            'Ergebnisse der Gruppe einfließen soll.'
+        )
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'MAIN_ACT', datentyp='Text',
+            kommentar='Hauptaktivität der Personengruppe'
+        )
+        pg.add_cols(['CATEGORY', 'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
+                     'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'MAIN_ACT'])
+
+        # Wege Gesamt der Gruppe
+        formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
+        userdefined2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'Trips',
+            formel=formel,
+            kommentar=f'Gesamtzahl der Wege der Gruppe',
+        )
+
+    def add_mode_specific_pgr_attributes(self,
+                                         pg: Personengruppe,
+                                         mode: pd.Series,
+                                         userdefined1: BenutzerdefiniertesAttribut,
+                                         userdefined2: BenutzerdefiniertesAttribut):
+        """Add mode-specific Attributes for the Persongrups"""
+        m = mode.code
+        userdefined1.add_daten_attribute(
+            'Personengruppe', f'CONST_{m}', datentyp='Double',
+            kommentar=f'Konstante für Verkehrsmittel {mode.name}'
+        )
+        userdefined1.add_daten_attribute(
+            'Personengruppe', f'TARGET_MS_{m}', datentyp='Double',
+            kommentar=f'Ziel-ModalSplit für Verkehrsmittel {mode.name}'
+        )
+        pg.add_cols([f'CONST_{m}', f'TARGET_MS_{m}'])
+
+        # Wege nach Modus und Modal Split der Gruppe
+        formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]+"_{m}": Mat[SUMME])'
+        userdefined2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'Trips_{m}',
+            formel=formel,
+            kommentar=f'Gesamtzahl der Wege mit Verkehrsmittel {mode.name}',
+        )
+        # Modal Split der Gruppe
+        userdefined2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'MS_{m}',
+            formel=f'[Trips_{m}] / [Trips]',
+            kommentar=f'Modal Split-Anteil {mode.name}',
+        )
+
+    def add_params_persongrupmodel(self, userdefined1: BenutzerdefiniertesAttribut):
+        userdefined1.add_daten_attribute(
+            'Netz',
+            'ParamFilePersongroupModel',
+            datentyp='Text',
+            stringstandardwert="ParamsPersongroupModel.xlsx")
+        userdefined1.add_daten_attribute(
+            'Netz',
+            'Sheetname_ParamsModelOccupation',
+            datentyp='Text',
+            stringstandardwert="Taetigkeit_Long")
+        userdefined1.add_daten_attribute(
+            'Netz',
+            'Sheetname_ParamsModelCarAvailability',
+            datentyp='Text',
+            stringstandardwert="Pkwverf_Long")
+
+    def add_params_tripgeneration(self, userdefined1: BenutzerdefiniertesAttribut):
+        userdefined1.add_daten_attribute(
+            'Netz',
+            'ParamFileTripGenerationModel',
+            datentyp='Text',
+            stringstandardwert="TripChainRates.xlsx")
+        userdefined1.add_daten_attribute(
+            'Netz',
+            'Sheetname_TripChainRates',
+            datentyp='Text',
+            stringstandardwert="TripChainRates")
+
     def write_modification_iv_matrices(self, modification_number: int):
         v = VisumTransfer.new_transfer()
 
@@ -295,25 +353,7 @@ class VisemDemandModel:
         # Netzattribute
         userdefined0.add_daten_attribute('Netz', 'COST_PER_KM_PKW',
                                          standardwert=0.15)
-        userdefined0.add_daten_attribute('Netz',
-                                         'FilenameTripChainRates',
-                                         datentyp='Text',
-                                         stringstandardwert="tcr_gg.csv")
         userdefined0.add_daten_attribute('Netz', 'MINUS_ONE', standardwert=-1)
-
-        # Aktivitäten
-        userdefined0.add_daten_attribute('Aktivitaet', 'HRF_EINZEL2ZEITKARTE',
-                                         standardwert=1.0)
-        userdefined0.add_daten_attribute('Aktivitaet', 'HRF_COST_MITFAHRER',
-                                         standardwert=1.0)
-        userdefined0.add_daten_attribute('Aktivitaet', 'LS',
-                                         standardwert=1.0)
-
-        # Bezirk
-        userdefined0.add_daten_attribute('Bezirk', 'OBERBEZIRK_SRV')
-        userdefined0.add_daten_attribute('Bezirk', 'ANTEIL_FERNAUSPENDLER',
-                                         standardwert=0.0)
-
 
         mode_lkw = 'X'
         # Nachfragesegmente
@@ -423,9 +463,9 @@ if __name__ == '__main__':
                           )
 
     params = dm.get_params(param_excel_fp)
-    # dm.add_nsegs_userdefined(modification_no=444)
-    #dm.create_transfer(params, modification_number=22)
-    dm.create_transfer_constants(params, modification_no=25)
-    dm.create_transfer_target_values(params, modification_no=26)
+    dm.add_nsegs_userdefined(modification_no=444)
+    dm.create_transfer(params, modification_number=22)
+    #dm.create_transfer_constants(params, modification_no=25)
+    #dm.create_transfer_target_values(params, modification_no=26)
     # dm.write_modification_iv_matrices(modification_no=12)
     #dm.write_modification_ov_matrices(modification_no=14)
