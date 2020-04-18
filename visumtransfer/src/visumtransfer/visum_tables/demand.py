@@ -33,8 +33,8 @@ class Personengruppe(VisumTable):
     code = 'PERSONENGRUPPE'
     _cols = 'CODE;NAME;NACHFRAGEMODELLCODE'
 
-    def __init__(self):
-        super(Personengruppe, self).__init__()
+    def __init__(self, mode='+'):
+        super(Personengruppe, self).__init__(mode=mode)
         self.groups = []
         self.gd_codes = defaultdict(list)
 
@@ -305,11 +305,14 @@ class Aktivitaet(VisumTable):
         )
         userdefined.add_formel_attribute(
             objid='AKTIVITAET',
-            name='TripDistance',
+            name='MeanTripDistance',
             formel='TableLookup(MATRIX Mat: '
             'Mat[CODE]="VL_Activity_"+[CODE]: Mat[SUMME]) / [TotalTrips]',
         )
-
+        userdefined.add_daten_attribute(
+            objid='AKTIVITAET',
+            name='Target_MeanTripDistance',
+        )
         userdefined.add_daten_attribute(
             objid='AKTIVITAET',
             name='TTFACTOR_O',

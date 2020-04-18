@@ -82,12 +82,9 @@ class VisemDemandModel:
         v.write(fn=fn)
 
 
-    def create_transfer(self, modification_number: int):
+    def create_transfer(self, params: Params, modification_number: int):
 
         v = VisumTransfer.new_transfer()
-
-        # use the data from the excel-file
-        params = Params(param_excel_fp)
 
         userdefined1 = BenutzerdefiniertesAttribut()
         v.tables['BenutzerdefinierteAttribute1'] = userdefined1
@@ -344,6 +341,61 @@ class VisemDemandModel:
         fn = v.get_modification(modification_no, self.modifications)
         v.write(fn=fn)
 
+    def create_transfer_target_values(self, params: Params, modification_no: int):
+
+        cols = [f'TARGET_MS_{mode.code}' for _, mode in params.modes.iterrows()]
+        v = VisumTransfer.new_transfer()
+
+        # Personengruppenspezifische Zielwerte Modal Split
+        gd = params.group_definitions.set_index('code')
+        gd = gd[cols]
+        gd = gd.loc[gd.any(axis=1)]
+        pg = Personengruppe(mode='*')
+        pg.df = gd
+        v.tables['Personengruppe'] = pg
+
+        # Aktivitätenspezifische Zielwerte Modal Split
+        va = params.validation_activities.set_index('code')
+        va = va.loc[va['in_model'] == 1]
+        va = va[cols + ['Target_MeanTripDistance']]
+        va = va.loc[va.any(axis=1)]
+        ac = Aktivitaet(mode='*')
+        ac.df = va
+        v.tables['Aktivitaet'] = ac
+
+        #  Zielwerte Mittlere Wegelängen Aktivitäten
+
+        fn = v.get_modification(modification_no, self.modifications)
+        v.write(fn=fn)
+
+
+    def create_transfer_constants(self, params: Params, modification_no: int):
+        cols = [f'CONST_{mode.code}' for _, mode in params.modes.iterrows()]
+
+        v = VisumTransfer.new_transfer()
+
+        # Personengruppenspezifische Konstanten
+        gd = params.group_definitions.set_index('code')
+        gd = gd[cols]
+        gd = gd.loc[gd.any(axis=1)]
+        pg = Personengruppe(mode='*')
+        pg.df = gd
+        v.tables['Personengruppe'] = pg
+
+        # Aktivitätenspezifische Konstanten
+        va = params.validation_activities.set_index('code')
+        va = va.loc[va['in_model']==1]
+        va = va[cols]
+        va = va.loc[va.any(axis=1)]
+        ac = Aktivitaet(mode='*')
+        ac.df = va
+        v.tables['Aktivitaet'] = ac
+
+        fn = v.get_modification(modification_no, self.modifications)
+        v.write(fn=fn)
+
+    def get_params(self, param_excel_fp: str) -> Params:
+        return Params(param_excel_fp)
 
     def define_vsys_fv_preference(self,
                                   vsys: Verkehrssystem,
@@ -370,8 +422,10 @@ if __name__ == '__main__':
                           param_excel_fp,
                           )
 
-    #dm.add_nsegs_userdefined(modification_no=444)
-    dm.create_transfer(modification_number=22)
-    #dm.create_transfer_rsa(modification_number=23)
-    #dm.write_modification_iv_matrices(modification_no=12)
+    params = dm.get_params(param_excel_fp)
+    # dm.add_nsegs_userdefined(modification_no=444)
+    #dm.create_transfer(params, modification_number=22)
+    dm.create_transfer_constants(params, modification_no=25)
+    dm.create_transfer_target_values(params, modification_no=26)
+    # dm.write_modification_iv_matrices(modification_no=12)
     #dm.write_modification_ov_matrices(modification_no=14)
