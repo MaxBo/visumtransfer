@@ -60,7 +60,7 @@ class Personengruppe(VisumTable):
                         suffixes=['_tc', '_person'])
 
         # loop over all tripchains in the groups
-        for g, tc in gds.iterrows():
+        for _, tc in gds.iterrows():
             gd_code = tc['code']
             act_code = tc['code_tc']
             act_sequence = tc['Sequence']
@@ -80,6 +80,7 @@ class Personengruppe(VisumTable):
                     name=name,
                     groups_constants=tc['groups_constants'],
                     groups_output=tc['groups_output'],
+                    group_generation=gd_code,
                     main_act=main_act)
             else:
                 # otherwise just append the activity chain
@@ -203,7 +204,7 @@ class Aktivitaet(VisumTable):
     code = 'AKTIVITAET'
     _cols = ('CODE;RANG;NAME;NACHFRAGEMODELLCODE;ISTHEIMATAKTIVITAET;'
              'STRUKTURGROESSENCODES;KOPPLUNGZIEL;RSA;BASE_CODE;'
-             'COMPOSITE_ACTIVITIES;AUTOCALIBRATE;CALCDESTMODE;AKTIVITAETSET')
+             'COMPOSITE_ACTIVITIES;AUTOCALIBRATE;CALCDESTMODE;AKTIVITAETSET;LS_FACTOR')
 
     def create_tables(self,
                       activities: pd.DataFrame,
@@ -224,6 +225,7 @@ class Aktivitaet(VisumTable):
             row.composite_activities = a['composite_activities']
             row.calcdestmode = a['calcdestmode']
             row.base_code = a['base_code']
+            row.ls_factor = a['LS_Factor']
             rows.append(row)
         self.add_rows(rows)
         self.set_activityset()

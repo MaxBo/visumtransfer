@@ -2,6 +2,7 @@
 
 
 import os
+import json
 import pandas as pd
 from argparse import ArgumentParser
 
@@ -124,7 +125,14 @@ class VisemDemandModel:
         # spezifische Attribute für die Zielwahl
         userdefined1.add_daten_attribute('Aktivitaet', 'LS',
                                          standardwert=1.0,
-                                         kommentar='LogSum-Parameter der Aktivität')
+                                         kommentar='LogSum-Parameter der Aktivität, '
+                                         'berechnet als Multiplikation der LS_Factors '
+                                         'aller zugehörigen Aktivitäten')
+        # spezifische Attribute für die Zielwahl
+        userdefined1.add_daten_attribute('Aktivitaet', 'LS_Factor',
+                                         standardwert=1.0,
+                                         kommentar='LogSum-Faktor der Aktivität, '
+                                         'wird bei zu')
         # Aktivitätenspezifische Koeffizienten für die Verkehrsmittelwahl
         userdefined1.add_daten_attribute('Aktivitaet', 'HRF_EINZEL2ZEITKARTE',
                                          standardwert=1.0)
@@ -152,7 +160,7 @@ class VisemDemandModel:
             self.add_mode_specific_pgr_attributes(pg, mode, userdefined1, userdefined2)
 
         pg.add_df(params.group_definitions)
-        gg = params.groups_generation[['code', 'name', 'Category']]
+        gg = params.groups_generation[['code', 'name', 'Category', 'groups_output']]
         pg.add_df(gg)
         pg.create_groups_destmode(params.groups_generation,
                                   params.trip_chain_rates,
@@ -242,11 +250,16 @@ class VisemDemandModel:
             'Ergebnisse der Gruppe einfließen soll.'
         )
         userdefined1.add_daten_attribute(
+            'Personengruppe', 'GROUP_GENERATION', datentyp='Text',
+            kommentar='Code der Personengruppe für das Erzeugungsmodell'
+        )
+        userdefined1.add_daten_attribute(
             'Personengruppe', 'MAIN_ACT', datentyp='Text',
             kommentar='Hauptaktivität der Personengruppe'
         )
         pg.add_cols(['CATEGORY', 'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
-                     'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'MAIN_ACT'])
+                     'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'GROUP_GENERATION',
+                     'MAIN_ACT'])
 
         # Wege Gesamt der Gruppe
         formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
@@ -291,33 +304,31 @@ class VisemDemandModel:
         )
 
     def add_params_persongrupmodel(self, userdefined1: BenutzerdefiniertesAttribut):
+        params_pgrmodel = dict(
+            excel_filename="ParamsPersongroupModel.xlsx",
+            excel_folder='',
+            sn_occupation='Taetigkeit_Long',
+            sn_caravailability='Pkwverf_Long',
+            sn_lab_occupation='lab_taetigkeit',
+            sn_lab_caravailability='lab_pkwverf',
+        )
         userdefined1.add_daten_attribute(
             'Netz',
             'ParamFilePersongroupModel',
-            datentyp='Text',
-            stringstandardwert="ParamsPersongroupModel.xlsx")
-        userdefined1.add_daten_attribute(
-            'Netz',
-            'Sheetname_ParamsModelOccupation',
-            datentyp='Text',
-            stringstandardwert="Taetigkeit_Long")
-        userdefined1.add_daten_attribute(
-            'Netz',
-            'Sheetname_ParamsModelCarAvailability',
-            datentyp='Text',
-            stringstandardwert="Pkwverf_Long")
+            datentyp='LongText',
+            stringstandardwert=json.dumps(params_pgrmodel))
 
     def add_params_tripgeneration(self, userdefined1: BenutzerdefiniertesAttribut):
+        params_tcr = dict(
+            excel_filename="params_long_2020.xlsx",
+            excel_folder='',
+            sn_trc='trip_chain_rates',
+        )
         userdefined1.add_daten_attribute(
             'Netz',
             'ParamFileTripGenerationModel',
-            datentyp='Text',
-            stringstandardwert="TripChainRates.xlsx")
-        userdefined1.add_daten_attribute(
-            'Netz',
-            'Sheetname_TripChainRates',
-            datentyp='Text',
-            stringstandardwert="TripChainRates")
+            datentyp='LongText',
+            stringstandardwert=json.dumps(params_tcr))
 
     def write_modification_iv_matrices(self, modification_number: int):
         v = VisumTransfer.new_transfer()
@@ -463,7 +474,7 @@ if __name__ == '__main__':
                           )
 
     params = dm.get_params(param_excel_fp)
-    dm.add_nsegs_userdefined(modification_no=444)
+    #dm.add_nsegs_userdefined(modification_no=444)
     dm.create_transfer(params, modification_number=22)
     #dm.create_transfer_constants(params, modification_no=25)
     #dm.create_transfer_target_values(params, modification_no=26)
