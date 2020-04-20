@@ -731,6 +731,11 @@ class Aktivitaet(VisumTable):
                 name=f'const_{mode.code}',
                 standardwert=0,
             )
+            userdefined.add_daten_attribute(
+                'AKTIVITAET',
+                name=f'baseconst_{mode.code}',
+                standardwert=0,
+            )
             userdefined.add_formel_attribute(
                 'AKTIVITAET',
                 name=f'Trips_{mode.code}',

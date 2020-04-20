@@ -433,6 +433,8 @@ class VisemDemandModel:
         pg.df = gd
         v.tables['Personengruppe'] = pg
 
+        cols = [f'BASECONST_{mode.code}' for _, mode in params.modes.iterrows()]
+
         # Aktivitätenspezifische Konstanten
         va = params.validation_activities.set_index('code')
         va = va.loc[va['in_model']==1]
