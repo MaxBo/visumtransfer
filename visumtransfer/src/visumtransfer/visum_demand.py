@@ -159,7 +159,10 @@ class VisemDemandModel:
         for pgr_category in params.group_definitions['CATEGORY'].unique():
             self.add_category(pgr_category, {}, netz)
 
-        gg = params.groups_generation[['code', 'name', 'Category']]
+        categories = ['occupation', 'car_availability', 'Gesamt']
+        gg = pg.get_groups_destmode(categories, new_category='Erzeugung')
+
+        #gg = params.groups_generation[['code', 'name', 'Category']]
         pg.add_df(gg)
         category = 'ZielVMWahl'
         attrs = {
@@ -319,6 +322,14 @@ class VisemDemandModel:
         userdef1.add_daten_attribute('Personengruppe', 'CATEGORY', datentyp='Text',
                                          kommentar='Kategorie der Personengruppe')
         userdef1.add_daten_attribute(
+            'Personengruppe', 'CODEPART', datentyp='Text',
+            kommentar='Code-Bestandteil der Zusammengesetzten Personengruppen'
+        )
+        userdef1.add_daten_attribute(
+            'Personengruppe', 'NAMEPART', datentyp='Text',
+            kommentar='Namens-Bestandteil der Zusammengesetzten Personengruppen'
+        )
+        userdef1.add_daten_attribute(
             'Personengruppe', 'CALIBRATION_HIERARCHY', datentyp='Int',
             kommentar='Hierarchie bei der Kalibrierung des Modal Splits'
             'Der Modal Split der höchsten Hierarchiestufe wird zuletzt kalibriert'
@@ -350,7 +361,8 @@ class VisemDemandModel:
             'Personengruppe', 'Persons', datentyp='Double',
             kommentar='Personen in Personengruppe'
         )
-        pg.add_cols(['CATEGORY', 'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
+        pg.add_cols(['CATEGORY', 'CODEPART', 'NAMEPART',
+                     'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
                      'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'GROUP_GENERATION',
                      'MAIN_ACT', 'PERSONS'])
 

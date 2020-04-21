@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from typing import List
 import pandas as pd
 from collections import defaultdict
 from .matrizen import Matrix
@@ -22,6 +23,41 @@ class Personengruppe(VisumTable):
                        nachfragemodellcode=model_code,
                        **kwargs)
         self.groups.append(row)
+
+    def get_groups_destmode(self,
+                            categories: List[str],
+                            new_category: str) -> pd.DataFrame:
+        """Create Groups as combinations of the categories"""
+        assert categories, f'you need at least one category'
+
+        # take the first category
+        category = categories[0]
+        df = self.df.reset_index()
+        df = df.loc[df['CATEGORY'] == category,
+                    ['CODE', 'NAME', 'GROUPS_CONSTANTS']]
+        assert len(df), f'no groups defined for category {category}'
+
+        # cross join with the other categories
+        for category in categories[1:]:
+            df_new = self.df.reset_index()
+            df_cat = df_new.loc[df_new['CATEGORY'] == category,
+                                ['CODE', 'NAMEPART', 'CODEPART']]\
+                .rename(columns={'CODE': 'CODE_new'})\
+                .assign(one=1)
+            assert len(df_cat), f'no groups defined for category {category}'
+
+            df = df.assign(one=1).merge(df_cat, on='one').drop('one', 1)
+
+            # define code, name and groups_const for composite groups
+            df['CODE'] = df['CODE'] + df['CODEPART']
+            new_name = df['NAME'] + ', ' + df['NAMEPART']
+            df['NAME'] = new_name.str.strip(', ')
+            new_groups_constants = df['GROUPS_CONSTANTS'] + ',' + df['CODE_new']
+            df['GROUPS_CONSTANTS'] = new_groups_constants
+            df.drop(['CODE_new', 'CODEPART', 'NAMEPART'], axis=1, inplace=True)
+
+        df['CATEGORY'] = new_category
+        return df
 
     def create_groups_destmode(self,
                                groups_generation: pd.DataFrame,
