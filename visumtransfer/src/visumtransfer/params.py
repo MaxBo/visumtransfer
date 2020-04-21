@@ -8,7 +8,6 @@ class Params:
     modes: pd.DataFrame
     group_definitions: pd.DataFrame
     groups_generation: pd.DataFrame
-    groups_rsa: pd.DataFrame
     activities: pd.DataFrame
     activity_parking: pd.DataFrame
     activitypairs: pd.DataFrame
@@ -22,7 +21,6 @@ class Params:
     attr2tablename = dict(
         group_definitions='group_definitions',
         groups_generation='groups_generation',
-        groups_rsa='groups_dest_mode_rsa',
         activities='activities',
         activity_parking='activity_parking',
         activitypairs='activitypairs',
