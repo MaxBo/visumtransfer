@@ -34,7 +34,11 @@ class Personengruppe(VisumTable):
         category = categories[0]
         df = self.df.reset_index()
         df = df.loc[df['CATEGORY'] == category,
-                    ['CODE', 'NAME', 'GROUPS_CONSTANTS']]
+                    ['CODE', 'NAME', 'NAMEPART', 'GROUPS_CONSTANTS', 'CODEPART']]
+        df['GROUPS_CONSTANTS'] = df['CODE']
+        df['CODE'] = df['CODEPART']
+        df['NAME'] = df['NAMEPART']
+        df.drop(['CODEPART', 'NAMEPART'], axis=1, inplace=True)
         assert len(df), f'no groups defined for category {category}'
 
         # cross join with the other categories
@@ -64,27 +68,48 @@ class Personengruppe(VisumTable):
                                trip_chain_rates: pd.DataFrame,
                                activities: Aktivitaet,
                                model_code: str,
+                               tc_categories: List[str],
                                category: str,
+                               category_generation: str,
+                               output_categories: List[str] = [],
                                ):
-        """"""
+        """Create the Groups for the Destination and Model modelling"""
+        pgr_in_categories = self.df.loc[self.df['CATEGORY'].isin(tc_categories)].index
+        pgr_in_output_categories = self.df.loc[self.df['CATEGORY'].isin(
+            output_categories)].index
+
+        pgr_generation = self.df.loc[self.df['CATEGORY'] == category_generation].copy()
+
+        # create common column to merge Persongrups and TripChainRates
+        pgr_generation['gr_tc'] = ''
+        for pg_code, gr_const in pgr_generation['GROUPS_CONSTANTS'].iteritems():
+            gr_split = gr_const.split(',')
+            gr_tc = ','.join(sorted([gr
+                                     for gr in gr_split
+                                     if gr in pgr_in_categories]))
+            pgr_generation.loc[pg_code, 'gr_tc'] = gr_tc
+
+        pgr_generation.index.name = 'PGRCODES'
+
+        trip_chain_rates['gr_tc'] = ''
+        for idx, gr_const in trip_chain_rates['group_generation'].iteritems():
+            gr_split = gr_const.split(',')
+            gr_tc = ','.join(sorted([gr for gr in gr_split]))
+            trip_chain_rates.loc[idx, 'gr_tc'] = gr_tc
+
+        trip_chain_rates.rename(columns={'code': 'code_tc',}, inplace=True)
+        tcs = pgr_generation.reset_index().merge(trip_chain_rates, on='gr_tc')
+        assert len(tcs), f'No matching tripchains found for categories {tc_categories}'
 
         act_hierarchy = activities.get_hierarchy()
 
-        # merge persongroups to tripchainrates
-        gds = trip_chain_rates.groupby(['group_generation', 'code'])\
-            .first()\
-            .reset_index()\
-            .set_index('group_generation')
-        gds = gds.merge(groups_generation, left_index=True, right_on='code',
-                        suffixes=['_tc', '_person'])
-
         # loop over all tripchains in the groups
-        for _, tc in gds.iterrows():
-            gg_code = tc['code']
-            gd_code = tc['group']
+        for _, tc in tcs.iterrows():
+            gg_code = tc['PGRCODES']
+            gd_code = tc['PGRCODES']
             act_code = tc['code_tc']
             act_sequence = tc['Sequence']
-            tc_name = tc['name']
+            tc_name = tc['NAME']
             main_act = activities.get_main_activity(act_hierarchy, act_sequence)
             code = '_'.join((gd_code, main_act))
             # if the the group occurs the first time ...
@@ -92,14 +117,20 @@ class Personengruppe(VisumTable):
                 #  create it and add it to self.gd_codes
                 self.gd_codes[code] = [act_code]
                 name = f'{tc_name} mit Hauptaktivität {main_act}'
+                groups_constants = tc['GROUPS_CONSTANTS']
+                gr_split = groups_constants.split(',')
+                groups_output = [gr
+                                 for gr in gr_split
+                                 if gr in pgr_in_output_categories]
+                grcodes_output = ','.join(groups_output)
 
                 self.add_group(
                     category=category,
                     model_code=model_code,
                     code=code,
                     name=name,
-                    groups_constants=tc['groups_constants'],
-                    groups_output=tc['groups_output'],
+                    groups_constants=groups_constants,
+                    groups_output=grcodes_output,
                     group_generation=gg_code,
                     main_act=main_act)
             else:

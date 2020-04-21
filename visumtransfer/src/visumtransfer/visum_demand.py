@@ -20,7 +20,6 @@ from visumtransfer.visum_tables import (
     Aktivitaetenpaar,
     Aktivitaetenkette,
     Nachfrageschicht,
-    Verkehrssystem,
     Ganglinie,
     Ganglinienelement,
     Nachfrageganglinie,
@@ -159,25 +158,14 @@ class VisemDemandModel:
         for pgr_category in params.group_definitions['CATEGORY'].unique():
             self.add_category(pgr_category, {}, netz)
 
-        categories = ['occupation', 'car_availability', 'Gesamt']
-        gg = pg.get_groups_destmode(categories, new_category='Erzeugung')
-
-        #gg = params.groups_generation[['code', 'name', 'Category']]
+        # create the groups for the RSA-Model
+        categories = ['RSA', 'occupation', 'car_availability', 'Tarifzonen', 'Gesamt']
+        category_generation = 'ErzeugungRSA'
+        gg = pg.get_groups_destmode(categories, new_category=category_generation)
         pg.add_df(gg)
-        category = 'ZielVMWahl'
-        attrs = {
-            'Comment': 'Ziel- und Verkehrsmittelwahl mit Visem',
-            'ActivityMatrixPrefix': 'Activity_',
-            'ActivityMatrixOBBPrefix': 'Activity_OBB_',
-            'PersonGroupPrefix': 'Pgr_',
-        }
-        self.add_category(category, attrs, netz)
-        pg.create_groups_destmode(params.groups_generation,
-                                  params.trip_chain_rates,
-                                  acts,
-                                  model_code,
-                                  category)
+
         category = 'ZielVMWahl_RSA'
+        tc_categories = ['occupation', 'car_availability']
         attrs = {
             'Comment': 'Zielwahl für Randsummenabgleich',
             'ActivityMatrixPrefix': 'Pendlermatrix_',
@@ -190,7 +178,37 @@ class VisemDemandModel:
                                   params.trip_chain_rates_rsa,
                                   acts,
                                   model_code,
-                                  category)
+                                  tc_categories,
+                                  category,
+                                  category_generation,
+                                  output_categories=['RSA'])
+
+        #  Create the groups for the Main Model
+        categories = ['occupation', 'car_availability', 'Tarifzonen', 'Gesamt']
+        category_generation = 'Erzeugung'
+        gg = pg.get_groups_destmode(categories, new_category=category_generation)
+        pg.add_df(gg)
+
+        category = 'ZielVMWahl'
+        attrs = {
+            'Comment': 'Ziel- und Verkehrsmittelwahl mit Visem',
+            'ActivityMatrixPrefix': 'Activity_',
+            'ActivityMatrixOBBPrefix': 'Activity_OBB_',
+            'PersonGroupPrefix': 'Pgr_',
+        }
+        self.add_category(category, attrs, netz)
+        tc_categories = ['occupation']
+        pg.create_groups_destmode(params.groups_generation,
+                                  params.trip_chain_rates,
+                                  acts,
+                                  model_code,
+                                  tc_categories,
+                                  category,
+                                  category_generation,
+                                  output_categories=categories)
+
+
+        # Create the Dataframe
         pg.create_df_from_group_list()
 
         pg.add_calibration_matrices_and_attributes(modes, matrices)
