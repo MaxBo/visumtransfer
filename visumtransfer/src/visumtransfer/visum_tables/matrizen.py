@@ -6,7 +6,7 @@ import xarray as xr
 from visumtransfer.params import Params
 from typing import Mapping
 from .basis import BenutzerdefiniertesAttribut
-from visumtransfer.visum_table import (VisumTable)
+from visumtransfer.visum_table import VisumTable
 
 
 class MatrixCategories(dict):

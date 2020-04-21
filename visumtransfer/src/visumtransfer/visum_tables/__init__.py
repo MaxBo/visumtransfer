@@ -48,14 +48,23 @@ from .matrizen import (
     Matrix
 )
 
-from .demand import (
+from .persongroups import (
+    Personengruppe
+)
+
+from .activities import (
     Aktivitaet,
     Aktivitaetenkette,
     Aktivitaetenpaar,
+)
+
+from .nachfrageschicht import (
+    Nachfrageschicht,
+)
+
+from .demand import (
     Nachfragebeschreibung,
     Nachfragemodell,
-    Nachfrageschicht,
-    Personengruppe,
     PersonengruppeJeBezirk,
     Strukturgr,
     Strukturgroessenwert,

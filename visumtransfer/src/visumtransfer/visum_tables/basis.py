@@ -2,8 +2,7 @@
 
 import numpy as np
 import pandas as pd
-from recordclass import recordclass
-from visumtransfer.visum_table import (VisumTable)
+from visumtransfer.visum_table import VisumTable
 
 
 

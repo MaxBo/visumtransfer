@@ -53,7 +53,7 @@ class Params:
                 setattr(self, k, df)
 
     @property
-    def mode_set(self):
+    def mode_set(self) -> str:
         modes = self.modes['code']
         return ','.join(modes)
 
@@ -80,7 +80,7 @@ class Params:
                         pass
                     df.to_excel(excel, sheet_name=sheet_name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         tbls = json.dumps(self.attr2tablename, indent=2)
         #return tbls
         return f'Params-object with the following tables: {tbls}'

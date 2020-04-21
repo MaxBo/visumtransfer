@@ -91,18 +91,13 @@ class VisemDemandModel:
         matrices.add_other_demand_matrices(params, loadmatrix=0)
         matrices.add_commuter_matrices(userdef1)
 
-        # Verkehrssysteme mit FV-Präferenz
-        vsys = Verkehrssystem(mode='*')
-        self.define_vsys_fv_preference(vsys, userdef2)
-
         # add matrices later
         vt.tables['Matrizen'] = matrices
         vt.tables['BenutzerdefinierteAttribute2'] = userdef2
-        vt.tables['Verkehrssysteme'] = vsys
 
         #  Skip adding logsum-Matrices
         if False:
-            self.add_logsum_matrices(ak, ns)
+            self.add_logsum_matrices(ak, ns, vt)
 
         self.add_ganglinien(pg, params, vt)
 
@@ -111,11 +106,12 @@ class VisemDemandModel:
 
     def add_logsum_matrices(self,
                             ak: Aktivitaetenkette,
-                            ns: Nachfrageschicht):
+                            ns: Nachfrageschicht,
+                            vt: VisumTransfer):
         """Add logsum-matrices"""
         matrices_logsum = Matrix()
         matrices_logsum.add_logsum_matrices(ns, ak)
-        v.tables['MatrizenLogsum'] = matrices_logsum
+        vt.tables['MatrizenLogsum'] = matrices_logsum
 
     def add_ganglinien(self,
                        pg: Personengruppe,
@@ -492,9 +488,9 @@ class VisemDemandModel:
 
 
     def add_nsegs_userdefined(self, modification_no: int):
-        v = VisumTransfer.new_transfer()
+        vt = VisumTransfer.new_transfer()
         userdef0 = BenutzerdefiniertesAttribut()
-        v.tables['BenutzerdefinierteAttribute0'] = userdef0
+        vt.tables['BenutzerdefinierteAttribute0'] = userdef0
 
         # Matrizen
         userdef0.add_daten_attribute('Matrix', 'INITMATRIX', datentyp='Bool')
@@ -512,7 +508,7 @@ class VisemDemandModel:
         mode_lkw = 'X'
         # Nachfragesegmente
         nseg = Nachfragesegment()
-        v.tables['Nachfragesegment'] = nseg
+        vt.tables['Nachfragesegment'] = nseg
         #nseg.add_row(nseg.Row(code='O', name='ÖV Region', modus='O'))
         nseg.add_row(nseg.Row(code='OFern', name='ÖV Fernverkehr', modus='O'))
         nseg.add_row(nseg.Row(code='B_P', name='Pkw-Wirtschaftsverkehr',
@@ -532,8 +528,8 @@ class VisemDemandModel:
         nseg.add_row(nseg.Row(code='PG', name='Kfz bis 3,5 to',
                               modus='P'))
 
-        fn = v.get_modification(modification_no, self.modifications)
-        v.write(fn=fn)
+        fn = vt.get_modification(modification_no, self.modifications)
+        vt.write(fn=fn)
 
     def create_transfer_target_values(self, params: Params, modification_no: int):
 
@@ -599,13 +595,6 @@ class VisemDemandModel:
     def get_params(self, param_excel_fp: str) -> Params:
         return Params(param_excel_fp)
 
-    def define_vsys_fv_preference(self,
-                                  vsys: Verkehrssystem,
-                                  userdef2: BenutzerdefiniertesAttribut):
-        #userdefined2.add_daten_attribute('VSYS', 'VSYS_FV_PREFERENCE', standardwert=1)
-        vsys.add_cols(['VSYS_FV_PREFERENCE'])
-        row = vsys.Row(code='S', typ='OV', vsys_fv_preference=0.5)
-        vsys.add_row(row)
 
 if __name__ == '__main__':
     argpase = ArgumentParser()

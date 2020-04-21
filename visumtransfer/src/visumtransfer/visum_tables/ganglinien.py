@@ -2,9 +2,9 @@
 
 import xarray as xr
 import pandas as pd
-from .demand import Nachfragebeschreibung, Personengruppe
-from visumtransfer.params import Params
-from visumtransfer.visum_table import (VisumTable)
+from .demand import Nachfragebeschreibung
+from .persongroups import Personengruppe
+from visumtransfer.visum_table import VisumTable
 
 
 
