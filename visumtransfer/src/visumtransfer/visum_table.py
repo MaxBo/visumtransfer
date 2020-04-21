@@ -94,7 +94,7 @@ class VisumTable(metaclass=MetaClass):
 
         if mode is not None:
             self._mode = mode
-        self.df = pd.DataFrame()
+        self._df = pd.DataFrame()
 
         # define the trantab for the column names
 
@@ -106,6 +106,18 @@ class VisumTable(metaclass=MetaClass):
     def copy(self) -> 'VisumTable':
         """copy myself"""
         return copy(self)
+
+    @property
+    def df(self) -> pd.DataFrame:
+        return self._df
+
+    @df.setter
+    def df(self, df: pd.DataFrame):
+        self.validate_df(df)
+        self._df = df
+
+    def validate_df(self, df: pd.DataFrame):
+        """Validate the DataFrame, may be defined differently in the subclass"""
 
     @property
     def converters(self) -> Dict[str, callable]:

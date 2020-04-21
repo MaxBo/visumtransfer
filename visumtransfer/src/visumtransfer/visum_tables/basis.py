@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import pandas as pd
+from recordclass import recordclass
 from visumtransfer.visum_table import (VisumTable)
 
 
@@ -15,6 +17,11 @@ class Netz(VisumTable):
     @property
     def pkey(self):
         return None
+
+    def validate_df(self, df: pd.DataFrame):
+        """Validate the DataFrame, may be defined differently in the subclass"""
+        if len(self.df) > 1:
+            raise ValueError(f'{self.__class__} may have only one row')
 
 
 class BenutzerdefiniertesAttribut(VisumTable):
