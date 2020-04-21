@@ -39,28 +39,6 @@ class VisemDemandModel:
         self.modifications = modifications
         self.params_excel_fp = param_excel_fp
 
-    def add_category(self,
-                     category: str,
-                     attrs: dict,
-                     netz: Netz):
-        """Add category to the net-attribute PgrCategories and set the attributes"""
-        pgr_categories, category_dict = self.get_pgrcategory_dict(netz, category)
-        category_dict.update(attrs)
-        pgr_categories[category] = category_dict
-        netz.df.loc[0, 'PgrCategories'] = json.dumps(pgr_categories)
-
-    def get_pgrcategory_dict(self, netz: Netz, category: str):
-        pgr_categories = self.get_pgrcategories(netz)
-        category_dict = pgr_categories.get(category, {})
-        return pgr_categories, category_dict
-
-    def get_pgrcategories(self, netz: Netz) -> dict:
-        pgr_categories_json = netz.df.loc[0, 'PgrCategories']
-        if not pgr_categories_json:
-            return {}
-        pgr_categories = json.loads(pgr_categories_json)
-        return pgr_categories
-
     def create_transfer(self, params: Params, modification_number: int):
 
         v = VisumTransfer.new_transfer()
@@ -241,6 +219,32 @@ class VisemDemandModel:
         fn = v.get_modification(modification_number, self.modifications)
         v.write(fn=fn)
 
+
+    def add_category(self,
+                     category: str,
+                     attrs: dict,
+                     netz: Netz,
+                     category_attribute: str = 'PgrCategories'):
+        """
+        Add category to the net-attribute category_attribute
+        and set the attributes
+        """
+        categories = self.get_categories(netz)
+        category_dict = categories.get(category, {})
+        category_dict.update(attrs)
+        categories[category] = category_dict
+        netz.df.loc[0, category_attribute] = json.dumps(categories)
+
+    def get_categories(self,
+                       netz: Netz,
+                       category_attribute='PgrCategories') -> dict:
+        """Get the Categories from the category_attribute of the net"""
+        categories_json = netz.df.loc[0, category_attribute]
+        if not categories_json:
+            return {}
+        categories = json.loads(categories_json)
+        return categories
+
     def add_general_pgr_attributes(self,
                                    pg: Personengruppe,
                                    userdefined1: BenutzerdefiniertesAttribut,
@@ -276,17 +280,41 @@ class VisemDemandModel:
             'Personengruppe', 'MAIN_ACT', datentyp='Text',
             kommentar='Hauptaktivität der Personengruppe'
         )
+        userdefined1.add_daten_attribute(
+            'Personengruppe', 'Persons', datentyp='Double',
+            kommentar='Personen in Personengruppe'
+        )
         pg.add_cols(['CATEGORY', 'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
                      'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'GROUP_GENERATION',
-                     'MAIN_ACT'])
+                     'MAIN_ACT', 'PERSONS'])
 
-        # Wege Gesamt der Gruppe
+        # Wege Gesamt und Verkehrsleistung der Gruppe
         formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
         userdefined2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'Trips',
             formel=formel,
             kommentar=f'Gesamtzahl der Wege der Gruppe',
+        )
+        formel = f'TableLookup(MATRIX Mat: Mat[CODE]="VL_Pgr_"+[CODE]: Mat[SUMME])'
+        userdefined2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'Km',
+            formel=formel,
+            kommentar=f'Gesamte Verkehrsleistung der Gruppe',
+        )
+        # Wege und Verkehrsleistung pro Person
+        userdefined2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'Trips_per_Person',
+            formel='[Trips]/[Persons]',
+            kommentar=f'Wege Pro Person',
+        )
+        userdefined2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'Km_per_Person',
+            formel='[Km]/[Persons]',
+            kommentar=f'Wege Pro Person',
         )
 
     def add_mode_specific_pgr_attributes(self,
@@ -318,12 +346,32 @@ class VisemDemandModel:
             formel=formel,
             kommentar=f'Gesamtzahl der Wege mit Verkehrsmittel {mode.name}',
         )
+        formel = f'TableLookup(MATRIX Mat: Mat[CODE]="VL_Pgr_"+[CODE]+"_{m}": Mat[SUMME])'
+        userdefined2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'Km_{m}',
+            formel=formel,
+            kommentar=f'Verkehrsleistung mit Verkehrsmittel {mode.name} der Gruppe',
+        )
         # Modal Split der Gruppe
         userdefined2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'MS_{m}',
             formel=f'[Trips_{m}] / [Trips]',
             kommentar=f'Modal Split-Anteil {mode.name}',
+        )
+        # Wege und Verkehrsleistung pro Person
+        userdefined2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'Trips_Per_Person_{m}',
+            formel=f'[Trips_{m}] / [Persons]',
+            kommentar=f'Modal Split-Anteil {mode.name}',
+        )
+        userdefined2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'Km_Per_Person_{m}',
+            formel=f'[Km_{m}] / [Persons]',
+            kommentar=f'Km pro Person {mode.name}',
         )
 
     def add_params_persongrupmodel(self, userdefined1: BenutzerdefiniertesAttribut):
