@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+import json
 from typing import Dict
 from collections import defaultdict
 from .matrizen import Matrix
@@ -44,24 +45,30 @@ class Personengruppe(VisumTable):
                        **kwargs)
         self.groups.append(row)
 
-    def create_groups_destmode(self, groups_generation: pd.DataFrame, trip_chain_rates:
-                               pd.DataFrame, activities: 'Aktivitaet', model_code: str):
+    def create_groups_destmode(self,
+                               groups_generation: pd.DataFrame,
+                               trip_chain_rates: pd.DataFrame,
+                               activities: 'Aktivitaet',
+                               model_code: str,
+                               category: str,
+                               ):
         """"""
-        category = 'ZielVMWahl'
+
         assert isinstance(activities, Aktivitaet)
         act_hierarchy = activities.get_hierarchy()
 
         # merge persongroups to tripchainrates
-        gds = trip_chain_rates.groupby(['group', 'code'])\
+        gds = trip_chain_rates.groupby(['group_generation', 'code'])\
             .first()\
             .reset_index()\
-            .set_index('group')
+            .set_index('group_generation')
         gds = gds.merge(groups_generation, left_index=True, right_on='code',
                         suffixes=['_tc', '_person'])
 
         # loop over all tripchains in the groups
         for _, tc in gds.iterrows():
-            gd_code = tc['code']
+            gg_code = tc['code']
+            gd_code = tc['group']
             act_code = tc['code_tc']
             act_sequence = tc['Sequence']
             tc_name = tc['name']
@@ -80,35 +87,16 @@ class Personengruppe(VisumTable):
                     name=name,
                     groups_constants=tc['groups_constants'],
                     groups_output=tc['groups_output'],
-                    group_generation=gd_code,
+                    group_generation=gg_code,
                     main_act=main_act)
             else:
                 # otherwise just append the activity chain
                 # to the chains the persons makes
                 self.gd_codes[code].append(act_code)
+
+    def create_df_from_group_list(self):
         df = self.df_from_array(self.groups)
         self.add_df(df)
-
-    def create_groups_rsa(self,
-                          person_groups: pd.DataFrame,
-                          trip_chain_rates: pd.DataFrame,
-                          model_code: str = 'VisemGGR'):
-        """"""
-        for g, gdd in person_groups.iterrows():
-            gd_code = gdd['code']
-            name = gdd['name']
-            self.add_group(
-                code=gd_code,
-                name=name,
-                model_code=model_code,
-                car_availability=gdd['car_availability'],
-                occupation=gdd['occupation'],
-                groupdestmode=gd_code,
-            )
-            tc_group = trip_chain_rates.loc[trip_chain_rates.group == gd_code]
-            for idx, tc in tc_group.iterrows():
-                self.gd_codes[gd_code].append(tc.code)
-        self.create_table()
 
     def add_calibration_matrices_and_attributes(
             self,
@@ -128,11 +116,12 @@ class Personengruppe(VisumTable):
                                       'gr_id')
         df_out_long = df_out_long.loc[~df_out_long['group'].isnull()]
         df_out_long.set_index(df_out_long.index.droplevel(level=1), inplace=True)
+        prefix = 'Pgr_'
 
         for group_output, detailed_groups in df_out_long.groupby(by='group'):
             gr = self.df.loc[group_output]
             str_name = f'Wege der {gr.CATEGORY}-Gruppe {gr.NAME}'
-            code = f'Pgr_{gr.name}'
+            code = f'{prefix}{gr.name}'
             pgrset = ','.join(detailed_groups.index)
             matrices.add_daten_matrix(
                 code=code,
@@ -145,7 +134,7 @@ class Personengruppe(VisumTable):
                 mode_name = mode['name']
                 # add output matrix
                 str_name = f'Wege mit Verkehrsmittel {mode_name} der {gr.CATEGORY}-Gruppe {gr.NAME}'
-                code = f'Pgr_{gr.name}_{mode.code}'
+                code = f'{prefix}{gr.name}_{mode.code}'
                 pgrset = ','.join(detailed_groups.index)
                 matrices.add_daten_matrix(
                     code=code,
@@ -203,8 +192,8 @@ class Aktivitaet(VisumTable):
     name = 'Aktivitäten'
     code = 'AKTIVITAET'
     _cols = ('CODE;RANG;NAME;NACHFRAGEMODELLCODE;ISTHEIMATAKTIVITAET;'
-             'STRUKTURGROESSENCODES;KOPPLUNGZIEL;RSA;BASE_CODE;'
-             'COMPOSITE_ACTIVITIES;AUTOCALIBRATE;CALCDESTMODE;AKTIVITAETSET;LS_FACTOR')
+             'STRUKTURGROESSENCODES;KOPPLUNGZIEL;RSA;'
+             'COMPOSITE_ACTIVITIES;AUTOCALIBRATE;CALCDESTMODE;AKTIVITAETSET;BASE_LS')
 
     def create_tables(self,
                       activities: pd.DataFrame,
@@ -224,8 +213,6 @@ class Aktivitaet(VisumTable):
             row.kopplungziel = is_home_activity
             row.composite_activities = a['composite_activities']
             row.calcdestmode = a['calcdestmode']
-            row.base_code = a['base_code']
-            row.ls_factor = a['LS_Factor']
             rows.append(row)
         self.add_rows(rows)
         self.set_activityset()
@@ -394,7 +381,7 @@ class Aktivitaet(VisumTable):
             #  Wege und Verkehrsleistung nach Oberbezirk
             matrices.set_category('Activities_OBB')
             obb_nr = matrices.add_daten_matrix(
-                code=f'Activity_{code}_OBB',
+                code=f'Activity_OBB_{code}',
                 name=f'Oberbezirks-Matrix Aktivität {name}',
                 aktivcode=code,
                 bezugstyp='Oberbezirk',
@@ -403,7 +390,7 @@ class Aktivitaet(VisumTable):
             )
             matrices.set_category('VL_Activities_OBB')
             vl_obb_nr = matrices.add_daten_matrix(
-                code=f'Activity_VL_{code}_OBB',
+                code=f'Activity_VL_OBB_{code}',
                 name=f'Oberbezirks-Matrix VL Aktivität {name}',
                 aktivcode=code,
                 bezugstyp='Oberbezirk',
@@ -431,14 +418,6 @@ class Aktivitaet(VisumTable):
                 self.obbmatrixnummer_activity_w = obb_nr
                 self.obbmatrixnummer_activity_vl_w = vl_obb_nr
 
-            if t.RSA:
-                matrices.set_category('Commuters')
-                matrices.add_daten_matrix(
-                    code=f'Pendlermatrix_{code}_OBB',
-                    name=f'Oberbezirks-Matrix Pendleraktivität {name}',
-                    aktivcode=code,
-                    bezugstyp='Oberbezirk',
-                )
 
     def add_balancing_output_matrices(self,
                                       matrices: Matrix,
@@ -452,15 +431,6 @@ class Aktivitaet(VisumTable):
         matrices.set_category('Activities_Balancing')
         for code, t in self.df.iterrows():
             name = t.NAME
-
-            matrices.set_category('Activities')
-            nr = matrices.add_daten_matrix(
-                code=f'AllActivity_{code}',
-                name=f'Gesamtzahl der Gesamtwege zu Aktivität {name}',
-                aktivcode=code,
-                savematrix=savematrix,
-                loadmatrix=loadmatrix,
-            )
 
             if t.RSA:
                 matrices.set_category('Commuters')
@@ -531,6 +501,13 @@ class Aktivitaet(VisumTable):
                     formel=formel,
                 )
                 converged_attributes.append(attid)
+
+                matrices.add_daten_matrix(
+                    code=f'Pendlermatrix_{code}_OBB',
+                    name=f'Oberbezirks-Matrix Pendleraktivität {name}',
+                    aktivcode=code,
+                    bezugstyp='Oberbezirk',
+                )
 
         formel = ' | '.join((f"[{c}]" for c in converged_attributes))
         attid = 'NOT_CONVERGED_ANY_ACTIVITY'
@@ -826,41 +803,23 @@ class Nachfrageschicht(VisumTable):
     code = 'NACHFRAGESCHICHT'
     _cols = 'CODE;NAME;NACHFRAGEMODELLCODE;AKTKETTENCODE;PGRUPPENCODES;NSEGSET'
 
-    def create_tables_gg(self,
-                         trip_chain_rates: pd.DataFrame,
-                         model='VisemGeneration',
-                         suffix='_'):
-        rows = []
-        for idx, tcr in trip_chain_rates.iterrows():
-            row = self.Row(nachfragemodellcode=model)
-            pgr_code = tcr['group']
-            ac = tcr['code']
-            act_seq = tcr['Sequence']
-            ac_code = ''.join(act_seq)
-            row.name = '_'.join((pgr_code, ac))
-            if model == 'VisemGGR':
-                row.code = row.name
-            else:
-                row.code = '_'.join([pgr_code, ac_code])
-            row.aktkettencode = ac_code
-            row.pgruppencodes = pgr_code
-            rows.append(row)
-        self.add_rows(rows)
-
     def create_tables_gd(self,
                          personengruppe: Personengruppe,
                          nsegset: str = 'A,F,M,P,R',
-                         model='VisemGGR'):
+                         model: str = 'VisemGGR',
+                         category: str = 'ZielVMWahl'):
         rows = []
         pgroups = personengruppe.df
-        pg_gd = pgroups.loc[pgroups['CATEGORY'] == 'ZielVMWahl']
+        pg_gd = pgroups.loc[pgroups['CATEGORY'] == category]
         for pgr_code, gd in pg_gd.iterrows():
             for ac_code in personengruppe.gd_codes[pgr_code]:
-                row = self.Row(nachfragemodellcode=model,
+                dstratcode = ':'.join((pgr_code, ac_code))
+                row = self.Row(code=dstratcode,
+                               name=dstratcode,
+                               nachfragemodellcode=model,
                                pgruppencodes=pgr_code,
-                               aktkettencode=ac_code)
-                row.code = ':'.join((pgr_code, ac_code))
-                row.name = row.code
-                row.nsegset = nsegset
+                               aktkettencode=ac_code,
+                               nsegset=nsegset,
+                               )
                 rows.append(row)
         self.add_rows(rows)
