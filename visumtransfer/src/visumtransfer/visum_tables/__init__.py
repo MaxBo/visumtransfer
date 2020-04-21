@@ -37,6 +37,7 @@ from .netz import (
 )
 
 from .basis import (
+    Netz,
     BenutzerdefiniertesAttribut,
     Verkehrssystem,
     Bezirke,

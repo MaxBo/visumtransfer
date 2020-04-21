@@ -5,6 +5,18 @@ from visumtransfer.visum_table import (VisumTable)
 
 
 
+class Netz(VisumTable):
+    name = 'Netz'
+    code = 'NETZ'
+    _mode = ''
+    _cols = ''
+    _pkey = ''
+
+    @property
+    def pkey(self):
+        return None
+
+
 class BenutzerdefiniertesAttribut(VisumTable):
     name = 'Benutzerdefinierte Attribute'
     code = 'BENUTZERDEFATTRIBUTE'

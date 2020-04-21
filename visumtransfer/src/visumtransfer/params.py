@@ -17,16 +17,12 @@ class Params:
     trip_chain_rates: pd.DataFrame
     validation_activities: pd.DataFrame
     validation_activities_hauptweg: pd.DataFrame
-    validation_modes: pd.DataFrame
-
-    activities_rsa: pd.DataFrame
-    activitypairs_rsa: pd.DataFrame
     trip_chain_rates_rsa: pd.DataFrame
     """"""
     attr2tablename = dict(
         group_definitions='group_definitions',
         groups_generation='groups_generation',
-        groups_rsa='groups_rsa',
+        groups_rsa='groups_dest_mode_rsa',
         activities='activities',
         activity_parking='activity_parking',
         activitypairs='activitypairs',
@@ -35,10 +31,7 @@ class Params:
         trip_chain_rates='trip_chain_rates',
         validation_activities='validation_activities',
         validation_activities_hauptweg='validation_hauptweg',
-        validation_modes='validation_mode',
         modes='modes',
-        activities_rsa='activities_rsa',
-        activitypairs_rsa='activitypairs_rsa',
         trip_chain_rates_rsa='trip_chain_rates_rsa',
     )
 

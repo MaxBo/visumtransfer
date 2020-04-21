@@ -76,7 +76,7 @@ class VisumTable(metaclass=MetaClass):
     _outtab = "___aouAOUs"
     _converters = {}
 
-    def __init__(self, mode: str = None):
+    def __init__(self, mode: str = None, new_cols: List[str] = None):
         """
         Parameters
         ----------
@@ -85,7 +85,13 @@ class VisumTable(metaclass=MetaClass):
           + -> new objects
           * -> change existing objects
           - -> delete objects
+
+        cols: List[str], optional
+            append the cols to the existing cols
         """
+        if new_cols:
+            self._cols = ','.join(self.cols + new_cols).strip(',')
+
         if mode is not None:
             self._mode = mode
         self.df = pd.DataFrame()
@@ -243,7 +249,9 @@ class VisumTable(metaclass=MetaClass):
         fobj.writeln('*')
 
     def df_from_array(self, data_arr) -> pd.DataFrame:
-        df = pd.DataFrame(data_arr, columns=self.cols).set_index(self.pkey)
+        df = pd.DataFrame(data_arr, columns=self.cols)
+        if self.pkey:
+            df.set_index(self.pkey, inplace=True)
         return df
 
     def df_from_string(self, data_str: str) -> pd.DataFrame:
