@@ -478,6 +478,7 @@ class VisemDemandModel:
             sn_caravailability='Pkwverf_Long',
             sn_lab_occupation='lab_taetigkeit',
             sn_lab_caravailability='lab_pkwverf',
+            sn_lab_gebiet='lab_gebiet',
         )
         userdef1.add_daten_attribute(
             'Netz',

@@ -607,7 +607,7 @@ class Aktivitaetenkette(VisumTable):
                       trip_chain_rates: pd.DataFrame,
                       model: str):
         rows = []
-        activity_chains = trip_chain_rates.groupby('code').first()
+        activity_chains = trip_chain_rates.groupby('code_tc').first()
         for ac_code, ac in activity_chains.iterrows():
             row = self.Row(code=ac_code,
                            name=ac_code,
