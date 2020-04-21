@@ -219,7 +219,7 @@ class Matrix(VisumTable):
 
     def add_ov_kg_matrices(self,
                            params: Params,
-                           userdefined: BenutzerdefiniertesAttribut,
+                           userdef: BenutzerdefiniertesAttribut,
                            savematrix=0,
                            factor=.8,
                            exponent=.8,
@@ -379,9 +379,9 @@ class Matrix(VisumTable):
             moduscode='O',
         )
 
-        userdefined.add_daten_attribute('Netz', 'DistanceKorrBisKm_OV',
+        userdef.add_daten_attribute('Netz', 'DistanceKorrBisKm_OV',
                                          standardwert=3)
-        userdefined.add_daten_attribute('Netz', 'DistanceKorrFaktor_OV',
+        userdef.add_daten_attribute('Netz', 'DistanceKorrFaktor_OV',
                                          standardwert=-1.5)
 
         self.add_formel_matrix(
@@ -420,7 +420,7 @@ class Matrix(VisumTable):
         )
 
     def add_iv_kg_matrices(self,
-                           userdefined: BenutzerdefiniertesAttribut,
+                           userdef: BenutzerdefiniertesAttribut,
                            savematrix=0):
         """Add PrT Skim Matrices"""
         self.set_category('IV_Skims')
@@ -463,7 +463,7 @@ class Matrix(VisumTable):
                               moduscode='P',
                               savematrix=savematrix)
 
-        userdefined.add_formel_attribute(
+        userdef.add_formel_attribute(
             objid='Bezirk',
             name='Binnendistanz_area',
             formel='SQRT([FLAECHEKM2]) / 3',
@@ -494,9 +494,9 @@ class Matrix(VisumTable):
                                    formel=formel)
 
 
-        userdefined.add_daten_attribute('Netz', 'DistanceKorrBisKm_Pkw',
+        userdef.add_daten_attribute('Netz', 'DistanceKorrBisKm_Pkw',
                                              standardwert=1.2)
-        userdefined.add_daten_attribute('Netz', 'DistanceKorrFaktor_Pkw',
+        userdef.add_daten_attribute('Netz', 'DistanceKorrFaktor_Pkw',
                                              standardwert=-4)
 
         self.add_formel_matrix(
@@ -678,7 +678,7 @@ class Matrix(VisumTable):
                                   savematrix=savematrix,
                                   )
 
-    def add_commuter_matrices(self, userdefined: BenutzerdefiniertesAttribut,
+    def add_commuter_matrices(self, userdef: BenutzerdefiniertesAttribut,
                               loadmatrix=1,
                               savematrix=1):
         """Add Commuter Matrices"""
@@ -705,13 +705,13 @@ class Matrix(VisumTable):
                               matrixtyp='Nachfrage',
                               loadmatrix=1,
                               matrixfolder='Pendler')
-        userdefined.add_daten_attribute(objid='Netz',
+        userdef.add_daten_attribute(objid='Netz',
                                         name='faktor_binnenpendler',
                                         standardwert=1.28)
-        userdefined.add_daten_attribute(objid='Netz',
+        userdef.add_daten_attribute(objid='Netz',
                                         name='faktor_einpendler',
                                         standardwert=1.430976)
-        userdefined.add_daten_attribute(objid='Netz',
+        userdef.add_daten_attribute(objid='Netz',
                                         name='faktor_auspendler',
                                         standardwert=1.27264235846709)
         formel = '''Matrix([CODE]="Pendlermatrix_OBB") * '''\
