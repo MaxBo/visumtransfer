@@ -130,6 +130,19 @@ class Personengruppe(VisumTable):
                 personengruppenset=pgrset,
                 pgruppencode=group_output,
             )
+            vl_code = f'VL_{code}'
+            formel_vl = f'Matrix([CODE]="{code}") * Matrix([CODE]="KM")'
+            vl_name = f'Verkehrsleistung der {gr.CATEGORY}-Gruppe {gr.NAME}'
+
+            matrices.add_formel_matrix(
+                code=vl_code,
+                formel=formel_vl,
+                name=vl_name,
+                modusset=','.join(modes['code']),
+                personengruppenset=pgrset,
+                pgruppencode=group_output,
+            )
+
             for _, mode in modes.iterrows():
                 mode_name = mode['name']
                 # add output matrix
@@ -144,7 +157,17 @@ class Personengruppe(VisumTable):
                     personengruppenset=pgrset,
                     pgruppencode=group_output,
                 )
-
+                vl_code = f'VL_{code}'
+                formel_vl = f'Matrix([CODE]="{code}") * Matrix([CODE]="KM")'
+                vl_name = f'Verkehrsleistung mit Verkehrsmittel {mode_name} der {gr.CATEGORY}-Gruppe {gr.NAME}'
+                matrices.add_formel_matrix(
+                    code=vl_code,
+                    formel=formel_vl,
+                    name=vl_name,
+                    modusset=','.join(modes['code']),
+                    personengruppenset=pgrset,
+                    pgruppencode=group_output,
+                )
 
 class Strukturgr(VisumTable):
     name = 'Strukturgrößen'
