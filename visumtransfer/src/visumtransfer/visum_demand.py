@@ -74,6 +74,11 @@ class VisemDemandModel:
         vt.tables['Aktivitaetenkette'] = ak
 
         ns = Nachfrageschicht()
+        userdef1.add_daten_attribute('Nachfrageschicht', 'Mobilitaetsrate')
+        userdef1.add_daten_attribute('Nachfrageschicht', 'Tours',
+                                     kommentar='Touren der Nachfrageschicht')
+        userdef1.add_daten_attribute('Nachfrageschicht', 'Trips',
+                                     kommentar='Wege der Nachfrageschicht')
         ns.create_tables_gd(personengruppe=pg,
                             model=model_code,
                             category='ZielVMWahl')

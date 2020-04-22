@@ -110,12 +110,13 @@ class Personengruppe(VisumTable):
             act_code = tc['code_tc']
             act_sequence = tc['Sequence']
             tc_name = tc['NAME']
+            mobilitaetsrate = tc['rate']
             main_act = activities.get_main_activity(act_hierarchy, act_sequence)
             code = '_'.join((gd_code, main_act))
             # if the the group occurs the first time ...
             if code not in self.gd_codes:
                 #  create it and add it to self.gd_codes
-                self.gd_codes[code] = [act_code]
+                self.gd_codes[code] = [(act_code, mobilitaetsrate)]
                 name = f'{tc_name} mit Hauptaktivität {main_act}'
                 groups_constants = tc['GROUPS_CONSTANTS']
                 gr_split = groups_constants.split(',')
@@ -136,7 +137,7 @@ class Personengruppe(VisumTable):
             else:
                 # otherwise just append the activity chain
                 # to the chains the persons makes
-                self.gd_codes[code].append(act_code)
+                self.gd_codes[code].append((act_code, mobilitaetsrate))
 
     def create_df_from_group_list(self):
         df = self.df_from_array(self.groups)
