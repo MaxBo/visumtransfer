@@ -170,6 +170,7 @@ class VisemDemandModel:
             'Comment': 'Zielwahl für Randsummenabgleich',
             'ActivityMatrixPrefix': 'Pendlermatrix_',
             'ActivityMatrixOBBPrefix': 'Pendlermatrix_OBB_',
+            'Prefix_GG': 'RSA_',
             'PersonGroupPrefix': 'Pgr_',
             'RSA': True,
         }

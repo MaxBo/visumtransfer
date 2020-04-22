@@ -415,8 +415,6 @@ class VisumTransfer:
             fobj.writeln('$VISION')
             fobj.writeln(f'* {self.user}')
             fobj.writeln(f'* {self.date}')
-            fobj.writeln('* Von: *')
-            fobj.writeln('* Nach: *')
             for table in self.tables.values():
                 table.write_block(fobj)
 
