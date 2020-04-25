@@ -492,6 +492,7 @@ class VisemDemandModel:
             datentyp='LongText',
             maxstringlaenge=99999,
             stringstandardwert=json.dumps(params_pgrmodel))
+        userdef1.add_daten_attribute('Bezirk', 'Pkw_Personengruppen')
 
     def add_params_tripgeneration(self, userdef1: BenutzerdefiniertesAttribut):
         params_tcr = dict(
