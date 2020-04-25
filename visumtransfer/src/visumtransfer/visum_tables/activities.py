@@ -280,7 +280,7 @@ class Aktivitaet(VisumTable):
 
                 # Ziel-Wege je Bezirk
                 formel = f'[SG_{code}] / [NETZ\SUM:BEZIRKE\SG_{code}] * '\
-                f'[NETZ\SUM:BEZIRKE\ZONE_ACTUAL_TRIPS_{code}]'
+                    f'[NETZ\SUM:BEZIRKE\ZONE_ACTUAL_TRIPS_{code}]'
                 userdef.add_formel_attribute(
                     objid='BEZIRK',
                     attid=f'ZONE_TARGET_TRIPS_{code}',
