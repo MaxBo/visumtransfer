@@ -58,6 +58,10 @@ class VisemDemandModel:
         self.add_params_tripgeneration(userdef1)
         self.add_strukturgroessen(params.activities, model_code, vt)
 
+        matrices.set_category('General')
+        matrices.add_daten_matrix('Diagonal', category='General', loadmatrix=True)
+        matrices.add_daten_matrix('NoDiagonal', category='General', loadmatrix=True)
+
 
         acts = self.add_activities(userdef1, userdef2, matrices,
                                    params, model_code, vt)
@@ -492,7 +496,18 @@ class VisemDemandModel:
             datentyp='LongText',
             maxstringlaenge=99999,
             stringstandardwert=json.dumps(params_pgrmodel))
-        userdef1.add_daten_attribute('Bezirk', 'Pkw_Personengruppen')
+
+        # Attribute für Motorisierung
+        userdef1.add_daten_attribute('Bezirk', 'Pkw_Personengruppen')        formel = '[Pkw_Personengruppen] / [ANZPERSONEN(XSumme)] * 1000'
+        userdef1.add_formel_attribute('Bezirk', 'Motorisierung', formel=formel)        userdef1.add_daten_attribute('Netz', 'Pkw_per_CarAvailabilityGroup')
+        kommentar = 'Pkw nach Pkw-Verfügbarkeit im json-Format'
+        userdef1.add_daten_attribute('Netz',
+                                     name='Pkw nach PkwVerfügbarkeit',
+                                     attid='Cars_By_Caravailability',
+                                     datentyp='LongText',
+                                     maxstringlaenge=99999,
+                                     kommentar=kommentar,
+                                     )
 
     def add_params_tripgeneration(self, userdef1: BenutzerdefiniertesAttribut):
         params_tcr = dict(

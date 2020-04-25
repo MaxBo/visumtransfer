@@ -271,12 +271,6 @@ class Aktivitaet(VisumTable):
                     name=f'Actual Trips to Zone for Activity {code}',
                 )
 
-                name = t.NAME
-                userdef.add_daten_attribute(
-                    objid='BEZIRK',
-                    name=f'ZP0_{code}',
-                    kommentar=f'Basis-Zielpotenzial für Aktivität {code}',
-                )
                 userdef.add_daten_attribute(
                     objid='BEZIRK',
                     name=f'BF_{code}',
@@ -285,7 +279,7 @@ class Aktivitaet(VisumTable):
                 )
 
                 # Ziel-Wege je Bezirk
-                formel = f'[ZP0_{code}] / [NETZ\SUM:BEZIRKE\ZP0_{code}] * '\
+                formel = f'[SG_{code}] / [NETZ\SUM:BEZIRKE\SG_{code}] * '\
                 f'[NETZ\SUM:BEZIRKE\ZONE_ACTUAL_TRIPS_{code}]'
                 userdef.add_formel_attribute(
                     objid='BEZIRK',

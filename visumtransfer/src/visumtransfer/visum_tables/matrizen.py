@@ -11,6 +11,7 @@ from visumtransfer.visum_table import VisumTable
 
 class MatrixCategories(dict):
     _end_block: Mapping[str, int] = {
+        'General': 5,
         'Visem_Demand': 20,
         'Visem_OV_Stunden': 30,
         'Other_Demand': 90,
@@ -319,29 +320,19 @@ class Matrix(VisumTable):
 
         self.set_category('OV_TimeSeries_Skims_Formula')
 
-        self.add_formel_matrix(
+        self.add_daten_matrix(
             code='No_Connection_Forward',
             matrixtyp='Kenngröße',
             name='Keine ÖV-Verbindung in Zeitscheibe Hinweg',
             nsegcode=nsegcode,
             moduscode='O',
-            formel=''
         )
-        self.add_formel_matrix(
+        self.add_daten_matrix(
             code='No_Connection_Backward',
             matrixtyp='Kenngröße',
             name='Keine ÖV-Verbindung in Zeitscheibe Rückweg',
             nsegcode=nsegcode,
             moduscode='O',
-            formel=''
-        )
-        self.add_formel_matrix(
-            code='weighted_skim_matrix',
-            matrixtyp='Kenngröße',
-            name='Empfundene Reisezeit incl. SWZ, mit Aktivitäten gewichtet',
-            nsegcode=nsegcode,
-            moduscode='O',
-            formel=''
         )
         # ÖV-Kosten
         self.set_category('OV_Skims_Fare')
@@ -424,13 +415,32 @@ class Matrix(VisumTable):
                            savematrix=0):
         """Add PrT Skim Matrices"""
         self.set_category('IV_Skims')
-        self.add_daten_matrix(code='DIS', name='Fahrweite Pkw', loadmatrix=1,
-                              matrixtyp='Kenngröße',
-                              nsegcode='P',
-                              #moduscode='P',
-                              vonzeit='',
-                              biszeit='',
-                              savematrix=savematrix)
+        for nsegcode in ['P', 'PG']:
+            self.add_daten_matrix(code='DIS',
+                                  name=f'Fahrweite Pkw ({nsegcode})',
+                                  loadmatrix=1,
+                                  matrixtyp='Kenngröße',
+                                  nsegcode=nsegcode,
+                                  vonzeit='',
+                                  biszeit='',
+                                  savematrix=savematrix)
+            self.add_daten_matrix(code='TT0',
+                                  name=f't0 Pkw ({nsegcode})',
+                                  loadmatrix=1,
+                                  matrixtyp='Kenngröße',
+                                  nsegcode=nsegcode,
+                                  vonzeit='',
+                                  biszeit='',
+                                  savematrix=savematrix)
+            self.add_daten_matrix(code='TTC',
+                                  name=f'tAkt Pkw ({nsegcode})',
+                                  loadmatrix=1,
+                                  matrixtyp='Kenngröße',
+                                  nsegcode=nsegcode,
+                                  vonzeit='',
+                                  biszeit='',
+                                  savematrix=savematrix)
+
         self.add_daten_matrix(code='TFUSS', name='tFuss', loadmatrix=1,
                               matrixtyp='Kenngröße',
                               nsegcode='F',
@@ -440,20 +450,6 @@ class Matrix(VisumTable):
                               matrixtyp='Kenngröße',
                               nsegcode='R',
                               moduscode='R',
-                              savematrix=savematrix)
-        self.add_daten_matrix(code='TT0', name='t0 Pkw', loadmatrix=1,
-                              matrixtyp='Kenngröße',
-                              nsegcode='P',
-                              vonzeit='',
-                              biszeit='',
-                              #moduscode='P',
-                              savematrix=savematrix)
-        self.add_daten_matrix(code='TTC', name='tAkt Pkw', loadmatrix=1,
-                              matrixtyp='Kenngröße',
-                              nsegcode='P',
-                              vonzeit='',
-                              biszeit='',
-                              #moduscode='P',
                               savematrix=savematrix)
         self.add_daten_matrix(code='TTC_boxcox',
                               name='tAkt Pkw BoxCox-Transformiert',
@@ -660,10 +656,15 @@ class Matrix(VisumTable):
             matcode = f'VL_{code}'
             mode_name = mode['name']
             matname = f'Verkehrsleistung {mode_name}'
+            nsegcode = mode['default_nsegcode']
+            if nsegcode:
+                cond_nsegcode = f' & [NSEGCODE] = "{nsegcode}"'
+            else:
+                cond_nsegcode = ''
             if matcode in existing_codes:
                 continue
             formel = f'Matrix([CODE]="Visem_{code}") * '\
-                f'Matrix([CODE]="{distance_matrix}")'
+                f'Matrix([CODE]="{distance_matrix}"{cond_nsegcode})'
             self.add_formel_matrix(code=matcode,
                                    name=matname,
                                    formel=formel,
