@@ -36,6 +36,7 @@ class Strukturgroessenwert(VisumTable):
     code = 'STRUKTURGROESSENWERT'
     _cols = 'BEZNR;STRUKTURGROESSENCODE;WERT'
     _longformat = True
+    _mode = ''
 
 
 class PersonengruppeJeBezirk(VisumTable):
@@ -43,6 +44,7 @@ class PersonengruppeJeBezirk(VisumTable):
     code = 'PERSONENGRUPPEJEBEZIRK'
     _cols = 'BEZNR;PGRUPPENCODE;ANZPERSONEN'
     _longformat = True
+    _mode = ''
 
 
 class Nachfragebeschreibung(VisumTable):
