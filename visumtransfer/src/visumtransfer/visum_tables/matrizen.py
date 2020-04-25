@@ -484,11 +484,19 @@ class Matrix(VisumTable):
                                moduscode='F',
                                formel='Matrix([CODE] = "TFUSS") * 4.5 / 60')
 
-        formel = ('If (Matrix([CODE] = "TFUSS") > 100.0 ,'
-                  'If(Matrix([CODE] = "TRAD") < 999.0 ,'
-                  'Matrix([CODE] = "TRAD") * 16 / 60.0,'
-                  'Matrix([CODE] = "DIS")),'
-                  'Matrix([CODE] = "SFUSS"))')
+        # Visum-Bug beim Einlesen der Formelmatrix
+        #formel = ('If (Matrix([CODE] = "TFUSS") > 100.0 ,'
+                  #'If(Matrix([CODE] = "TRAD") < 999.0 ,'
+                  #'Matrix([CODE] = "TRAD") * 16 / 60.0,'
+                  #'Matrix([CODE] = "DIS")),'
+                  #'Matrix([CODE] = "SFUSS"))')
+        formel = ('(Matrix([CODE] = "TFUSS") <= 100.0) '
+                  '* Matrix([CODE] = "SFUSS") '
+                  '+ (Matrix([CODE] = "TFUSS") > 100.0) '
+                  '* (Matrix([CODE] = "TRAD") < 999.0) '
+                  '* Matrix([CODE] = "TRAD") * 16 / 60.0 '
+                  '+ (Matrix([CODE] = "TRAD") >= 1000) '
+                  '* Matrix([CODE] = "DIS" & [NSEGCODE] = "P")')
         self.add_formel_matrix(code='KM', name='Reiseweite',
                                    matrixtyp='Kenngröße',
                                    formel=formel)
