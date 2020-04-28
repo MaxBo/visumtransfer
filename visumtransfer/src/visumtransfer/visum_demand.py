@@ -409,6 +409,13 @@ class VisemDemandModel:
             formel=formel,
             kommentar=f'Gesamte Verkehrsleistung der Gruppe',
         )
+        # Mittlere Wegelänge
+        userdef2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'MeanTripLength',
+            formel='[Km]/[Trips]',
+            kommentar=f'Mittlere Wegelänge [km]',
+        )
         # Wege und Verkehrsleistung pro Person
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
@@ -465,6 +472,13 @@ class VisemDemandModel:
             name=f'MS_{m}',
             formel=f'[Trips_{m}] / [Trips]',
             kommentar=f'Modal Split-Anteil {mode.name}',
+        )
+        # Mittlere Wegelänge
+        userdef2.add_formel_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'MeanTripLength_{m}',
+            formel='[Km_{m}]/[Trips_{m}]',
+            kommentar=f'Mittlere Wegelänge {mode.name}',
         )
         # Wege und Verkehrsleistung pro Person
         userdef2.add_formel_attribute(
