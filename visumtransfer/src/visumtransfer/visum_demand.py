@@ -243,29 +243,29 @@ class VisemDemandModel:
         userdef1.add_daten_attribute('Aktivitaet', 'Aktivitaetset',
                                          datentyp='Text')
         userdef1.add_daten_attribute('Aktivitaet',
-                                         code='CalcDestMode',
-                                         name='CalculateDestinationAndModeChoice',
-                                         datentyp='Bool')
+                                     code='CalcDestMode',
+                                     name='CalculateDestinationAndModeChoice',
+                                     datentyp='Bool')
         # spezifische Attribute für die Zielwahl
         userdef1.add_daten_attribute('Aktivitaet', 'LS',
-                                         standardwert=1.0,
-                                         kommentar='LogSum-Parameter der Aktivität, '
-                                         'berechnet als Multiplikation der LS_Factors '
-                                         'aller zugehörigen Aktivitäten')
+                                     standardwert=1.0,
+                                     kommentar='LogSum-Parameter der Aktivität, '
+                                     'berechnet als Multiplikation der LS_Factors '
+                                     'aller zugehörigen Aktivitäten')
         # spezifische Attribute für die Zielwahl
         userdef1.add_daten_attribute('Aktivitaet', 'BASE_LS',
-                                         standardwert=1.0,
-                                         kommentar='Basis-LogSum-Faktor der Aktivität, '
-                                         'wird mit anderen Faktoren multipliziert')
-        # Aktivitätenspezifische Koeffizienten für die Verkehrsmittelwahl
-        userdef1.add_daten_attribute('Aktivitaet', 'HRF_EINZEL2ZEITKARTE',
-                                         standardwert=1.0)
-        userdef1.add_daten_attribute('Aktivitaet', 'HRF_COST_MITFAHRER',
-                                         standardwert=1.0)
+                                     standardwert=1.0,
+                                     kommentar='Basis-LogSum-Faktor der Aktivität, '
+                                     'wird mit anderen Faktoren multipliziert')
+        # spezifische Attribute für die Zielwahl
+        userdef1.add_daten_attribute('Aktivitaet', 'KF_BASE_LS',
+                                     standardwert=1.0,
+                                     kommentar='Korrekturfaktor für LogSum der Aktivität, '
+                                     'während Kalibrierung')
 
         acts.create_tables(params.activities, model=model_code, suffix='')
         acts.add_benutzerdefinierte_attribute(userdef2)
-        acts.add_net_activity_ticket_attributes(userdef2)
+        acts.add_net_activity_ticket_attributes(userdef2, params.modes)
         acts.add_output_matrices(matrices, userdef2)
         acts.add_modal_split(userdef2, matrices, params.modes)
         acts.add_balancing_output_matrices(matrices, userdef2, loadmatrix=0)
@@ -449,7 +449,14 @@ class VisemDemandModel:
             'Personengruppe', f'TARGET_MS_{m}', datentyp='Double',
             kommentar=f'Ziel-ModalSplit für Verkehrsmittel {mode.name}'
         )
-        pg.add_cols([f'BASECONST_{m}', f'CONST_{m}', f'TARGET_MS_{m}'])
+        userdef1.add_daten_attribute(
+            objid='PERSONENGRUPPE',
+            name=f'KF_CONST_{m}',
+            standardwert=0,
+            kommentar=f'Korrektur der Konstante bei Kalibrierung für {mode.name}',
+        )
+
+        pg.add_cols([f'BASECONST_{m}', f'CONST_{m}', f'TARGET_MS_{m}', f'KF_CONST_{m}'])
 
         # Wege nach Modus und Modal Split der Gruppe
         formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]+"_{m}": Mat[SUMME])'
@@ -477,7 +484,7 @@ class VisemDemandModel:
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'MeanTripLength_{m}',
-            formel='[Km_{m}]/[Trips_{m}]',
+            formel=f'[Km_{m}]/[Trips_{m}]',
             kommentar=f'Mittlere Wegelänge {mode.name}',
         )
         # Wege und Verkehrsleistung pro Person

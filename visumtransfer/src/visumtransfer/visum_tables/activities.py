@@ -153,6 +153,7 @@ class Aktivitaet(VisumTable):
                 aktivcode=code,
                 quellaktivitaetset=self.all_non_composite_activites,
                 zielaktivitaetset=t.AKTIVITAETSET,
+                obb_matrix_ref=f'[CODE]="Activity_OBB_{code}"',
             )
 
             matrices.set_category('VL_Activities')
@@ -164,6 +165,7 @@ class Aktivitaet(VisumTable):
                 aktivcode=code,
                 quellaktivitaetset=self.all_non_composite_activites,
                 zielaktivitaetset=t.AKTIVITAETSET,
+                obb_matrix_ref=f'[CODE]="Activity_VL_OBB_{code}"',
             )
 
             if not t.ISTHEIMATAKTIVITAET:
@@ -261,6 +263,7 @@ class Aktivitaet(VisumTable):
                     aktivcode=code,
                     savematrix=savematrix,
                     loadmatrix=loadmatrix,
+                    obb_matrix_ref=f'[CODE]="Pendlermatrix_OBB_{code}"',
                 )
                 # Add KF-Attribute
                 userdef.add_formel_attribute(
@@ -318,7 +321,7 @@ class Aktivitaet(VisumTable):
                 converged_attributes.append(attid)
 
                 matrices.add_daten_matrix(
-                    code=f'Pendlermatrix_{code}_OBB',
+                    code=f'Pendlermatrix_OBB_{code}',
                     name=f'Oberbezirks-Matrix Pendleraktivität {name}',
                     aktivcode=code,
                     bezugstyp='Oberbezirk',
@@ -380,35 +383,29 @@ class Aktivitaet(VisumTable):
                 )
 
     def add_net_activity_ticket_attributes(self,
-                                           userdef: BenutzerdefiniertesAttribut):
-        """Add userdefined attributes for ticket costs"""
-        formel_ov = 'TableLookup(ACTIVITY Act: Act[CODE]="{a}": Act[HRF_EINZEL2ZEITKARTE])'
-        formel_time_ov = 'TableLookup(ACTIVITY Act: Act[CODE]="{a}": Act[TTFACTOR_O])'
-        formel_cost_mitfahrer = 'TableLookup(ACTIVITY Act: Act[CODE]="{a}": Act[HRF_COST_MITFAHRER])'
-        formel_time_mitfahrer = 'TableLookup(ACTIVITY Act: Act[CODE]="{a}": Act[TTFACTOR_M])'
+                                           userdef: BenutzerdefiniertesAttribut,
+                                           modes: pd.DataFrame):
+        """Add userdefined attributes for costs and travel times by activity and mode"""
+        formel_cost = 'TableLookup(ACTIVITY Act: Act[CODE]="{a}": Act[Factor_Cost_{m}])'
+        formel_time = 'TableLookup(ACTIVITY Act: Act[CODE]="{a}": Act[Factor_Time_{m}])'
 
         for code, t in self.df.iterrows():
             if t.CALCDESTMODE:
-                userdef.add_formel_attribute(
-                    'NETZ',
-                    name=f'Factor_Ticket_{code}',
-                    formel=formel_ov.format(a=code)
-                )
-                userdef.add_formel_attribute(
-                    'NETZ',
-                    name=f'Factor_Time_OV_{code}',
-                    formel=formel_time_ov.format(a=code)
-                )
-                userdef.add_formel_attribute(
-                    'NETZ',
-                    name=f'Factor_Cost_Mitfahrer_{code}',
-                    formel=formel_cost_mitfahrer.format(a=code)
-                )
-                userdef.add_formel_attribute(
-                    'NETZ',
-                    name=f'Factor_Time_Mitfahrer_{code}',
-                    formel=formel_time_mitfahrer.format(a=code),
-                )
+                for _, mode in modes.iterrows():
+                    userdef.add_formel_attribute(
+                        'NETZ',
+                        name=f'Factor_Cost_{code}_{mode.code}',
+                        formel=formel_cost.format(a=code, m=mode.code),
+                        kommentar=f'TravelCost-Factor for MainActivity {t.name} '\
+                        f'and mode {mode.code}'
+                    )
+                    userdef.add_formel_attribute(
+                        'NETZ',
+                        name=f'Factor_Time_{code}_{mode.code}',
+                        formel=formel_time.format(a=code, m=mode.code),
+                        kommentar=f'TravelTime-Factor for MainActivity {t.name} '\
+                        f'and mode {mode.code}'
+                    )
 
     def add_modal_split(self,
                         userdef: BenutzerdefiniertesAttribut,
@@ -424,12 +421,15 @@ class Aktivitaet(VisumTable):
                 mode_code = mode['code']
                 # add output matrix
                 str_name = f'Wege mit Verkehrsmittel {mode_code} der für Aktivität {code}'
+                obb_matrix_ref = f'[CODE]="OBB_Activity_{code}_{mode_code}"'\
+                    if t.ISTHEIMATAKTIVITAET else None
                 nr = matrices.add_daten_matrix(
                     code=f'Activity_{code}_{mode_code}',
                     name=str_name,
                     moduscode=mode_code,
                     aktivcode=code,
                     initmatrix=init_matrix,
+                    obb_matrix_ref=obb_matrix_ref,
                 )
                 ges=self.matrixnummern_activity[code]
                 userdef.add_formel_attribute(
@@ -517,6 +517,7 @@ class Aktivitaet(VisumTable):
             userdef.add_daten_attribute(
                 'AKTIVITAET',
                 name=f'Target_MS_{mode.code}',
+                kommentar=f'Modal Split (Zielwert) {mode.bezeichnung}',
             )
             userdef.add_daten_attribute(
                 'AKTIVITAET',
@@ -526,17 +527,38 @@ class Aktivitaet(VisumTable):
             userdef.add_daten_attribute(
                 'AKTIVITAET',
                 name=f'baseconst_{mode.code}',
+                kommentar=f'Verkehrsmittelspezifische Basis-Konstante {mode.bezeichnung}',
+                standardwert=0,
+            )
+            userdef.add_daten_attribute(
+                'AKTIVITAET',
+                name=f'KF_CONST_{mode.code}',
+                kommentar=f'Korrekturfaktor für Kalibrierung MS {mode.bezeichnung}',
                 standardwert=0,
             )
             userdef.add_formel_attribute(
                 'AKTIVITAET',
                 name=f'Trips_{mode.code}',
+                kommentar=f'Wege {mode.bezeichnung}',
                 formel=formel_trips_mode.format(m=mode.code)
             )
             userdef.add_formel_attribute(
                 'AKTIVITAET',
                 name=f'MS_{mode.code}',
+                kommentar=f'Modal Split modelliert {mode.bezeichnung}',
                 formel=formel_ms.format(m=mode.code)
+            )
+            userdef.add_daten_attribute(
+                'AKTIVITAET',
+                name=f'FACTOR_TIME_{mode.code}',
+                kommentar=f'Faktor Reisezeitkoeffizient {mode.bezeichnung}',
+                standardwert=1,
+            )
+            userdef.add_daten_attribute(
+                'AKTIVITAET',
+                name=f'FACTOR_COST_{mode.code}',
+                kommentar=f'Faktor Kostenkoeffizient {mode.bezeichnung}',
+                standardwert=1,
             )
 
     def add_kf_logsum(self,

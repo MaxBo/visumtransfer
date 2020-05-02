@@ -64,7 +64,7 @@ class Matrix(VisumTable):
     'MODUSCODE;MODUSSET;PERSONENGRUPPENSET;PGRUPPENCODE;AKTIVCODE;'
     'QUELLAKTIVITAETSET;ZIELAKTIVITAETSET;'
     'INITMATRIX;SAVEMATRIX;LOADMATRIX;MATRIXFOLDER;'
-    'CALIBRATIONCODE;NACHFRMODELLCODE;CATEGORY')
+    'CALIBRATIONCODE;NACHFRMODELLCODE;CATEGORY;OBB_MATRIX_REF')
 
     _defaults = {'ANZDEZSTELLEN': 2,
                  'MATRIXTYP': 'Nachfrage',
@@ -205,7 +205,7 @@ class Matrix(VisumTable):
             minute = 59
             second = 59
         else:
-            second = round((minute % 1) * 60, 0)
+            second = int(round((minute % 1) * 60, 0))
             minute = int(minute)
 
         return hour, minute, second
@@ -232,12 +232,13 @@ class Matrix(VisumTable):
         self.set_category('OV_TimeSeries_Skims')
         for idx, ts in time_series.iterrows():
             ts_code = ts.code
+            ts_name = ts.name_long
             vonzeit = self.get_timestring(ts.from_hour)
             biszeit = self.get_timestring(ts.to_hour)
             self.add_daten_matrix(
                 code='PJT',
                 matrixtyp='Kenngröße',
-                name=f'Empfundene Reisezeit {nsegcode}',
+                name=f'Empfundene Reisezeit {nsegcode} {ts_name}',
                 datname=f'PJT_{ts_code}',
                 nsegcode=nsegcode,
                 tag=1,
@@ -250,7 +251,7 @@ class Matrix(VisumTable):
             self.add_daten_matrix(
                 code='FAR',
                 matrixtyp='Kenngröße',
-                name=f'Fahrpreis {nsegcode}',
+                name=f'Fahrpreis {nsegcode} {ts_name}',
                 datname=f'FAR_{ts_code}',
                 nsegcode=nsegcode,
                 tag=1,
@@ -261,10 +262,10 @@ class Matrix(VisumTable):
                 # moduscode='O',
             )
             self.add_daten_matrix(
-                code='XADT',
+                code='FFZ',
                 matrixtyp='Kenngröße',
-                name=f'Erweiterte Anpassungszeit {nsegcode}',
-                datname=f'XADT_{ts_code}',
+                name=f'Fahrzeugfolgezeit {nsegcode} {ts_name}',
+                datname=f'FFZ_{ts_code}',
                 nsegcode=nsegcode,
                 tag=1,
                 vonzeit=vonzeit,
@@ -276,7 +277,7 @@ class Matrix(VisumTable):
             self.add_daten_matrix(
                 code='JRD',
                 matrixtyp='Kenngröße',
-                name=f'Reiseweite {nsegcode}',
+                name=f'Reiseweite {nsegcode} {ts_name}',
                 datname=f'JRD_{ts_code}',
                 nsegcode=nsegcode,
                 tag=1,
@@ -308,6 +309,16 @@ class Matrix(VisumTable):
             # moduscode='O',
         )
         self.add_daten_matrix(
+            code='FFZ',
+            matrixtyp='Kenngröße',
+            name=f'Fahrzeugfolgezeit {nsegcode}',
+            nsegcode=nsegcode,
+            vonzeit='',
+            biszeit='',
+            zeitbezug='Abfahrtszeit',
+            # moduscode='O',
+        )
+        self.add_daten_matrix(
             code='XADT',
             matrixtyp='Kenngröße',
             name=f'Erweiterte Anpassungszeit {nsegcode}',
@@ -317,7 +328,6 @@ class Matrix(VisumTable):
             zeitbezug='Abfahrtszeit',
             # moduscode='O',
         )
-
         self.set_category('OV_TimeSeries_Skims_Formula')
 
         self.add_daten_matrix(
@@ -397,7 +407,7 @@ class Matrix(VisumTable):
         formula = (
             f'Matrix([CODE] = "PJT" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit}) + '
             f'{factor} * POW('
-            f'(Matrix([CODE] = "XADT" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit}) * 4 + 1)'
+            f'Matrix([CODE] = "FFZ" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit})'
             f', {exponent})')
 
         complete_formula = f'(({formula}) + TRANSPOSE({formula})) * 0.5'
@@ -481,22 +491,15 @@ class Matrix(VisumTable):
                                formel='Matrix([CODE] = "TFUSS") * 4.5 / 60')
 
         # Visum-Bug beim Einlesen der Formelmatrix
-        #formel = ('If (Matrix([CODE] = "TFUSS") > 100.0 ,'
-                  #'If(Matrix([CODE] = "TRAD") < 999.0 ,'
-                  #'Matrix([CODE] = "TRAD") * 16 / 60.0,'
-                  #'Matrix([CODE] = "DIS")),'
-                  #'Matrix([CODE] = "SFUSS"))')
-        formel = ('(Matrix([CODE] = "TFUSS") <= 100.0) '
-                  '* Matrix([CODE] = "SFUSS") '
-                  '+ (Matrix([CODE] = "TFUSS") > 100.0) '
-                  '* (Matrix([CODE] = "TRAD") < 999.0) '
-                  '* Matrix([CODE] = "TRAD") * 16 / 60.0 '
-                  '+ (Matrix([CODE] = "TRAD") >= 1000) '
-                  '* Matrix([CODE] = "DIS" & [NSEGCODE] = "P")')
+        formel = ('If (Matrix([CODE] = "TFUSS") > 100.0 : '
+                  'If(Matrix([CODE] = "TRAD") < 999.0 : '
+                  'Matrix([CODE] = "TRAD") * 16 / 60.0 : '
+                  'Matrix([CODE] = "DIS" & [NSEGCODE] = "P")) : '
+                  'Matrix([CODE] = "SFUSS"))')
+
         self.add_formel_matrix(code='KM', name='Reiseweite',
                                    matrixtyp='Kenngröße',
                                    formel=formel)
-
 
         userdef.add_daten_attribute('Netz', 'DistanceKorrBisKm_Pkw',
                                              standardwert=1.2)
@@ -525,7 +528,9 @@ class Matrix(VisumTable):
                               matrixtyp='Nachfrage',
                               nsegcode='P',
                               moduscode='P',
-                              savematrix=savematrix)
+                              savematrix=savematrix,
+                              obb_matrix_ref='[CODE]="Visem_OBB_P"',
+                              )
 
         self.set_category('Other_Demand')
         self.add_daten_matrix(code='Pkw_Wirtschaftsverkehr',
@@ -597,7 +602,9 @@ class Matrix(VisumTable):
                               matrixtyp='Nachfrage',
                               nsegcode='A',
                               moduscode='O',
-                              savematrix=savematrix)
+                              savematrix=savematrix,
+                              obb_matrix_ref='[CODE]="Visem_OBB_O"',
+                              )
         self.set_category('OV_Demand')
         self.add_daten_matrix(code='FernverkehrBahn', name='Fernverkehr Bahn',
                               loadmatrix=loadmatrix,
@@ -613,11 +620,20 @@ class Matrix(VisumTable):
         self.set_category('Visem_Demand')
         existing_codes = self.df['CODE'].tolist()
 
-        self.add_daten_matrix(code='Visem_Gesamt',
+        matcode = 'Visem_Gesamt'
+        matcode_obb = 'Visem_OBB_Gesamt'
+        self.add_daten_matrix(code=matcode,
                               name='Gesamtwege Visem Region',
                               loadmatrix=loadmatrix,
                               savematrix=savematrix,
-                              matrixtyp='Nachfrage')
+                              matrixtyp='Nachfrage',
+                              obb_matrix_ref=f'[CODE]="{matcode_obb}"')
+        self.add_daten_matrix(code=matcode_obb,
+                              name='Gesamtwege Visem Region',
+                              loadmatrix=loadmatrix,
+                              savematrix=savematrix,
+                              matrixtyp='Nachfrage',
+                              bezugstyp='Oberbezirk')
 
         for m, mode in params.modes.iterrows():
             code = mode['code']
@@ -632,13 +648,14 @@ class Matrix(VisumTable):
                                   matrixtyp='Nachfrage',
                                   moduscode=code,
                                   savematrix=savematrix,
+                                  obb_matrix_ref=f'[CODE]="Visem_OBB_{code}"',
                                   )
 
 
         for m, mode in params.modes.iterrows():
             code = mode['code']
-            matcode = f'Visem_{code}_OBB'
-            mode_name = mode['name']
+            matcode = f'Visem_OBB_{code}'
+            mode_name = mode['bezeichnung']
             name = f'Wege {mode_name} Oberbezirk Region'
             if matcode in existing_codes:
                 continue
@@ -665,12 +682,20 @@ class Matrix(VisumTable):
                 continue
             formel = f'Matrix([CODE]="Visem_{code}") * '\
                 f'Matrix([CODE]="{distance_matrix}"{cond_nsegcode})'
+            matcode_obb = f'VL_OBB_{code}'
             self.add_formel_matrix(code=matcode,
                                    name=matname,
                                    formel=formel,
                                    matrixtyp='Nachfrage',
                                    moduscode=code,
+                                   obb_matrix_ref=f'[CODE]="{matcode_obb}"',
                                    )
+            self.add_daten_matrix(code=matcode_obb,
+                                  name=name,
+                                  loadmatrix=0,
+                                  matrixtyp='Nachfrage',
+                                  moduscode=code,
+                                  bezugstyp='Oberbezirk')
 
     def add_ov_haupt_ap_demand_matrices(self,
                                         ds_tagesgang: xr.Dataset,
@@ -696,7 +721,8 @@ class Matrix(VisumTable):
                               name='Pendlermatrix modelliert',
                               loadmatrix=loadmatrix,
                               savematrix=savematrix,
-                              matrixtyp='Nachfrage')
+                              matrixtyp='Nachfrage',
+                              obb_matrix_ref='[CODE]="Pendler_OBB_modelliert"')
         self.add_daten_matrix(code='Pendler_OBB_modelliert',
                               name='Pendlermatrix Oberbezirk modelliert',
                               loadmatrix=loadmatrix,
