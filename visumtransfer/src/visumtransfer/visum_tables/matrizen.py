@@ -717,44 +717,19 @@ class Matrix(VisumTable):
                               savematrix=1):
         """Add Commuter Matrices"""
         self.set_category('Commuters')
-        self.add_daten_matrix(code='Pendlermatrix_modelliert',
-                              name='Pendlermatrix modelliert',
-                              loadmatrix=loadmatrix,
-                              savematrix=savematrix,
-                              matrixtyp='Nachfrage',
-                              obb_matrix_ref='[CODE]="Pendler_OBB_modelliert"')
-        self.add_daten_matrix(code='Pendler_OBB_modelliert',
-                              name='Pendlermatrix Oberbezirk modelliert',
-                              loadmatrix=loadmatrix,
-                              savematrix=savematrix,
-                              matrixtyp='Nachfrage',
-                              bezugstyp='Oberbezirk')
         self.add_daten_matrix(code='Pendlermatrix',
-                              name='Pendlermatrix',
-                              loadmatrix=1,
+                              name='Pendlermatrix der BA disaggregiert auf Bezirke',
+                              loadmatrix=0,
                               matrixtyp='Nachfrage',
                               matrixfolder='Pendler')
         self.add_daten_matrix(code='Pendlermatrix_OBB',
-                              name='Pendlermatrix',
+                              name='Pendlermatrix der BA (SvB)',
                               bezugstyp='Oberbezirk',
                               matrixtyp='Nachfrage',
                               loadmatrix=1,
                               matrixfolder='Pendler')
-        userdef.add_daten_attribute(objid='Netz',
-                                        name='faktor_binnenpendler',
-                                        standardwert=1.28)
-        userdef.add_daten_attribute(objid='Netz',
-                                        name='faktor_einpendler',
-                                        standardwert=1.430976)
-        userdef.add_daten_attribute(objid='Netz',
-                                        name='faktor_auspendler',
-                                        standardwert=1.27264235846709)
-        formel = '''Matrix([CODE]="Pendlermatrix_OBB") * '''\
-        '''((FROM[TYPNR] = 0) * [faktor_einpendler] + (FROM[TYPNR] = 1)) * '''\
-        '''((TO[TYPNR] = 0) * [faktor_auspendler] + (TO[TYPNR] = 1)) * '''\
-        '''((FROM[TYPNR] = 1) * (TO[TYPNR] = 1) * [faktor_binnenpendler] + '''\
-        '''(FROM[TYPNR] = 0) * (TO[TYPNR] = 1) + '''\
-        '''(FROM[TYPNR] = 1) * (TO[TYPNR] = 0))'''
+        formel = 'Matrix([CODE]="Pendlermatrix_OBB") * [SUM:PGRUPPEN\ERWERBSTAETIGE] '\
+            '/ MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB"))'
         self.add_formel_matrix(
             code='Pendlermatrix_OBB_Gesamt',
             name='Pendlermatrix_OBB incl Nicht-SVB-Beschäftigte',

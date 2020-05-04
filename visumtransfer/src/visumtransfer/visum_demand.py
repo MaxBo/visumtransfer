@@ -59,9 +59,14 @@ class VisemDemandModel:
         self.add_strukturgroessen(params.activities, model_code, vt)
 
         matrices.set_category('General')
-        matrices.add_daten_matrix('Diagonal', category='General', loadmatrix=True)
-        matrices.add_daten_matrix('NoDiagonal', category='General', loadmatrix=True)
-
+        matrices.add_daten_matrix('Diagonal',
+                                  category='General',
+                                  matrixtyp='Kenngröße',
+                                  loadmatrix=1)
+        matrices.add_daten_matrix('NoDiagonal',
+                                  category='General',
+                                  matrixtyp='Kenngröße',
+                                  loadmatrix=1)
 
         acts = self.add_activities(userdef1, userdef2, matrices,
                                    params, model_code, vt)
@@ -174,7 +179,8 @@ class VisemDemandModel:
         pg.add_df(gg)
 
         category = 'ZielVMWahl_RSA'
-        tc_categories = ['occupation', 'car_availability']
+        #tc_categories = ['occupation', 'car_availability']
+        tc_categories = ['occupation']
         attrs = {
             'Comment': 'Zielwahl für Randsummenabgleich',
             'ActivityMatrixPrefix': 'Pendlermatrix_',
@@ -389,10 +395,19 @@ class VisemDemandModel:
             'Personengruppe', 'Persons', datentyp='Double',
             kommentar='Personen in Personengruppe'
         )
+        userdef1.add_daten_attribute(
+            'Personengruppe', 'Faktor_Erwerbstaetigkeit', datentyp='Double',
+            kommentar='Anteil der Erwerbstätigen an der Personengruppe',
+        )
+        userdef1.add_formel_attribute(
+            'Personengruppe', 'Erwerbstaetige', datentyp='Double',
+            formel='[PERSONS] * [FAKTOR_ERWERBSTAETIGKEIT]',
+            kommentar='Erwerbstätige Personen',
+        )
         pg.add_cols(['CATEGORY', 'CODEPART', 'NAMEPART',
                      'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
                      'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'GROUP_GENERATION',
-                     'MAIN_ACT', 'PERSONS'])
+                     'MAIN_ACT', 'PERSONS', 'FAKTOR_ERWERBSTAETIGKEIT'])
 
         # Wege Gesamt und Verkehrsleistung der Gruppe
         formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
