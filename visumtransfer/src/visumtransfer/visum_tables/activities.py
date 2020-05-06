@@ -14,7 +14,8 @@ class Aktivitaet(VisumTable):
     code = 'AKTIVITAET'
     _cols = ('CODE;RANG;NAME;NACHFRAGEMODELLCODE;ISTHEIMATAKTIVITAET;'
              'STRUKTURGROESSENCODES;KOPPLUNGZIEL;RSA;'
-             'COMPOSITE_ACTIVITIES;AUTOCALIBRATE;CALCDESTMODE;AKTIVITAETSET;BASE_LS')
+             'COMPOSITE_ACTIVITIES;AUTOCALIBRATE;CALCDESTMODE;AKTIVITAETSET;BASE_LS'
+             ';TARIFMATRIX')
 
     def create_tables(self,
                       activities: pd.DataFrame,
@@ -34,6 +35,7 @@ class Aktivitaet(VisumTable):
             row.kopplungziel = is_home_activity
             row.composite_activities = a['composite_activities']
             row.calcdestmode = a['calcdestmode']
+            row.tarifmatrix = a['TARIFMATRIX']
             rows.append(row)
         self.add_rows(rows)
         self.set_activityset()
@@ -125,14 +127,8 @@ class Aktivitaet(VisumTable):
         )
         userdef.add_daten_attribute(
             objid='AKTIVITAET',
-            name='TTFACTOR_O',
-            kommentar='Anpassung Reisezeitkoeffizient ÖV für Aktivität',
-            standardwert=1,
-        )
-        userdef.add_daten_attribute(
-            objid='AKTIVITAET',
-            name='TTFACTOR_M',
-            kommentar='Anpassung Reisezeitkoeffizient Mitfahrer für Aktivität',
+            name='WEIGHT_SWT',
+            kommentar='Gewicht Startwartezeit für Aktivität',
             standardwert=1,
         )
 

@@ -83,15 +83,26 @@ class VisemDemandModel:
         vt.tables['Aktivitaetenkette'] = ak
 
         ns = Nachfrageschicht()
-        userdef1.add_daten_attribute('Nachfrageschicht', 'Mobilitaetsrate')
-        userdef1.add_daten_attribute('Nachfrageschicht', 'Tours',
+        userdef1.add_daten_attribute('Nachfrageschicht',
+                                     'Mobilitaetsrate')
+        userdef1.add_daten_attribute('Nachfrageschicht',
+                                     'Tours',
                                      kommentar='Touren der Nachfrageschicht')
-        userdef1.add_daten_attribute('Nachfrageschicht', 'Trips',
+        userdef1.add_daten_attribute('Nachfrageschicht',
+                                     'Trips',
                                      kommentar='Wege der Nachfrageschicht')
+        userdef1.add_daten_attribute('Nachfrageschicht',
+                                     'Tarifmatrix',
+                                     datentyp='LongText',
+                                     kommentar='Tarifmatrix der Nachfrageschicht')
         ns.create_tables_gd(personengruppe=pg,
+                            aktivitaet=acts,
+                            aktivitaetenkette=ak,
                             model=model_code,
                             category='ZielVMWahl')
         ns.create_tables_gd(personengruppe=pg,
+                            aktivitaet=acts,
+                            aktivitaetenkette=ak,
                             model=model_code,
                             category='ZielVMWahl_RSA')
         vt.tables['Nachfrageschicht'] = ns
@@ -268,6 +279,14 @@ class VisemDemandModel:
                                      standardwert=1.0,
                                      kommentar='Korrekturfaktor für LogSum der Aktivität, '
                                      'während Kalibrierung')
+        # spezifische Attribute für die Verkehrsmittelwahl
+        userdef1.add_daten_attribute(
+            objid='AKTIVITAET',
+            name='TARIFMATRIX',
+            datentyp='LongText',
+            kommentar='Name einer speziellen Tarifmatrix, '\
+            'die bei dieser Hauptaktivität verwendet werden soll',
+        )
 
         acts.create_tables(params.activities, model=model_code, suffix='')
         acts.add_benutzerdefinierte_attribute(userdef2)
@@ -404,10 +423,14 @@ class VisemDemandModel:
             formel='[PERSONS] * [FAKTOR_ERWERBSTAETIGKEIT]',
             kommentar='Erwerbstätige Personen',
         )
+        userdef1.add_daten_attribute(
+            'Personengruppe', 'Tarifmatrix', datentyp='LongText',
+            kommentar='spezielle Tarifmatrix der Personengruppe',
+        )
         pg.add_cols(['CATEGORY', 'CODEPART', 'NAMEPART',
                      'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
                      'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'GROUP_GENERATION',
-                     'MAIN_ACT', 'PERSONS', 'FAKTOR_ERWERBSTAETIGKEIT'])
+                     'MAIN_ACT', 'PERSONS', 'FAKTOR_ERWERBSTAETIGKEIT', 'TARIFMATRIX'])
 
         # Wege Gesamt und Verkehrsleistung der Gruppe
         formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
