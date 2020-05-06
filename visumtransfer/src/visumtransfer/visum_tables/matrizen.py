@@ -569,10 +569,9 @@ class Matrix(VisumTable):
                               moduscode=mode_lkw)
 
         # Summen Schwerverkehr und Kfz bis 3.5 to
-        nsegs = ['Lkw_bis_12to',
-                 'Lkw_über_12to',
-                 'FernverkehrLkw']
-        formel = ' + '.join((f'Matrix([CODE]="{nseg}")'
+        nsegs = ['Lkw_b_12 nwd',
+                 'Lkw_gr_12 nwd']
+        formel = ' + '.join((f'Matrix([CODE]="{nseg}" & [BEZUGSTYP]=2)'
                             for nseg in nsegs))
         self.add_formel_matrix(code='Schwerverkehr',
                                formel=formel,
@@ -583,9 +582,9 @@ class Matrix(VisumTable):
 
         nsegs = ['Visem_P',
                  'Pkw_Wirtschaftsverkehr',
-                 'Lieferfahrzeuge',
-                 'FernverkehrPkw']
-        formel = ' + '.join((f'Matrix([CODE]="{nseg}")'
+                 'PKW NWD',
+                 ]
+        formel = ' + '.join((f'Matrix([CODE]="{nseg}" & [BEZUGSTYP]=2)'
                              for nseg in nsegs))
         self.add_formel_matrix(code='Kfz_35',
                                formel=formel,
