@@ -4,6 +4,12 @@ import pandas as pd
 from visumtransfer.visum_table import VisumTable
 
 
+class Modus(VisumTable):
+    name = 'Modi'
+    code = 'MODUS'
+    _cols = 'CODE;NAME;VSYSSET;AUSTAUSCHBAR'
+
+
 class Nachfragemodell(VisumTable):
     name = 'Nachfragemodelle'
     code = 'NACHFRAGEMODELL'

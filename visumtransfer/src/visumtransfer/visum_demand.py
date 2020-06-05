@@ -11,6 +11,7 @@ from visumtransfer.visum_table import (
 
 from visumtransfer.visum_tables import (
     Netz,
+    Modus,
     Matrix,
     BenutzerdefiniertesAttribut,
     Nachfragemodell,
@@ -42,6 +43,13 @@ class VisemDemandModel:
 
         vt = VisumTransfer.new_transfer()
 
+        modus = Modus()
+        modus.add_row(
+            modus.Row(code='O', name='ÖV', vsysset='BUS,F_X,S', austauschbar=True))
+        modus.add_row(
+            modus.Row(code='M', name='Pkw-Mitfahrer', vsysset='P', austauschbar=True))
+        vt.tables['Modi'] = modus
+
         userdef1 = BenutzerdefiniertesAttribut()
         vt.tables['BenutzerdefinierteAttribute1'] = userdef1
         userdef2 = BenutzerdefiniertesAttribut()
@@ -58,6 +66,8 @@ class VisemDemandModel:
         self.add_params_tripgeneration(userdef1)
         self.add_strukturgroessen(params.activities, model_code, vt)
 
+
+        # Kenngrößenmatrizen
         matrices.set_category('General')
         matrices.add_daten_matrix('Diagonal',
                                   category='General',
@@ -67,6 +77,8 @@ class VisemDemandModel:
                                   category='General',
                                   matrixtyp='Kenngröße',
                                   loadmatrix=1)
+        matrices.add_ov_kg_matrices(params, userdef1)
+        matrices.add_iv_kg_matrices(userdef1)
 
         acts = self.add_activities(userdef1, userdef2, matrices,
                                    params, model_code, vt)
@@ -107,9 +119,7 @@ class VisemDemandModel:
                             category='ZielVMWahl_RSA')
         vt.tables['Nachfrageschicht'] = ns
 
-        # Kenngrößenmatrizen
-        matrices.add_ov_kg_matrices(params, userdef1)
-        matrices.add_iv_kg_matrices(userdef1)
+        # Nachfragematrizen
         matrices.add_iv_demand(loadmatrix=1)
         matrices.add_ov_demand(loadmatrix=1)
         matrices.add_other_demand_matrices(params, loadmatrix=0)
@@ -296,7 +306,7 @@ class VisemDemandModel:
         acts.add_balancing_output_matrices(matrices, userdef2, loadmatrix=0)
         acts.add_parking_matrices(matrices)
         acts.add_pjt_matrices(matrices)
-        acts.add_kf_logsum(userdef2)
+        #acts.add_kf_logsum(userdef2)
         vt.tables['Aktivitaet'] = acts
         return acts
 
@@ -622,19 +632,19 @@ class VisemDemandModel:
         nseg = Nachfragesegment()
         vt.tables['Nachfragesegment'] = nseg
         #nseg.add_row(nseg.Row(code='O', name='ÖV Region', modus='O'))
-        nseg.add_row(nseg.Row(code='OFern', name='ÖV Fernverkehr', modus='O'))
-        nseg.add_row(nseg.Row(code='B_P', name='Pkw-Wirtschaftsverkehr',
-                              modus='P'))
-        nseg.add_row(nseg.Row(code='B_Li', name='Lieferfahrzeug',
-                              modus='P'))
-        nseg.add_row(nseg.Row(code='B_L1', name='Lkw bis 12 to',
-                              modus=mode_lkw))
-        nseg.add_row(nseg.Row(code='B_L2', name='Lkw 12-40 to',
-                              modus=mode_lkw))
-        nseg.add_row(nseg.Row(code='LkwFern', name='Lkw Fernverkehr',
-                              modus=mode_lkw))
-        nseg.add_row(nseg.Row(code='PkwFern', name='Pkw Fernverkehr',
-                              modus='P'))
+        #nseg.add_row(nseg.Row(code='OFern', name='ÖV Fernverkehr', modus='O'))
+        #nseg.add_row(nseg.Row(code='B_P', name='Pkw-Wirtschaftsverkehr',
+                              #modus='P'))
+        #nseg.add_row(nseg.Row(code='B_Li', name='Lieferfahrzeug',
+                              #modus='P'))
+        #nseg.add_row(nseg.Row(code='B_L1', name='Lkw bis 12 to',
+                              #modus=mode_lkw))
+        #nseg.add_row(nseg.Row(code='B_L2', name='Lkw 12-40 to',
+                              #modus=mode_lkw))
+        #nseg.add_row(nseg.Row(code='LkwFern', name='Lkw Fernverkehr',
+                              #modus=mode_lkw))
+        #nseg.add_row(nseg.Row(code='PkwFern', name='Pkw Fernverkehr',
+                              #modus='P'))
         nseg.add_row(nseg.Row(code='SV', name='Schwerverkehr',
                               modus=mode_lkw))
         nseg.add_row(nseg.Row(code='PG', name='Kfz bis 3,5 to',
@@ -649,7 +659,7 @@ class VisemDemandModel:
         v = VisumTransfer.new_transfer()
 
         # Personengruppenspezifische Zielwerte Modal Split
-        gd = params.group_definitions.set_index('code')
+        gd = params.group_definitions.set_index('CODE')
         gd = gd[cols]
         gd = gd.loc[gd.any(axis=1)]
         pg = Personengruppe(mode='*')
@@ -725,8 +735,8 @@ if __name__ == '__main__':
 
     params = dm.get_params(param_excel_fp)
     #dm.add_nsegs_userdefined(modification_no=444)
-    dm.create_transfer(params, modification_number=22)
-    dm.create_transfer_constants(params, modification_no=25)
-    #dm.create_transfer_target_values(params, modification_no=26)
+    dm.create_transfer(params, modification_number=16)
+    dm.create_transfer_constants(params, modification_no=17)
+    dm.create_transfer_target_values(params, modification_no=18)
     # dm.write_modification_iv_matrices(modification_no=12)
     #dm.write_modification_ov_matrices(modification_no=14)

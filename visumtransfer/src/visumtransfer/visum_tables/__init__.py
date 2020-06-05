@@ -68,6 +68,7 @@ from .demand import (
     PersonengruppeJeBezirk,
     Strukturgr,
     Strukturgroessenwert,
+    Modus,
 )
 
 from .ganglinien import (

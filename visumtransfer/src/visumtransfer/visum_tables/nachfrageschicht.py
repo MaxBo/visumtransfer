@@ -14,7 +14,7 @@ class Nachfrageschicht(VisumTable):
                          personengruppe: Personengruppe,
                          aktivitaet: Aktivitaet,
                          aktivitaetenkette: Aktivitaetenkette,
-                         nsegset: str = 'A,F,M,P,R',
+                         nsegset: str = 'OEV,F,PM,P,R',
                          model: str = 'VisemGGR',
                          category: str = 'ZielVMWahl'):
         ac_hierarchy = aktivitaet.get_hierarchy()
