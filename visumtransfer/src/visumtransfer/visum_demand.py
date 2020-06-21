@@ -39,7 +39,24 @@ class VisemDemandModel:
         self.modifications = modifications
         self.params_excel_fp = param_excel_fp
 
-    def create_transfer(self, params: Params, modification_number: int):
+    def create_transfer(self,
+                        params: Params,
+                        modification_number: int,
+                        tag_index: int=1):
+        """
+        Create a Modification with the VISEM-Model and all elements needed
+
+        Parameters
+        ----------
+        params : Params-instance
+            the parameter to use
+        modification_number: int
+            the number used in M0000xx.tra
+        tag_index: int
+            the PuT-Matrices and time-series
+            will use this day_index in the caledar to refer to
+            the correct date
+        """
 
         vt = VisumTransfer.new_transfer()
 
@@ -77,7 +94,7 @@ class VisemDemandModel:
                                   category='General',
                                   matrixtyp='Kenngröße',
                                   loadmatrix=1)
-        matrices.add_ov_kg_matrices(params, userdef1)
+        matrices.add_ov_kg_matrices(params, userdef1, tag_index=tag_index)
         matrices.add_iv_kg_matrices(userdef1)
 
         acts = self.add_activities(userdef1, userdef2, matrices,
@@ -292,12 +309,17 @@ class VisemDemandModel:
         # spezifische Attribute für die Verkehrsmittelwahl
         userdef1.add_daten_attribute(
             objid='AKTIVITAET',
+            name='ZIELWAHL_FUNKTION_MATRIXCODES',
+            datentyp='LongText',
+            kommentar='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
+        )
+        userdef1.add_daten_attribute(
+            objid='AKTIVITAET',
             name='TARIFMATRIX',
             datentyp='LongText',
             kommentar='Name einer speziellen Tarifmatrix, '\
             'die bei dieser Hauptaktivität verwendet werden soll',
         )
-
         acts.create_tables(params.activities, model=model_code, suffix='')
         acts.add_benutzerdefinierte_attribute(userdef2)
         acts.add_net_activity_ticket_attributes(userdef2, params.modes)
@@ -735,7 +757,7 @@ if __name__ == '__main__':
 
     params = dm.get_params(param_excel_fp)
     #dm.add_nsegs_userdefined(modification_no=444)
-    dm.create_transfer(params, modification_number=16)
+    dm.create_transfer(params, modification_number=16, tag_index=318)
     dm.create_transfer_constants(params, modification_no=17)
     dm.create_transfer_target_values(params, modification_no=18)
     # dm.write_modification_iv_matrices(modification_no=12)

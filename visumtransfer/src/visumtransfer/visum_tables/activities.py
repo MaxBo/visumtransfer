@@ -15,7 +15,7 @@ class Aktivitaet(VisumTable):
     _cols = ('CODE;RANG;NAME;NACHFRAGEMODELLCODE;ISTHEIMATAKTIVITAET;'
              'STRUKTURGROESSENCODES;KOPPLUNGZIEL;RSA;'
              'COMPOSITE_ACTIVITIES;AUTOCALIBRATE;CALCDESTMODE;AKTIVITAETSET;BASE_LS'
-             ';TARIFMATRIX')
+             ';TARIFMATRIX;ZIELWAHL_FUNKTION_MATRIXCODES')
 
     def create_tables(self,
                       activities: pd.DataFrame,
@@ -36,6 +36,7 @@ class Aktivitaet(VisumTable):
             row.composite_activities = a['composite_activities']
             row.calcdestmode = a['calcdestmode']
             row.tarifmatrix = a['TARIFMATRIX']
+            row.zielwahl_funktion_matrixcodes = a['ZIELWAHL_FUNKTION_MATRIXCODES']
             rows.append(row)
         self.add_rows(rows)
         self.set_activityset()
@@ -242,7 +243,7 @@ class Aktivitaet(VisumTable):
                                       matrices: Matrix,
                                       userdef: BenutzerdefiniertesAttribut,
                                       loadmatrix=0,
-                                      savematrix=1):
+                                      savematrix=0):
         """
         Add Output Matrices for Activities with Balancing
         """
@@ -260,6 +261,7 @@ class Aktivitaet(VisumTable):
                     savematrix=savematrix,
                     loadmatrix=loadmatrix,
                     obb_matrix_ref=f'[CODE]="Pendlermatrix_OBB_{code}"',
+                    matrixfolder='Pendler',
                 )
                 # Add KF-Attribute
                 userdef.add_formel_attribute(
@@ -321,6 +323,7 @@ class Aktivitaet(VisumTable):
                     name=f'Oberbezirks-Matrix Pendleraktivität {name}',
                     aktivcode=code,
                     bezugstyp='Oberbezirk',
+                    matrixfolder='Pendler',
                 )
 
         formel = ' | '.join((f"[{c}]" for c in converged_attributes))
@@ -355,7 +358,7 @@ class Aktivitaet(VisumTable):
                     name=f'Empfundene Reisezeit für Hauptaktivität {name}',
                     matrixtyp='Kenngröße',
                     aktivcode=code,
-                    loadmatrix=1,
+                    loadmatrix=0,
                     savematrix=savematrix,
                 )
 
@@ -374,7 +377,7 @@ class Aktivitaet(VisumTable):
                     name=f'Parkwiderstand für Hauptaktivität {name}',
                     aktivcode=code,
                     matrixtyp='Kenngröße',
-                    loadmatrix=1,
+                    loadmatrix=0,
                     savematrix=savematrix,
                 )
 

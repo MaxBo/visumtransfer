@@ -20,6 +20,7 @@ class Nachfrageschicht(VisumTable):
         ac_hierarchy = aktivitaet.get_hierarchy()
         rows = []
         pgroups = personengruppe.df
+        pgroups['TARIFMATRIX'].fillna('', inplace=True)
         pg_gd = pgroups.loc[pgroups['CATEGORY'] == category]
         for pgr_code, gd in pg_gd.iterrows():
             for ac_code, mobilitaetsrate in personengruppe.gd_codes[pgr_code]:

@@ -226,6 +226,7 @@ class Matrix(VisumTable):
                            factor=.8,
                            exponent=.8,
                            time_interval=1,
+                           tag_index: int = 1,
                            ):
         """Add OV Kenngrößen-Matrizen für Zeitscheiben"""
         time_series = params.time_series
@@ -242,7 +243,7 @@ class Matrix(VisumTable):
                 name=f'Empfundene Reisezeit {nsegcode} {ts_name}',
                 datname=f'PJT_{ts_code}',
                 nsegcode=nsegcode,
-                tag=1,
+                tag=tag_index,
                 vonzeit=vonzeit,
                 biszeit=biszeit,
                 zeitbezug='Abfahrtszeit',
@@ -255,7 +256,7 @@ class Matrix(VisumTable):
                 name=f'Fahrpreis {nsegcode} {ts_name}',
                 datname=f'FAR_{ts_code}',
                 nsegcode=nsegcode,
-                tag=1,
+                tag=tag_index,
                 vonzeit=vonzeit,
                 biszeit=biszeit,
                 initmatrix=1,
@@ -268,7 +269,7 @@ class Matrix(VisumTable):
                 name=f'Fahrzeugfolgezeit {nsegcode} {ts_name}',
                 datname=f'FFZ_{ts_code}',
                 nsegcode=nsegcode,
-                tag=1,
+                tag=tag_index,
                 vonzeit=vonzeit,
                 biszeit=biszeit,
                 initmatrix=1,
@@ -281,7 +282,7 @@ class Matrix(VisumTable):
                 name=f'Reiseweite {nsegcode} {ts_name}',
                 datname=f'JRD_{ts_code}',
                 nsegcode=nsegcode,
-                tag=1,
+                tag=tag_index,
                 vonzeit=vonzeit,
                 biszeit=biszeit,
                 initmatrix=1,
@@ -354,7 +355,7 @@ class Matrix(VisumTable):
             datname='Singelticket',
             nsegcode=nsegcode,
             moduscode='O',
-            loadmatrix=1,
+            loadmatrix=0,
             savematrix=savematrix,
         )
 
@@ -376,7 +377,7 @@ class Matrix(VisumTable):
             name='OV Reiseweite',
             datname='OVDIS',
             nsegcode=nsegcode,
-            loadmatrix=1,
+            loadmatrix=0,
             savematrix=savematrix,
             moduscode='O',
         )
@@ -466,7 +467,7 @@ class Matrix(VisumTable):
                               savematrix=savematrix)
         self.add_daten_matrix(code='TTC_boxcox',
                               name='tAkt Pkw BoxCox-Transformiert',
-                              loadmatrix=1,
+                              loadmatrix=0,
                               matrixtyp='Kenngröße',
                               nsegcode='P',
                               moduscode='P',
@@ -533,6 +534,7 @@ class Matrix(VisumTable):
                               moduscode='P',
                               savematrix=savematrix,
                               obb_matrix_ref='[CODE]="Visem_OBB_P"',
+                              matrixfolder='Analysefall',
                               )
 
         self.set_category('Other_Demand')
@@ -607,6 +609,7 @@ class Matrix(VisumTable):
                               moduscode='O',
                               savematrix=savematrix,
                               obb_matrix_ref='[CODE]="Visem_OBB_O"',
+                              matrixfolder='Analysefall',
                               )
         #self.set_category('OV_Demand')
         #self.add_daten_matrix(code='FernverkehrBahn', name='Fernverkehr Bahn',
@@ -618,7 +621,7 @@ class Matrix(VisumTable):
     def add_other_demand_matrices(self,
                                   params: Params,
                                   loadmatrix=1,
-                                  savematrix=1):
+                                  savematrix=0):
         """Add Demand Matrices for other modes"""
         self.set_category('Visem_Demand')
         existing_codes = self.df['CODE'].tolist()
@@ -630,11 +633,13 @@ class Matrix(VisumTable):
                               loadmatrix=loadmatrix,
                               savematrix=savematrix,
                               matrixtyp='Nachfrage',
-                              obb_matrix_ref=f'[CODE]="{matcode_obb}"')
+                              obb_matrix_ref=f'[CODE]="{matcode_obb}"',
+                              matrixfolder='Analysefall',
+                              )
         self.add_daten_matrix(code=matcode_obb,
                               name='Gesamtwege Visem Region',
-                              loadmatrix=loadmatrix,
-                              savematrix=savematrix,
+                              loadmatrix=0,
+                              savematrix=0,
                               matrixtyp='Nachfrage',
                               bezugstyp='Oberbezirk')
 
@@ -647,10 +652,11 @@ class Matrix(VisumTable):
                 continue
             self.add_daten_matrix(code=matcode,
                                   name=matname,
-                                  loadmatrix=loadmatrix,
+                                  loadmatrix=0,
                                   matrixtyp='Nachfrage',
                                   moduscode=code,
-                                  savematrix=savematrix,
+                                  savematrix=0,
+                                  matrixfolder='Analysefall',
                                   obb_matrix_ref=f'[CODE]="Visem_OBB_{code}"',
                                   )
 
@@ -664,7 +670,7 @@ class Matrix(VisumTable):
                 continue
             self.add_daten_matrix(code=matcode,
                                   name=name,
-                                  loadmatrix=loadmatrix,
+                                  loadmatrix=0,
                                   matrixtyp='Nachfrage',
                                   moduscode=code,
                                   bezugstyp='Oberbezirk')
@@ -729,7 +735,7 @@ class Matrix(VisumTable):
                               name='Pendlermatrix der BA (SvB)',
                               bezugstyp='Oberbezirk',
                               matrixtyp='Nachfrage',
-                              loadmatrix=1,
+                              loadmatrix=0,
                               matrixfolder='Pendler')
         formel = 'Matrix([CODE]="Pendlermatrix_OBB") * [SUM:PGRUPPEN\ERWERBSTAETIGE] '\
             '/ MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB"))'
@@ -739,7 +745,7 @@ class Matrix(VisumTable):
             matrixtyp='Nachfrage',
             bezugstyp='Oberbezirk',
             matrixfolder='Pendler',
-            savematrix=1,
+            savematrix=0,
             formel=formel)
 
         self.set_category('DestinationChoiceSkims')
