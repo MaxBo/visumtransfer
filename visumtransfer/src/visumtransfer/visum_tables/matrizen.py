@@ -346,16 +346,19 @@ class Matrix(VisumTable):
         )
         # ÖV-Kosten
         self.set_category('OV_Skims_Fare')
-        self.add_daten_matrix(
-            code='SINGLETICKET',
-            matrixtyp='Kenngröße',
-            name='Fahrpreis Einzelticket',
-            datname='Singelticket',
-            nsegcode=nsegcode,
-            moduscode='O',
-            loadmatrix=1,
-            savematrix=savematrix,
-        )
+        ticketarten = ['SINGLETICKET',
+                       'MonatskarteAbo',
+                       'Jugendnetzkarte',
+                       'SeniorenAbo',
+                       ]
+        for ticketart in ticketarten:
+            self.add_daten_matrix(
+                code=ticketart,
+                matrixtyp='Kenngröße',
+                moduscode='O',
+                loadmatrix=1,
+                savematrix=savematrix,
+            )
 
         self.add_daten_matrix(
             code='JRD',
@@ -729,14 +732,17 @@ class Matrix(VisumTable):
                               matrixfolder='Pendler')
         formel = 'Matrix([CODE]="Pendlermatrix_OBB") * [SUM:PGRUPPEN\ERWERBSTAETIGE] '\
             '/ MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB"))'
-        self.add_formel_matrix(
+        self.add_daten_matrix(
+        #self.add_formel_matrix(
             code='Pendlermatrix_OBB_Gesamt',
             name='Pendlermatrix_OBB incl Nicht-SVB-Beschäftigte',
             matrixtyp='Nachfrage',
             bezugstyp='Oberbezirk',
             matrixfolder='Pendler',
-            savematrix=1,
-            formel=formel)
+            savematrix=0,
+            #savematrix=1,
+            #formel=formel,
+        )
 
         self.set_category('DestinationChoiceSkims')
         self.add_formel_matrix(

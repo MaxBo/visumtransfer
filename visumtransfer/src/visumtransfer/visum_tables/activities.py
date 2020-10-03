@@ -378,30 +378,30 @@ class Aktivitaet(VisumTable):
                     savematrix=savematrix,
                 )
 
-    def add_net_activity_ticket_attributes(self,
-                                           userdef: BenutzerdefiniertesAttribut,
-                                           modes: pd.DataFrame):
-        """Add userdefined attributes for costs and travel times by activity and mode"""
-        formel_cost = 'TableLookup(ACTIVITY Act: Act[CODE]="{a}": Act[Factor_Cost_{m}])'
-        formel_time = 'TableLookup(ACTIVITY Act: Act[CODE]="{a}": Act[Factor_Time_{m}])'
+    #def add_net_activity_ticket_attributes(self,
+                                           #userdef: BenutzerdefiniertesAttribut,
+                                           #modes: pd.DataFrame):
+        #"""Add userdefined attributes for costs and travel times by activity and mode"""
+        #formel_cost = 'TableLookup(ACTIVITY Act: Act[CODE]="{a}": Act[Factor_Cost_{m}])'
+        #formel_time = 'TableLookup(ACTIVITY Act: Act[CODE]="{a}": Act[Factor_Time_{m}])'
 
-        for code, t in self.df.iterrows():
-            if t.CALCDESTMODE:
-                for _, mode in modes.iterrows():
-                    userdef.add_formel_attribute(
-                        'NETZ',
-                        name=f'Factor_Cost_{code}_{mode.code}',
-                        formel=formel_cost.format(a=code, m=mode.code),
-                        kommentar=f'TravelCost-Factor for MainActivity {t.name} '\
-                        f'and mode {mode.code}'
-                    )
-                    userdef.add_formel_attribute(
-                        'NETZ',
-                        name=f'Factor_Time_{code}_{mode.code}',
-                        formel=formel_time.format(a=code, m=mode.code),
-                        kommentar=f'TravelTime-Factor for MainActivity {t.name} '\
-                        f'and mode {mode.code}'
-                    )
+        #for code, t in self.df.iterrows():
+            #if t.CALCDESTMODE:
+                #for _, mode in modes.iterrows():
+                    #userdef.add_formel_attribute(
+                        #'NETZ',
+                        #name=f'Factor_Cost_{code}_{mode.code}',
+                        #formel=formel_cost.format(a=code, m=mode.code),
+                        #kommentar=f'TravelCost-Factor for MainActivity {t.name} '\
+                        #f'and mode {mode.code}'
+                    #)
+                    #userdef.add_formel_attribute(
+                        #'NETZ',
+                        #name=f'Factor_Time_{code}_{mode.code}',
+                        #formel=formel_time.format(a=code, m=mode.code),
+                        #kommentar=f'TravelTime-Factor for MainActivity {t.name} '\
+                        #f'and mode {mode.code}'
+                    #)
 
     def add_modal_split(self,
                         userdef: BenutzerdefiniertesAttribut,

@@ -11,6 +11,7 @@ from visumtransfer.visum_table import (
 
 from visumtransfer.visum_tables import (
     Netz,
+    Modus,
     Matrix,
     BenutzerdefiniertesAttribut,
     Nachfragemodell,
@@ -58,6 +59,8 @@ class VisemDemandModel:
         self.add_params_tripgeneration(userdef1)
         self.add_strukturgroessen(params.activities, model_code, vt)
 
+
+        # Kenngrößenmatrizen
         matrices.set_category('General')
         matrices.add_daten_matrix('Diagonal',
                                   category='General',
@@ -67,6 +70,9 @@ class VisemDemandModel:
                                   category='General',
                                   matrixtyp='Kenngröße',
                                   loadmatrix=1)
+        matrices.add_ov_kg_matrices(params, userdef1)
+        matrices.add_iv_kg_matrices(userdef1)
+
 
         acts = self.add_activities(userdef1, userdef2, matrices,
                                    params, model_code, vt)
@@ -84,6 +90,10 @@ class VisemDemandModel:
 
         ns = Nachfrageschicht()
         userdef1.add_daten_attribute('Nachfrageschicht',
+                                     'MainActCode',
+                                     datentyp='LongText',
+                                     )
+        userdef1.add_daten_attribute('Nachfrageschicht',
                                      'Mobilitaetsrate')
         userdef1.add_daten_attribute('Nachfrageschicht',
                                      'Tours',
@@ -95,6 +105,37 @@ class VisemDemandModel:
                                      'Tarifmatrix',
                                      datentyp='LongText',
                                      kommentar='Tarifmatrix der Nachfrageschicht')
+        for m in params.mode_set.split(','):
+            userdef1.add_daten_attribute('Personengruppe',
+                                         f'Factor_Cost_{m}',
+                                         datentyp='Double',
+                                         kommentar=f'Kostenfaktor {m}')
+            formel = f'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Factor_Cost_{m}])'
+            userdef1.add_formel_attribute('Personengruppe',
+                                         f'Factor_Cost_{m}_MainAct',
+                                         formel=formel,
+                                         datentyp='Double',
+                                         kommentar=f'Kostenfaktor {m} der Hauptaktivität',
+                                         )
+            userdef1.add_daten_attribute('Personengruppe',
+                                         f'Factor_Time_{m}',
+                                         datentyp='Double',
+                                         kommentar=f'Zeitfaktor {m}')
+            formel = f'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Factor_Time_{m}])'
+            userdef1.add_formel_attribute('Personengruppe',
+                                         f'Factor_Time_{m}_MainAct',
+                                         formel=formel,
+                                         datentyp='Double',
+                                         kommentar='Zeitfaktor {m} der Hauptaktivität',
+                                         )
+        formel = 'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Tarifmatrix])'
+        userdef1.add_formel_attribute('Personengruppe',
+                                     f'Tarifmatrix_MainAct',
+                                     formel=formel,
+                                     datentyp='LongText',
+                                     kommentar='Tarifmatrix der Hauptaktivität',
+                                     )
+
         ns.create_tables_gd(personengruppe=pg,
                             aktivitaet=acts,
                             aktivitaetenkette=ak,
@@ -107,9 +148,7 @@ class VisemDemandModel:
                             category='ZielVMWahl_RSA')
         vt.tables['Nachfrageschicht'] = ns
 
-        # Kenngrößenmatrizen
-        matrices.add_ov_kg_matrices(params, userdef1)
-        matrices.add_iv_kg_matrices(userdef1)
+        # Nachfragematrizen
         matrices.add_iv_demand(loadmatrix=1)
         matrices.add_ov_demand(loadmatrix=1)
         matrices.add_other_demand_matrices(params, loadmatrix=0)
@@ -282,15 +321,30 @@ class VisemDemandModel:
         # spezifische Attribute für die Verkehrsmittelwahl
         userdef1.add_daten_attribute(
             objid='AKTIVITAET',
+            name='ZIELWAHL_FUNKTION_MATRIXCODES',
+            datentyp='LongText',
+            kommentar='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
+        )
+        userdef1.add_daten_attribute(
+            objid='AKTIVITAET',
             name='TARIFMATRIX',
             datentyp='LongText',
             kommentar='Name einer speziellen Tarifmatrix, '\
             'die bei dieser Hauptaktivität verwendet werden soll',
         )
+        #for m in params.mode_set:
+            #userdef1.add_daten_attribute('Aktivitaet',
+                                         #f'Factor_Cost_{m}',
+                                         #standardwert=1.0,
+                                         #kommentar=f'Kostenfaktor {m}')
+            #userdef1.add_daten_attribute('Aktivitaet',
+                                         #f'Factor_Time_{m}',
+                                         #standardwert=1.0,
+                                         #kommentar=f'Zeitfaktor {m}')
 
         acts.create_tables(params.activities, model=model_code, suffix='')
         acts.add_benutzerdefinierte_attribute(userdef2)
-        acts.add_net_activity_ticket_attributes(userdef2, params.modes)
+        #acts.add_net_activity_ticket_attributes(userdef2, params.modes)
         acts.add_output_matrices(matrices, userdef2)
         acts.add_modal_split(userdef2, matrices, params.modes)
         acts.add_balancing_output_matrices(matrices, userdef2, loadmatrix=0)
@@ -725,8 +779,8 @@ if __name__ == '__main__':
 
     params = dm.get_params(param_excel_fp)
     #dm.add_nsegs_userdefined(modification_no=444)
-    dm.create_transfer(params, modification_number=22)
-    dm.create_transfer_constants(params, modification_no=25)
+    dm.create_transfer(params, modification_number=62)
+    #dm.create_transfer_constants(params, modification_no=25)
     #dm.create_transfer_target_values(params, modification_no=26)
     # dm.write_modification_iv_matrices(modification_no=12)
     #dm.write_modification_ov_matrices(modification_no=14)
