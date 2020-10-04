@@ -369,7 +369,7 @@ class Matrix(VisumTable):
         )
         # ÖV-Kosten
         self.set_category('OV_Skims_Fare')
-        ticketarten = ['SINGLETICKET',
+        ticketarten = ['Singleticket',
                        'MonatskarteAbo',
                        'Jugendnetzkarte',
                        'SeniorenAbo',
