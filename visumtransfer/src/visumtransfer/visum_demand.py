@@ -5,6 +5,7 @@ import os
 import json
 import pandas as pd
 from argparse import ArgumentParser
+from typing import List
 
 from visumtransfer.visum_table import (
     VisumTransfer)
@@ -41,6 +42,8 @@ class VisemDemandModel:
 
     def create_transfer(self, params: Params, modification_number: int):
 
+        nsegcodes = ['A', 'AboA', 'AboJ', 'AboS']
+
         vt = VisumTransfer.new_transfer()
 
         userdef1 = BenutzerdefiniertesAttribut()
@@ -70,7 +73,7 @@ class VisemDemandModel:
                                   category='General',
                                   matrixtyp='Kenngröße',
                                   loadmatrix=1)
-        matrices.add_ov_kg_matrices(params, userdef1)
+        matrices.add_ov_kg_matrices(params, userdef1, nsegcodes=nesegcodes)
         matrices.add_iv_kg_matrices(userdef1)
 
 
@@ -332,19 +335,10 @@ class VisemDemandModel:
             kommentar='Name einer speziellen Tarifmatrix, '\
             'die bei dieser Hauptaktivität verwendet werden soll',
         )
-        #for m in params.mode_set:
-            #userdef1.add_daten_attribute('Aktivitaet',
-                                         #f'Factor_Cost_{m}',
-                                         #standardwert=1.0,
-                                         #kommentar=f'Kostenfaktor {m}')
-            #userdef1.add_daten_attribute('Aktivitaet',
-                                         #f'Factor_Time_{m}',
-                                         #standardwert=1.0,
-                                         #kommentar=f'Zeitfaktor {m}')
 
         acts.create_tables(params.activities, model=model_code, suffix='')
         acts.add_benutzerdefinierte_attribute(userdef2)
-        #acts.add_net_activity_ticket_attributes(userdef2, params.modes)
+        acts.add_net_attributes_factor_time_costs(userdef2, params.modes)
         acts.add_output_matrices(matrices, userdef2)
         acts.add_modal_split(userdef2, matrices, params.modes)
         acts.add_balancing_output_matrices(matrices, userdef2, loadmatrix=0)
@@ -653,7 +647,7 @@ class VisemDemandModel:
         v.write(fn=v.get_modification(self.modifications, modification_number))
 
 
-    def add_nsegs_userdefined(self, modification_no: int):
+    def add_nsegs_userdefined(self, modification_no: int, nsegcodes_put: List[str]):
         vt = VisumTransfer.new_transfer()
         userdef0 = BenutzerdefiniertesAttribut()
         vt.tables['BenutzerdefinierteAttribute0'] = userdef0
@@ -693,6 +687,9 @@ class VisemDemandModel:
                               modus=mode_lkw))
         nseg.add_row(nseg.Row(code='PG', name='Kfz bis 3,5 to',
                               modus='P'))
+
+        for nsegcode in nsegcodes_put:
+            nseg.add_row(nseg.Row(code=nsegcode, modus='O'))
 
         fn = vt.get_modification(modification_no, self.modifications)
         vt.write(fn=fn)

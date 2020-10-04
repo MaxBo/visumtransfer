@@ -4,7 +4,7 @@ import datetime
 from collections import defaultdict
 import xarray as xr
 from visumtransfer.params import Params
-from typing import Mapping
+from typing import Mapping, List
 from .basis import BenutzerdefiniertesAttribut
 from visumtransfer.visum_table import VisumTable
 
@@ -225,16 +225,35 @@ class Matrix(VisumTable):
                            factor=.8,
                            exponent=.8,
                            time_interval=1,
+                           nsegcodes: List[str],
                            ):
         """Add OV Kenngrößen-Matrizen für Zeitscheiben"""
         time_series = params.time_series
-        nsegcode = 'A'
+
         self.set_category('OV_TimeSeries_Skims')
         for idx, ts in time_series.iterrows():
             ts_code = ts.code
             ts_name = ts.name_long
             vonzeit = self.get_timestring(ts.from_hour)
             biszeit = self.get_timestring(ts.to_hour)
+
+            for nsegcode in nsegcodes:
+                self.add_daten_matrix(
+                    code='FAR',
+                    matrixtyp='Kenngröße',
+                    name=f'Fahrpreis {nsegcode} {ts_name}',
+                    datname=f'FAR_{ts_code}',
+                    nsegcode=nsegcode,
+                    tag=1,
+                    vonzeit=vonzeit,
+                    biszeit=biszeit,
+                    initmatrix=1,
+                    zeitbezug='Abfahrtszeit',
+                    # moduscode='O',
+                )
+
+            nsegcode = 'A'
+
             self.add_daten_matrix(
                 code='PJT',
                 matrixtyp='Kenngröße',
@@ -248,11 +267,12 @@ class Matrix(VisumTable):
                 initmatrix=1,
                 # moduscode='O'
             )
+
             self.add_daten_matrix(
-                code='FAR',
+                code='JRD',
                 matrixtyp='Kenngröße',
-                name=f'Fahrpreis {nsegcode} {ts_name}',
-                datname=f'FAR_{ts_code}',
+                name=f'Reiseweite {nsegcode} {ts_name}',
+                datname=f'JRD_{ts_code}',
                 nsegcode=nsegcode,
                 tag=1,
                 vonzeit=vonzeit,
@@ -274,34 +294,25 @@ class Matrix(VisumTable):
                 zeitbezug='Abfahrtszeit',
                 # moduscode='O',
             )
+
+        for nsegcode in nsegcodes:
             self.add_daten_matrix(
-                code='JRD',
+                code='FAR',
                 matrixtyp='Kenngröße',
-                name=f'Reiseweite {nsegcode} {ts_name}',
-                datname=f'JRD_{ts_code}',
+                name=f'Fahrpreis {nsegcode}',
                 nsegcode=nsegcode,
-                tag=1,
-                vonzeit=vonzeit,
-                biszeit=biszeit,
-                initmatrix=1,
+                vonzeit='',
+                biszeit='',
                 zeitbezug='Abfahrtszeit',
                 # moduscode='O',
             )
+
+        nsegcode = 'A'
 
         self.add_daten_matrix(
             code='PJT',
             matrixtyp='Kenngröße',
             name=f'Empfundene Reisezeit {nsegcode}',
-            nsegcode=nsegcode,
-            vonzeit='',
-            biszeit='',
-            zeitbezug='Abfahrtszeit',
-            # moduscode='O',
-        )
-        self.add_daten_matrix(
-            code='FAR',
-            matrixtyp='Kenngröße',
-            name=f'Fahrpreis {nsegcode}',
             nsegcode=nsegcode,
             vonzeit='',
             biszeit='',
@@ -328,6 +339,18 @@ class Matrix(VisumTable):
             zeitbezug='Abfahrtszeit',
             # moduscode='O',
         )
+        self.add_daten_matrix(
+            code='JRD',
+            matrixtyp='Kenngröße',
+            name=f'Reiseweite {nsegcode}',
+            nsegcode=nsegcode,
+            vonzeit='',
+            biszeit='',
+            # initmatrix=1,
+            zeitbezug='Abfahrtszeit',
+            # moduscode='O',
+        )
+
         self.set_category('OV_TimeSeries_Skims_Formula')
 
         self.add_daten_matrix(
@@ -360,17 +383,6 @@ class Matrix(VisumTable):
                 savematrix=savematrix,
             )
 
-        self.add_daten_matrix(
-            code='JRD',
-            matrixtyp='Kenngröße',
-            name=f'Reiseweite {nsegcode}',
-            nsegcode=nsegcode,
-            vonzeit='',
-            biszeit='',
-            # initmatrix=1,
-            zeitbezug='Abfahrtszeit',
-            # moduscode='O',
-        )
 
         self.add_daten_matrix(
             code='OVDIS',
@@ -408,7 +420,7 @@ class Matrix(VisumTable):
         vonzeit = self.get_time_seconds(ts['from_hour'])
         biszeit = self.get_time_seconds(ts['to_hour'])
         formula = (
-            f'Matrix([CODE] = "PJT" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit}) + '
+            f'Matrix([CODE] = "PJT" & [NSEGCODE]="{nsegcode}" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit}) + '
             f'{factor} * POW('
             f'Matrix([CODE] = "FFZ" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit})'
             f', {exponent})')
