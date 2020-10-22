@@ -422,6 +422,14 @@ class Matrix(VisumTable):
             formel=complete_formula,
         )
 
+        self.add_formel_matrix(
+            code='OWTS',
+            matrixtyp='Kenngröße',
+            name='Startwartezeit aus XADT',
+            moduscode='O',
+            formel='0.8 * POW(Matrix([CODE]="FFZ" & [FROMTIME]=21600 & [TOTIME]=32400):0.8)',
+        )
+
     def add_iv_kg_matrices(self,
                            userdef: BenutzerdefiniertesAttribut,
                            savematrix=0):
@@ -739,14 +747,21 @@ class Matrix(VisumTable):
                               matrixfolder='Pendler')
         formel = 'Matrix([CODE]="Pendlermatrix_OBB") * [SUM:PGRUPPEN\ERWERBSTAETIGE] '\
             '/ MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB"))'
-        self.add_formel_matrix(
+        #self.add_formel_matrix(
+            #code='Pendlermatrix_OBB_Gesamt',
+            #name='Pendlermatrix_OBB incl Nicht-SVB-Beschäftigte',
+            #matrixtyp='Nachfrage',
+            #bezugstyp='Oberbezirk',
+            #matrixfolder='Pendler',
+            #savematrix=0,
+            #formel=formel)
+        self.add_daten_matrix(
             code='Pendlermatrix_OBB_Gesamt',
             name='Pendlermatrix_OBB incl Nicht-SVB-Beschäftigte',
             matrixtyp='Nachfrage',
             bezugstyp='Oberbezirk',
             matrixfolder='Pendler',
-            savematrix=0,
-            formel=formel)
+            savematrix=0)
 
         self.set_category('DestinationChoiceSkims')
         self.add_formel_matrix(

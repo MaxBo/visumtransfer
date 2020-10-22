@@ -71,6 +71,9 @@ class VisemDemandModel:
         vt.tables['BenutzerdefinierteAttribute1'] = userdef1
         userdef2 = BenutzerdefiniertesAttribut()
 
+        userdef1.add_daten_attribute('MATRIX', 'obb_matrix_ref',  datentyp='LongText')
+        userdef1.add_daten_attribute('MATRIX', 'Category',  datentyp='LongText')
+
         netz = self.add_pgr_categories(vt, userdef1)
 
         model_code = 'VisemGGR'
@@ -758,7 +761,7 @@ if __name__ == '__main__':
     params = dm.get_params(param_excel_fp)
     #dm.add_nsegs_userdefined(modification_no=444)
     dm.create_transfer(params, modification_number=16, tag_index=318)
-    dm.create_transfer_constants(params, modification_no=17)
-    dm.create_transfer_target_values(params, modification_no=18)
+    #dm.create_transfer_constants(params, modification_no=17)
+    #dm.create_transfer_target_values(params, modification_no=18)
     # dm.write_modification_iv_matrices(modification_no=12)
     #dm.write_modification_ov_matrices(modification_no=14)
