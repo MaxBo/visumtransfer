@@ -272,11 +272,11 @@ class VisumTable(metaclass=MetaClass):
         return df
 
     def add_row(self, row: recordclass):
-        self.add_rows([row])
+        self.add_rows([list(row)])
 
     def add_rows(self, rows: List[recordclass]):
         df2append = self.df_from_array(rows)
-        self.df = self.df.append(df2append, verify_integrity=True)
+        self.df = pd.concat([self.df, df2append], verify_integrity=True)
 
     def add_df(self, df: pd.DataFrame):
         """Add a pandas Dataframe"""

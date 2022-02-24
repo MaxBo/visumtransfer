@@ -225,7 +225,7 @@ class Matrix(VisumTable):
                            factor=.8,
                            exponent=.8,
                            time_interval=1,
-                           nsegcodes: List[str],
+                           nsegcodes: List[str]=[],
                            ):
         """Add OV Kenngrößen-Matrizen für Zeitscheiben"""
         time_series = params.time_series
@@ -371,8 +371,6 @@ class Matrix(VisumTable):
         self.set_category('OV_Skims_Fare')
         ticketarten = ['Singleticket',
                        'MonatskarteAbo',
-                       'Jugendnetzkarte',
-                       'SeniorenAbo',
                        ]
         for ticketart in ticketarten:
             self.add_daten_matrix(

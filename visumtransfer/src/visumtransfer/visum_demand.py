@@ -73,7 +73,7 @@ class VisemDemandModel:
                                   category='General',
                                   matrixtyp='Kenngröße',
                                   loadmatrix=1)
-        matrices.add_ov_kg_matrices(params, userdef1, nsegcodes=nesegcodes)
+        matrices.add_ov_kg_matrices(params, userdef1, nsegcodes=nsegcodes)
         matrices.add_iv_kg_matrices(userdef1)
 
 
