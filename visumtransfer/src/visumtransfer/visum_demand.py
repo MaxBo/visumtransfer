@@ -226,7 +226,7 @@ class VisemDemandModel:
             self.add_category(pgr_category, {}, netz)
 
         # create the groups for the RSA-Model
-        categories = ['RSA', 'occupation', 'car_availability', 'Tarifzonen', 'Gesamt']
+        categories = ['RSA', 'occupation', 'car_availability', 'Teilraum', 'Gesamt']
         category_generation = 'ErzeugungRSA'
         gg = pg.get_groups_destmode(categories, new_category=category_generation)
         pg.add_df(gg)
@@ -253,7 +253,7 @@ class VisemDemandModel:
                                   output_categories=['RSA'])
 
         #  Create the groups for the Main Model
-        categories = ['occupation', 'car_availability', 'Tarifzonen', 'Gesamt']
+        categories = ['occupation', 'car_availability', 'Teilraum', 'Gesamt']
         category_generation = 'Erzeugung'
         gg = pg.get_groups_destmode(categories, new_category=category_generation)
         pg.add_df(gg)
@@ -644,7 +644,7 @@ class VisemDemandModel:
         matrices = Matrix()
         matrices.add_ov_demand()
         v.tables['Matrizen'] = matrices
-        v.write(fn=v.get_modification(self.modifications, modification_number))
+        v.write(fn=v.get_modification(modification_number, self.modifications))
 
 
     def add_nsegs_userdefined(self, modification_no: int, nsegcodes_put: List[str]):
@@ -700,7 +700,7 @@ class VisemDemandModel:
         v = VisumTransfer.new_transfer()
 
         # Personengruppenspezifische Zielwerte Modal Split
-        gd = params.group_definitions.set_index('code')
+        gd = params.group_definitions.set_index('CODE')
         gd = gd[cols]
         gd = gd.loc[gd.any(axis=1)]
         pg = Personengruppe(mode='*')
@@ -761,9 +761,9 @@ class VisemDemandModel:
 
 if __name__ == '__main__':
     argpase = ArgumentParser()
-    argpase.add_argument('--infolder', type=str, default='D:\GGR\KS\55 Nachfragemodell')
+    argpase.add_argument('--infolder', type=str, default=r'D:\GGR\KS\55 Nachfragemodell')
     argpase.add_argument('--param_excel_fp', type=str, default='params_long_2022.xlsx')
-    argpase.add_argument('--visum_folder', type=str, default='D:\GGR\KS\55 Nachfragemodell')
+    argpase.add_argument('--visum_folder', type=str, default=r'D:\GGR\KS\55 Nachfragemodell')
     options = argpase.parse_args()
 
     param_excel_fp = os.path.join(options.infolder, options.param_excel_fp)
@@ -775,9 +775,9 @@ if __name__ == '__main__':
                           )
 
     params = dm.get_params(param_excel_fp)
-    dm.add_nsegs_userdefined(modification_no=444)
-    dm.create_transfer(params, modification_number=62)
-    #dm.create_transfer_constants(params, modification_no=25)
-    #dm.create_transfer_target_values(params, modification_no=26)
-    # dm.write_modification_iv_matrices(modification_no=12)
-    #dm.write_modification_ov_matrices(modification_no=14)
+    dm.add_nsegs_userdefined(modification_no=5, nsegcodes_put=['O'])
+    dm.create_transfer(params, modification_number=6)
+    dm.create_transfer_constants(params, modification_no=7)
+    dm.create_transfer_target_values(params, modification_no=8)
+    dm.write_modification_iv_matrices(modification_number=9)
+    dm.write_modification_ov_matrices(modification_number=10)

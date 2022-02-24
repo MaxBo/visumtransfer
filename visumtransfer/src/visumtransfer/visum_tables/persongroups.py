@@ -50,7 +50,7 @@ class Personengruppe(VisumTable):
                 .assign(one=1)
             assert len(df_cat), f'no groups defined for category {category}'
 
-            df = df.assign(one=1).merge(df_cat, on='one').drop('one', 1)
+            df = df.assign(one=1).merge(df_cat, on='one').drop('one', axis=1)
 
             # define code, name and groups_const for composite groups
             df['CODE'] = df['CODE'] + df['CODEPART']

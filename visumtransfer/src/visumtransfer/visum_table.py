@@ -261,7 +261,7 @@ class VisumTable(metaclass=MetaClass):
         fobj.writeln('*')
 
     def df_from_array(self, data_arr) -> pd.DataFrame:
-        df = pd.DataFrame(data_arr, columns=self.cols)
+        df = pd.DataFrame((list(r) for r in data_arr), columns=self.cols)
         if self.pkey:
             df.set_index(self.pkey, inplace=True)
         return df
@@ -286,7 +286,7 @@ class VisumTable(metaclass=MetaClass):
             .reindex(self.cols, axis='columns')\
             .set_index(self.pkey)\
             .fillna(self._defaults)
-        self.df = self.df.append(df, verify_integrity=True)
+        self.df = pd.concat([self.df, df], verify_integrity=True)
 
     def add_cols(self, new_cols: list):
         """Add columns to the columns definition"""
