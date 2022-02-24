@@ -42,7 +42,7 @@ class VisemDemandModel:
 
     def create_transfer(self, params: Params, modification_number: int):
 
-        nsegcodes = ['A', 'AboA', 'AboJ', 'AboS']
+        nsegcodes = ['O', 'AboA', 'AboJ', 'AboS']
 
         vt = VisumTransfer.new_transfer()
 
@@ -761,9 +761,9 @@ class VisemDemandModel:
 
 if __name__ == '__main__':
     argpase = ArgumentParser()
-    argpase.add_argument('--infolder', type=str)
-    argpase.add_argument('--param_excel_fp', type=str, default='tdm_params.xlsx')
-    argpase.add_argument('--visum_folder', type=str, default='D:\GGR\H\VISH-VEP19')
+    argpase.add_argument('--infolder', type=str, default='D:\GGR\KS\55 Nachfragemodell')
+    argpase.add_argument('--param_excel_fp', type=str, default='params_long_2022.xlsx')
+    argpase.add_argument('--visum_folder', type=str, default='D:\GGR\KS\55 Nachfragemodell')
     options = argpase.parse_args()
 
     param_excel_fp = os.path.join(options.infolder, options.param_excel_fp)
@@ -775,7 +775,7 @@ if __name__ == '__main__':
                           )
 
     params = dm.get_params(param_excel_fp)
-    #dm.add_nsegs_userdefined(modification_no=444)
+    dm.add_nsegs_userdefined(modification_no=444)
     dm.create_transfer(params, modification_number=62)
     #dm.create_transfer_constants(params, modification_no=25)
     #dm.create_transfer_target_values(params, modification_no=26)

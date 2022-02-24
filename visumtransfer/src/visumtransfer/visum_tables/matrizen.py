@@ -252,7 +252,7 @@ class Matrix(VisumTable):
                     # moduscode='O',
                 )
 
-            nsegcode = 'A'
+            nsegcode = 'O'
 
             self.add_daten_matrix(
                 code='PJT',
@@ -307,7 +307,7 @@ class Matrix(VisumTable):
                 # moduscode='O',
             )
 
-        nsegcode = 'A'
+        nsegcode = 'O'
 
         self.add_daten_matrix(
             code='PJT',
@@ -614,7 +614,7 @@ class Matrix(VisumTable):
         self.add_daten_matrix(code='Visem_O', name='ÖPNV',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='A',
+                              nsegcode='O',
                               moduscode='O',
                               savematrix=savematrix,
                               obb_matrix_ref='[CODE]="Visem_OBB_O"',
