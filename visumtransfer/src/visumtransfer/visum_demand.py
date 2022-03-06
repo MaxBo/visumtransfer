@@ -231,6 +231,10 @@ class VisemDemandModel:
         gg = pg.get_groups_destmode(categories, new_category=category_generation)
         pg.add_df(gg)
 
+        categories = ['RSA', 'Pendler']
+        gg = pg.get_groups_destmode(categories, new_category=category_generation)
+        pg.add_df(gg)
+
         category = 'ZielVMWahl_RSA'
         #tc_categories = ['occupation', 'car_availability']
         tc_categories = ['occupation']
