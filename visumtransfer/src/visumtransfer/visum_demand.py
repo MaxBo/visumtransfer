@@ -237,7 +237,6 @@ class VisemDemandModel:
 
         category = 'ZielVMWahl_RSA'
         #tc_categories = ['occupation', 'car_availability']
-        tc_categories = ['occupation', 'Pendler']
         attrs = {
             'Comment': 'Zielwahl für Randsummenabgleich',
             'ActivityMatrixPrefix': 'Pendlermatrix_',
@@ -247,6 +246,16 @@ class VisemDemandModel:
             'RSA': True,
         }
         self.add_category(category, attrs, netz)
+        tc_categories = ['occupation']
+        pg.create_groups_destmode(params.groups_generation,
+                                  params.trip_chain_rates_rsa,
+                                  acts,
+                                  model_code,
+                                  tc_categories,
+                                  category,
+                                  category_generation,
+                                  output_categories=['RSA'])
+        tc_categories = ['Pendler']
         pg.create_groups_destmode(params.groups_generation,
                                   params.trip_chain_rates_rsa,
                                   acts,
@@ -257,8 +266,11 @@ class VisemDemandModel:
                                   output_categories=['RSA'])
 
         #  Create the groups for the Main Model
-        categories = ['occupation', 'car_availability', 'Teilraum', 'Gesamt', 'Pendler']
         category_generation = 'Erzeugung'
+        categories = ['occupation', 'car_availability', 'Teilraum', 'Gesamt']
+        gd = pg.get_groups_destmode(categories, new_category=category_generation)
+        pg.add_df(gd)
+        categories = ['Pendler']
         gd = pg.get_groups_destmode(categories, new_category=category_generation)
         pg.add_df(gd)
 
@@ -270,7 +282,18 @@ class VisemDemandModel:
             'PersonGroupPrefix': 'Pgr_',
         }
         self.add_category(category, attrs, netz)
+        categories = ['occupation', 'car_availability', 'Teilraum', 'Gesamt']
         tc_categories = ['occupation']
+        pg.create_groups_destmode(params.groups_generation,
+                                  params.trip_chain_rates,
+                                  acts,
+                                  model_code,
+                                  tc_categories,
+                                  category,
+                                  category_generation,
+                                  output_categories=categories)
+        categories = ['Pendler']
+        tc_categories = ['Pendler']
         pg.create_groups_destmode(params.groups_generation,
                                   params.trip_chain_rates,
                                   acts,
