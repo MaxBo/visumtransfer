@@ -533,7 +533,6 @@ class Matrix(VisumTable):
 
     def add_iv_demand(self, savematrix=0, loadmatrix=1):
         """Add PrT Demand Matrices"""
-        mode_lkw = 'X'
 
         self.set_category('Visem_Demand')
         self.add_daten_matrix(code='Visem_P', name='Pkw regional',
@@ -543,59 +542,62 @@ class Matrix(VisumTable):
                               moduscode='P',
                               savematrix=savematrix,
                               obb_matrix_ref='[CODE]="Visem_OBB_P"',
+                              matrixfolder='Analysefall',
                               )
 
         self.set_category('Other_Demand')
+        # Wirtschaftsverkehr kommt aus LVMBY
         self.add_daten_matrix(code='Pkw_Wirtschaftsverkehr',
                               name='Pkw-Wirtschaftsverkehr',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='B_P',
-                              moduscode='P')
+                              nsegcode='P_W',
+                              moduscode='P_W')
         self.add_daten_matrix(code='Lieferfahrzeuge', name='Lieferfahrzeuge',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='B_Li',
-                              moduscode='P')
+                              nsegcode='LKW_S',
+                              moduscode='LKW_S')
         self.add_daten_matrix(code='Lkw_bis_12to',
                               name='Lkw zw. 3,5 und 12 to',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='B_L1',
-                              moduscode=mode_lkw)
+                              nsegcode='LKW_L',
+                              moduscode='LKW_L')
         self.add_daten_matrix(code='Lkw_über_12to', name='Lkw > 3,5 to',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='B_L2',
-                              moduscode=mode_lkw)
+                              nsegcode='LKW_XL',
+                              moduscode='LKW_XL')
         self.add_daten_matrix(code='FernverkehrPkw',
                               name='Pkw-Fernverkehr',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='PkwFern',
-                              moduscode='P')
+                              nsegcode='P_ex',
+                              moduscode='P_ex')
         self.add_daten_matrix(code='FernverkehrLkw',
                               name='Lkw-Fernverkehr',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='LkwFern',
-                              moduscode=mode_lkw)
+                              nsegcode='Lkw_ex',
+                              moduscode='Lkw_ex')
 
-        # Summen Schwerverkehr und Kfz bis 3.5 to
-        nsegs = ['Lkw_b_12 nwd',
-                 'Lkw_gr_12 nwd']
+        ## Summen Schwerverkehr und Kfz bis 3.5 to
+        nsegs = ['Lkw_bis_12to',
+                 'Lkw_über_12to',
+                 'FernverkehrLkw']
         formel = ' + '.join((f'Matrix([CODE]="{nseg}" & [BEZUGSTYP]=2)'
                             for nseg in nsegs))
         self.add_formel_matrix(code='Schwerverkehr',
                                formel=formel,
                                name='Schwerverkehr ohne Busse',
                                matrixtyp='Nachfrage',
-                               nsegcode='SV',
-                               moduscode=mode_lkw)
+                               nsegcode='SV')
 
         nsegs = ['Visem_P',
                  'Pkw_Wirtschaftsverkehr',
-                 'PKW NWD',
+                 'Lieferfahrzeuge',
+                 'FernverkehrPkw',
                  ]
         formel = ' + '.join((f'Matrix([CODE]="{nseg}" & [BEZUGSTYP]=2)'
                              for nseg in nsegs))
@@ -603,7 +605,7 @@ class Matrix(VisumTable):
                                formel=formel,
                                name='Kfz bis 3,5 to',
                                matrixtyp='Nachfrage',
-                               nsegcode='PG',
+                               nsegcode='P_A',
                                moduscode='P')
 
     def add_ov_demand(self, savematrix=0, loadmatrix=1):
@@ -612,16 +614,17 @@ class Matrix(VisumTable):
         self.add_daten_matrix(code='Visem_O', name='ÖPNV',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='O',
+                              nsegcode='OEV',
                               moduscode='O',
                               savematrix=savematrix,
                               obb_matrix_ref='[CODE]="Visem_OBB_O"',
+                              matrixfolder='Analysefall',
                               )
         self.set_category('OV_Demand')
         self.add_daten_matrix(code='FernverkehrBahn', name='Fernverkehr Bahn',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='OFern',
+                              nsegcode='O_ex',
                               moduscode='O')
 
     def add_other_demand_matrices(self,
@@ -758,11 +761,11 @@ class Matrix(VisumTable):
         self.add_formel_matrix(
             code='Aussen2Aussen',
             matrixtyp='Kenngröße',
-            formel='-999999 * (FROM[TYPNR] > 3) * (TO[TYPNR] > 3)')
+            formel='-999999 * (FROM[TYPNR] > 1) * (TO[TYPNR] > 1)')
         self.add_formel_matrix(
             code='Innen2Aussen',
             matrixtyp='Kenngröße',
-            formel='-999999 * ((FROM[TYPNR] <= 3) * (TO[TYPNR] <= 3) + (FROM[TYPNR] > 3) * (TO[TYPNR] > 3))')
+            formel='-999999 * ((FROM[TYPNR] <= 1) * (TO[TYPNR] <= 1) + (FROM[TYPNR] > 1) * (TO[TYPNR] > 1))')
 
     def add_logsum_matrices(self,
                             demand_strata: 'Nachfrageschicht',

@@ -42,7 +42,7 @@ class VisemDemandModel:
 
     def create_transfer(self, params: Params, modification_number: int):
 
-        nsegcodes = ['O', 'AboA', 'AboJ', 'AboS']
+        nsegcodes = ['O'] # , 'AboA', 'AboJ', 'AboS']
 
         vt = VisumTransfer.new_transfer()
 

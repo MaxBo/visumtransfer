@@ -568,7 +568,7 @@ class Aktivitaet(VisumTable):
         Dieser werden dann auf Bezirksebene übertragen und im
         Zielwahlmodell zur Korrektur der Wegelängen verwendet
         """
-        reference_column = 'OBERBEZIRK_SRV'
+        reference_column = 'OBB_Kreis'
         formel = 'TableLookup(MAINZONE OBB, OBB[NO]=[{col}], OBB[KF_LOGSUM_{a}])'
         for code, t in self.df.iterrows():
             if not t.ISTHEIMATAKTIVITAET:
