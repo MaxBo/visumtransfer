@@ -605,7 +605,7 @@ class Matrix(VisumTable):
                                formel=formel,
                                name='Kfz bis 3,5 to',
                                matrixtyp='Nachfrage',
-                               nsegcode='P_A',
+                               nsegcode='PG',
                                moduscode='P')
 
     def add_ov_demand(self, savematrix=0, loadmatrix=1):
@@ -614,7 +614,7 @@ class Matrix(VisumTable):
         self.add_daten_matrix(code='Visem_O', name='ÖPNV',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
-                              nsegcode='OEV',
+                              nsegcode='O',
                               moduscode='O',
                               savematrix=savematrix,
                               obb_matrix_ref='[CODE]="Visem_OBB_O"',

@@ -228,16 +228,16 @@ class VisemDemandModel:
         # create the groups for the RSA-Model
         categories = ['RSA', 'occupation', 'car_availability', 'Teilraum', 'Gesamt']
         category_generation = 'ErzeugungRSA'
-        gg = pg.get_groups_destmode(categories, new_category=category_generation)
-        pg.add_df(gg)
+        gd = pg.get_groups_destmode(categories, new_category=category_generation)
+        pg.add_df(gd)
 
         categories = ['RSA', 'Pendler']
-        gg = pg.get_groups_destmode(categories, new_category=category_generation)
-        pg.add_df(gg)
+        gd = pg.get_groups_destmode(categories, new_category=category_generation)
+        pg.add_df(gd)
 
         category = 'ZielVMWahl_RSA'
         #tc_categories = ['occupation', 'car_availability']
-        tc_categories = ['occupation']
+        tc_categories = ['occupation', 'Pendler']
         attrs = {
             'Comment': 'Zielwahl für Randsummenabgleich',
             'ActivityMatrixPrefix': 'Pendlermatrix_',
@@ -257,10 +257,10 @@ class VisemDemandModel:
                                   output_categories=['RSA'])
 
         #  Create the groups for the Main Model
-        categories = ['occupation', 'car_availability', 'Teilraum', 'Gesamt']
+        categories = ['occupation', 'car_availability', 'Teilraum', 'Gesamt', 'Pendler']
         category_generation = 'Erzeugung'
-        gg = pg.get_groups_destmode(categories, new_category=category_generation)
-        pg.add_df(gg)
+        gd = pg.get_groups_destmode(categories, new_category=category_generation)
+        pg.add_df(gd)
 
         category = 'ZielVMWahl'
         attrs = {
@@ -669,7 +669,7 @@ class VisemDemandModel:
                                          standardwert=0.15)
         userdef0.add_daten_attribute('Netz', 'MINUS_ONE', standardwert=-1)
 
-        mode_lkw = 'X'
+        mode_lkw = 'LKW_XL'
         # Nachfragesegmente
         nseg = Nachfragesegment()
         vt.tables['Nachfragesegment'] = nseg
