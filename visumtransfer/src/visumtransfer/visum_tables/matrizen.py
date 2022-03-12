@@ -418,7 +418,7 @@ class Matrix(VisumTable):
         vonzeit = self.get_time_seconds(ts['from_hour'])
         biszeit = self.get_time_seconds(ts['to_hour'])
         formula = (
-            f'Matrix([CODE] = "PJT" & [NSEGCODE]="{nsegcode}" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit}) + '
+            f'Matrix([CODE] = "PJT" & [DSEGCODE]="{nsegcode}" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit}) + '
             f'{factor} * POW('
             f'Matrix([CODE] = "FFZ" & [FROMTIME]={vonzeit} & [TOTIME]={biszeit})'
             f', {exponent})')
