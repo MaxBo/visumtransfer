@@ -58,7 +58,11 @@ class VisemDemandModel:
 
         matrices = Matrix()
 
-        self.add_params_persongrupmodel(userdef1)
+        pgr_summe = params.group_definitions.loc[
+            (params.group_definitions['category']=='agegroup') &
+            (params.group_definitions['id_in_category']==-1),
+            'code'].iloc[0]
+        self.add_params_persongrupmodel(userdef1, pgr_summe=pgr_summe)
         self.add_params_tripgeneration(userdef1)
         self.add_strukturgroessen(params.activities, model_code, vt)
 
@@ -369,6 +373,7 @@ class VisemDemandModel:
         acts.add_output_matrices(matrices, userdef2)
         acts.add_modal_split(userdef2, matrices, params.modes)
         acts.add_balancing_output_matrices(matrices, userdef2, loadmatrix=0)
+        acts.add_parkzone_attrs(userdef2)
         acts.add_parking_matrices(matrices)
         acts.add_pjt_matrices(matrices)
         acts.add_kf_logsum(userdef2)
@@ -614,7 +619,9 @@ class VisemDemandModel:
             kommentar=f'Km pro Person {mode.name}',
         )
 
-    def add_params_persongrupmodel(self, userdef1: BenutzerdefiniertesAttribut):
+    def add_params_persongrupmodel(self,
+                                   userdef1: BenutzerdefiniertesAttribut,
+                                   pgr_summe: str='ASumme'):
         params_pgrmodel = dict(
             excel_filename="ParamsPersongroupModel.xlsx",
             excel_folder='',
@@ -632,7 +639,7 @@ class VisemDemandModel:
             stringstandardwert=json.dumps(params_pgrmodel))
 
         # Attribute für Motorisierung
-        userdef1.add_daten_attribute('Bezirk', 'Pkw_Personengruppen')        formel = '[Pkw_Personengruppen] / [ANZPERSONEN(XSumme)] * 1000'
+        userdef1.add_daten_attribute('Bezirk', 'Pkw_Personengruppen')        formel = f'[Pkw_Personengruppen] / [ANZPERSONEN({pgr_summe})] * 1000'
         userdef1.add_formel_attribute('Bezirk', 'Motorisierung', formel=formel)        userdef1.add_daten_attribute('Netz', 'Pkw_per_CarAvailabilityGroup')
         kommentar = 'Pkw nach Pkw-Verfügbarkeit im json-Format'
         userdef1.add_daten_attribute('Netz',
@@ -802,9 +809,9 @@ if __name__ == '__main__':
                           )
 
     params = dm.get_params(param_excel_fp)
-    dm.add_nsegs_userdefined(modification_no=5, nsegcodes_put=['O'])
-    dm.create_transfer(params, modification_number=6)
+    #dm.add_nsegs_userdefined(modification_no=5, nsegcodes_put=['O'])
+    dm.create_transfer(params, modification_number=3)
     dm.create_transfer_constants(params, modification_no=7)
     dm.create_transfer_target_values(params, modification_no=8)
-    dm.write_modification_iv_matrices(modification_number=9)
-    dm.write_modification_ov_matrices(modification_number=10)
+    #dm.write_modification_iv_matrices(modification_number=9)
+    #dm.write_modification_ov_matrices(modification_number=10)
