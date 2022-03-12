@@ -362,6 +362,20 @@ class Aktivitaet(VisumTable):
                     savematrix=savematrix,
                 )
 
+    def add_parkzone_attrs(self,
+                           userdef: BenutzerdefiniertesAttribut,
+                           n_parkzones:int=10,
+                           ):
+        """
+        Add Activity-Attributes
+        """
+        for z in range(n_parkzones):
+            userdef.add_daten_attribute(
+                'AKTIVITAET',
+                name=f'PARKING_ZONE_{z}',
+                kommentar=f'Parkwiderstand für Park-Zone {z}',
+            )
+
     def add_parking_matrices(self,
                              matrices: Matrix,
                              savematrix=0):
