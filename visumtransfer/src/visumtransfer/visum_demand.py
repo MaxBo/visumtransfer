@@ -699,6 +699,11 @@ class VisemDemandModel:
                                          standardwert=0.15)
         userdef0.add_daten_attribute('Netz', 'MINUS_ONE', standardwert=-1)
 
+        # VSys-Attribute
+        userdef0.add_daten_attribute('VSys', 'VSYS_TRAVELTIME_BONUS', standardwert=1.0)
+        userdef0.add_daten_attribute('VSys', 'VSYS_MALUS', standardwert=6.0)
+
+
         mode_lkw = 'LKW_XL'
         # Nachfragesegmente
         nseg = Nachfragesegment()
@@ -809,7 +814,7 @@ if __name__ == '__main__':
                           )
 
     params = dm.get_params(param_excel_fp)
-    #dm.add_nsegs_userdefined(modification_no=5, nsegcodes_put=['O'])
+    dm.add_nsegs_userdefined(modification_no=5, nsegcodes_put=['O'])
     dm.create_transfer(params, modification_number=3)
     dm.create_transfer_constants(params, modification_no=7)
     dm.create_transfer_target_values(params, modification_no=8)
