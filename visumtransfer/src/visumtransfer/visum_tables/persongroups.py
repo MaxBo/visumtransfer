@@ -125,6 +125,17 @@ class Personengruppe(VisumTable):
                                  if gr in pgr_in_output_categories]
                 grcodes_output = ','.join(groups_output)
 
+                # get the tarifmatrix of the main-activity
+                tarifmatrix_main_act = activities.df.loc[main_act, 'TARIFMATRIX']
+
+                # if a special Tarifmatrix exists for a PersonGroups
+                # (like Senionrenticket), use this instead
+                for group in gr_split:
+                    tarifmatrix_pgr = self.df.loc[group, 'TARIFMATRIX']
+                    if tarifmatrix_pgr:
+                        break
+                tarifmatrix = tarifmatrix_pgr or tarifmatrix_main_act
+
                 self.add_group(
                     category=category,
                     model_code=model_code,
@@ -133,7 +144,9 @@ class Personengruppe(VisumTable):
                     groups_constants=groups_constants,
                     groups_output=grcodes_output,
                     group_generation=gg_code,
-                    main_act=main_act)
+                    main_act=main_act,
+                    tarifmatrix=tarifmatrix,
+                )
             else:
                 # otherwise just append the activity chain
                 # to the chains the persons makes
