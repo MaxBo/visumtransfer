@@ -703,6 +703,13 @@ class VisemDemandModel:
         userdef0.add_daten_attribute('VSys', 'VSYS_TRAVELTIME_BONUS', standardwert=1.0)
         userdef0.add_daten_attribute('VSys', 'VSYS_MALUS', standardwert=6.0)
 
+        # Mode-Attribute
+        userdef0.add_daten_attribute('Modus', 'BASEMODE', datentyp='Bool', standardwert=0)
+        userdef0.add_daten_attribute('Modus', 'COEFF_PARKING', standardwert=0.0)
+        userdef0.add_daten_attribute('Modus', 'COEFF_TRAVELTIME', standardwert=0.0)
+        userdef0.add_daten_attribute('Modus', 'COEFF_TRAVEL_COST', standardwert=0.0)
+        userdef0.add_daten_attribute('Modus', 'COST_PER_KM', standardwert=0.0)
+
 
         mode_lkw = 'LKW_XL'
         # Nachfragesegmente
