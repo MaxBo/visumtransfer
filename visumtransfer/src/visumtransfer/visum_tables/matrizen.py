@@ -743,6 +743,12 @@ class Matrix(VisumTable):
                               matrixtyp='Nachfrage',
                               loadmatrix=1,
                               matrixfolder='Pendler')
+        self.add_daten_matrix(code='Pendlerkorrektur',
+                              name='Pendlerkorrektur auf Bezirksebene',
+                              bezugstyp='Bezirk',
+                              matrixtyp='Nachfrage',
+                              loadmatrix=1,
+                              matrixfolder='Pendler')
         formel = 'Matrix([CODE]="Pendlermatrix_OBB") * [SUM:PGRUPPEN\ERWERBSTAETIGE] '\
             '/ MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB"))'
         self.add_daten_matrix(

@@ -693,6 +693,7 @@ class VisemDemandModel:
         userdef0.add_daten_attribute('Matrix', 'MATRIXFOLDER', datentyp='Text')
         userdef0.add_daten_attribute('Matrix', 'CALIBRATIONCODE', datentyp='Text')
         userdef0.add_daten_attribute('Matrix', 'CATEGORY', datentyp='Text')
+        userdef0.add_daten_attribute('Matrix', 'OBB_MATRIX_REF', datentyp='LongText')
 
         # Netzattribute
         userdef0.add_daten_attribute('Netz', 'COST_PER_KM_PKW',
