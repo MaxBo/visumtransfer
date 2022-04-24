@@ -427,7 +427,9 @@ class Aktivitaet(VisumTable):
         """Add userdefined attributes and Matrices for modal split by activity"""
 
         for code, t in self.df.iterrows():
-            init_matrix = 0 if t.ISTHEIMATAKTIVITAET else 1
+            # not initmatrix at the moment...
+            init_matrix = 0
+            #init_matrix = 0 if t.ISTHEIMATAKTIVITAET else 1
             for _, mode in modes.iterrows():
                 matrices.set_category('Modes_Demand_Activities')
 

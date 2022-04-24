@@ -494,7 +494,7 @@ class Matrix(VisumTable):
             matrixtyp='Kenngröße',
             nsegcode='P',
             name='Pkw Fahrtkosten',
-            formel='Matrix([CODE] = "DIS" & [NSEGCODE] = "P") * '
+            formel='Matrix([CODE] = "DIS" & [NSEGCODE] = "PG") * '
                    '[COST_PER_KM_PKW]')
 
         self.add_formel_matrix(code='SFUSS', name='sFuss',
@@ -503,12 +503,9 @@ class Matrix(VisumTable):
                                moduscode='F',
                                formel='Matrix([CODE] = "TFUSS") * 4.5 / 60')
 
-        # Visum-Bug beim Einlesen der Formelmatrix
-        formel = ('If (Matrix([CODE] = "TFUSS") > 100.0 : '
-                  'If(Matrix([CODE] = "TRAD") < 999.0 : '
-                  'Matrix([CODE] = "TRAD") * 16 / 60.0 : '
-                  'Matrix([CODE] = "DIS" & [NSEGCODE] = "P")) : '
-                  'Matrix([CODE] = "SFUSS"))')
+        # Reiseweite
+        formel = ('Min (Matrix([CODE] = "DIS" & [NSEGCODE] = "PG") : '
+                  'Matrix([CODE] = "DIS" & [NSEGCODE] = "R"))')
 
         self.add_formel_matrix(code='KM', name='Reiseweite',
                                    matrixtyp='Kenngröße',
@@ -546,7 +543,7 @@ class Matrix(VisumTable):
                               )
 
         self.set_category('Other_Demand')
-        # Wirtschaftsverkehr kommt aus LVMBY
+
         self.add_daten_matrix(code='Pkw_Wirtschaftsverkehr',
                               name='Pkw-Wirtschaftsverkehr',
                               loadmatrix=loadmatrix,
@@ -662,6 +659,7 @@ class Matrix(VisumTable):
                                   loadmatrix=loadmatrix,
                                   matrixtyp='Nachfrage',
                                   moduscode=code,
+                                  nsegcode=code,
                                   savematrix=savematrix,
                                   obb_matrix_ref=f'[CODE]="Visem_OBB_{code}"',
                                   )
