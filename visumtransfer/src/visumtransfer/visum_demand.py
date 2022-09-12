@@ -113,6 +113,16 @@ class VisemDemandModel:
                                      datentyp='LongText',
                                      kommentar='Tarifmatrix der Nachfrageschicht')
         for m in params.mode_set.split(','):
+            userdef1.add_daten_attribute('Oberbezirk',
+                                         f'CONST_ORIGIN_{m}',
+                                         datentyp='Double',
+                                         standardwert=0.0,
+                                         kommentar=f'Kalibrierungsfaktor Oberbezirk Wohnort {m}')
+            userdef1.add_daten_attribute('Oberbezirk',
+                                         f'CONST_DESTINATION_{m}',
+                                         datentyp='Double',
+                                         standardwert=0.0,
+                                         kommentar=f'Kalibrierungsfaktor Oberbezirk Zielort {m}')
             userdef1.add_daten_attribute('Personengruppe',
                                          f'Factor_Cost_{m}',
                                          datentyp='Double',
@@ -649,6 +659,10 @@ class VisemDemandModel:
                                      maxstringlaenge=99999,
                                      kommentar=kommentar,
                                      )
+
+        # OBB-Attribute für Kalibrierung Erwerbstätigkeit und Motorisierung
+        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_ERWERBT', standardwert=1.0)
+        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_PKW', standardwert=1.0)
 
     def add_params_tripgeneration(self, userdef1: BenutzerdefiniertesAttribut):
         params_tcr = dict(
