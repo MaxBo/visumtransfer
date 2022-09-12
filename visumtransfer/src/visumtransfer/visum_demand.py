@@ -808,9 +808,9 @@ class VisemDemandModel:
 
 if __name__ == '__main__':
     argpase = ArgumentParser()
-    argpase.add_argument('--infolder', type=str, default=r'D:\GGR\KS\55 Nachfragemodell')
-    argpase.add_argument('--param_excel_fp', type=str, default='params_long_2022.xlsx')
-    argpase.add_argument('--visum_folder', type=str, default=r'D:\GGR\KS\55 Nachfragemodell')
+    argpase.add_argument('--infolder', type=str, default=r'D:\GGR\HL\55 Nachfragemodell')
+    argpase.add_argument('--param_excel_fp', type=str, default='params_long_2022_HL.xlsx')
+    argpase.add_argument('--visum_folder', type=str, default=r'D:\GGR\HL\55 Nachfragemodell')
     options = argpase.parse_args()
 
     param_excel_fp = os.path.join(options.infolder, options.param_excel_fp)
@@ -823,7 +823,7 @@ if __name__ == '__main__':
 
     params = dm.get_params(param_excel_fp)
     #dm.add_nsegs_userdefined(modification_no=5, nsegcodes_put=['O'])
-    dm.create_transfer(params, modification_number=3)
+    dm.create_transfer(params, modification_number=11)
     #dm.create_transfer_constants(params, modification_no=7)
     #dm.create_transfer_target_values(params, modification_no=8)
     #dm.write_modification_iv_matrices(modification_number=9)
