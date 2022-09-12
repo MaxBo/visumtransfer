@@ -16,7 +16,7 @@ class MatrixCategories(dict):
         'Visem_OV_Stunden': 30,
         'Other_Demand': 90,
         'OV_Demand': 100,
-        'DestinationChoiceSkims': 110,
+        'DestinationChoiceSkims': 108,
         'IV_Skims': 150,
         'IV_Skims_Parking': 200,
         'OV_Skims_Fare': 250,
@@ -438,6 +438,22 @@ class Matrix(VisumTable):
                            savematrix=0):
         """Add PrT Skim Matrices"""
         self.set_category('IV_Skims')
+        self.add_daten_matrix(code='DIS',
+                              name=f'Fahrweite Rad (R)',
+                              loadmatrix=0,
+                              matrixtyp='Kenngröße',
+                              nsegcode='R',
+                              vonzeit='',
+                              biszeit='',
+                              savematrix=savematrix)
+        self.add_daten_matrix(code='IMP',
+                              name=f'Widerstand Rad (R)',
+                              loadmatrix=0,
+                              matrixtyp='Kenngröße',
+                              nsegcode='R',
+                              vonzeit='',
+                              biszeit='',
+                              savematrix=savematrix)
         for nsegcode in ['P', 'PG']:
             self.add_daten_matrix(code='DIS',
                                   name=f'Fahrweite Pkw ({nsegcode})',
