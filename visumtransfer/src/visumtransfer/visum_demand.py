@@ -661,8 +661,18 @@ class VisemDemandModel:
                                      )
 
         # OBB-Attribute für Kalibrierung Erwerbstätigkeit und Motorisierung
-        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_ERWERBT', standardwert=1.0)
+        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_ERWERBST', standardwert=1.0)
         userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_PKW', standardwert=1.0)
+        userdef1.add_formel_attribute('Oberbezirk', 'EINWOHNER',
+                                      formel='[SUM:BEZIRKE\SG_EINWOHNER]')
+        userdef1.add_formel_attribute('Oberbezirk', 'SGB2_EMPFAENGER',
+                                      formel='[ARBEITSLOSE]*2.5')
+        userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_ERWERBSTAETIGKEIT',
+                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+        userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_PKWVERFUEGBARKEIT',
+                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+        userdef1.add_formel_attribute('Oberbezirk', 'MODELLIERUNGSRAUM',
+                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
 
     def add_params_tripgeneration(self, userdef1: BenutzerdefiniertesAttribut):
         params_tcr = dict(
