@@ -520,8 +520,9 @@ class Matrix(VisumTable):
                                formel='Matrix([CODE] = "TFUSS") * 4.5 / 60')
 
         # Reiseweite
-        formel = ('Min (Matrix([CODE] = "DIS" & [NSEGCODE] = "PG") : '
-                  'Matrix([CODE] = "DIS" & [NSEGCODE] = "R"))')
+        formel = ('Matrix([CODE] = "DIS" & [NSEGCODE] = "PG")')
+        #formel = ('Min (Matrix([CODE] = "DIS" & [NSEGCODE] = "PG") : '
+                  #'Matrix([CODE] = "DIS" & [NSEGCODE] = "R"))')
 
         self.add_formel_matrix(code='KM', name='Reiseweite',
                                    matrixtyp='Kenngröße',
