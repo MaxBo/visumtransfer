@@ -517,10 +517,17 @@ class VisemDemandModel:
             'Personengruppe', 'Tarifmatrix', datentyp='LongText',
             kommentar='spezielle Tarifmatrix der Personengruppe',
         )
+        userdef1.add_daten_attribute(
+            objid='Personengruppe',
+            name='ZIELWAHL_FUNKTION_MATRIXCODES',
+            datentyp='LongText',
+            kommentar='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
+        )
         pg.add_cols(['CATEGORY', 'CODEPART', 'NAMEPART',
                      'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
                      'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'GROUP_GENERATION',
-                     'MAIN_ACT', 'PERSONS', 'FAKTOR_ERWERBSTAETIGKEIT', 'TARIFMATRIX'])
+                     'MAIN_ACT', 'PERSONS', 'FAKTOR_ERWERBSTAETIGKEIT', 'TARIFMATRIX',
+                     'ZIELWAHL_FUNKTION_MATRIXCODES'])
 
         # Wege Gesamt und Verkehrsleistung der Gruppe
         formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
