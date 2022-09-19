@@ -592,13 +592,15 @@ class Matrix(VisumTable):
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
                               nsegcode='P_ex',
-                              moduscode='P_ex')
+                              moduscode='P_ex',
+                              matrixfolder='Fernverkehr')
         self.add_daten_matrix(code='FernverkehrLkw',
                               name='Lkw-Fernverkehr',
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
                               nsegcode='Lkw_ex',
-                              moduscode='Lkw_ex')
+                              moduscode='Lkw_ex',
+                              matrixfolder='Fernverkehr')
 
         ## Summen Schwerverkehr und Kfz bis 3.5 to
         nsegs = ['Lkw_bis_12to',
