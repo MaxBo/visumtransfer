@@ -627,7 +627,7 @@ class Matrix(VisumTable):
     def add_other_demand_matrices(self,
                                   params: Params,
                                   loadmatrix=1,
-                                  savematrix=1):
+                                  savematrix=0):
         """Add Demand Matrices for other modes"""
         self.set_category('Visem_Demand')
         existing_codes = self.df['CODE'].tolist()
