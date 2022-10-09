@@ -765,11 +765,11 @@ class Matrix(VisumTable):
         self.add_formel_matrix(
             code='Aussen2Aussen',
             matrixtyp='Kenngröße',
-            formel='-999999 * (FROM[TYPNR] > 1) * (TO[TYPNR] > 1)')
+            formel='-999999 * (FROM[NVV] = 0) * (TO[NVV] = 0)')
         self.add_formel_matrix(
             code='Innen2Aussen',
             matrixtyp='Kenngröße',
-            formel='-999999 * ((FROM[TYPNR] <= 1) * (TO[TYPNR] <= 1) + (FROM[TYPNR] > 1) * (TO[TYPNR] > 1))')
+            formel='-999999 * ((FROM[NVV] = 1) * (TO[NVV] = 1) + (FROM[NVV] = 0) * (TO[NVV] = 0))')
 
     def add_logsum_matrices(self,
                             demand_strata: 'Nachfrageschicht',
