@@ -645,7 +645,8 @@ class Matrix(VisumTable):
                               loadmatrix=loadmatrix,
                               matrixtyp='Nachfrage',
                               nsegcode='O_ex',
-                              moduscode='O')
+                              moduscode='O',
+                              matrixfolder='Fernverkehr')
 
     def add_other_demand_matrices(self,
                                   params: Params,
