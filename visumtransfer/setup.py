@@ -11,7 +11,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="visumtransfer",
-    version="0.4",
+    version="0.4.1",
     description="Write Visum-Transfer Files - Modell NVV",
     packages=find_packages('src'),
     namespace_packages=['visumtransfer'],
