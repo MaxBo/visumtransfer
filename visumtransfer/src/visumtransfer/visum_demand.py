@@ -26,7 +26,9 @@ from visumtransfer.visum_tables import (
     Ganglinienelement,
     Nachfrageganglinie,
     VisemGanglinie,
-    Nachfragesegment
+    Nachfragesegment,
+    Tabellendefinition,
+    create_userdefined_table,
 )
 
 from visumtransfer.params import Params
@@ -46,11 +48,15 @@ class VisemDemandModel:
 
         vt = VisumTransfer.new_transfer()
 
+        tabledef = Tabellendefinition(mode='+')
+        vt.tables['TabDefs'] = tabledef
+
         userdef1 = BenutzerdefiniertesAttribut()
         vt.tables['BenutzerdefinierteAttribute1'] = userdef1
         userdef2 = BenutzerdefiniertesAttribut()
 
-        netz = self.add_pgr_categories(vt, userdef1)
+        netz, tbl_pgrcat = self.add_pgr_categories(vt, tabledef, userdef1)
+        vt.tables['PersongroupCategories'] = tbl_pgrcat
 
         model_code = 'VisemGGR'
         model_name = 'Visem Ziel- und Verkehrsmittelwahlmodell'
@@ -62,8 +68,10 @@ class VisemDemandModel:
             (params.group_definitions['category']=='agegroup') &
             (params.group_definitions['id_in_category']==-1),
             'code'].iloc[0]
-        self.add_params_persongrupmodel(userdef1, pgr_summe=pgr_summe)
-        self.add_params_tripgeneration(userdef1)
+        tbl = self.add_params_persongrupmodel(tabledef, userdef1, pgr_summe=pgr_summe)
+        vt.tables['ParamfilePersongroupmodel'] = tbl
+        tbl = self.add_params_tripgeneration(tabledef, userdef1)
+        vt.tables['ParamFileTripGenerationModel'] = tbl
         self.add_strukturgroessen(params.activities, model_code, vt)
 
 
@@ -227,7 +235,7 @@ class VisemDemandModel:
         pg.add_df(params.group_definitions)
         # add the categories
         for pgr_category in params.group_definitions['CATEGORY'].unique():
-            self.add_category(pgr_category, {}, netz)
+            self.add_category(pgr_category, {}, netz, vt)
 
         # create the groups for the RSA-Model
         categories = ['RSA', 'occupation', 'car_availability', 'Teilraum', 'Gesamt']
@@ -249,7 +257,7 @@ class VisemDemandModel:
             'PersonGroupPrefix': 'Pgr_',
             'RSA': True,
         }
-        self.add_category(category, attrs, netz)
+        self.add_category(category, attrs, netz, vt)
         tc_categories = ['occupation']
         pg.create_groups_destmode(params.groups_generation,
                                   params.trip_chain_rates_rsa,
@@ -285,7 +293,7 @@ class VisemDemandModel:
             'ActivityMatrixOBBPrefix': 'Activity_OBB_',
             'PersonGroupPrefix': 'Pgr_',
         }
-        self.add_category(category, attrs, netz)
+        self.add_category(category, attrs, netz, vt)
         categories = ['occupation', 'car_availability', 'Teilraum', 'Gesamt']
         tc_categories = ['occupation']
         pg.create_groups_destmode(params.groups_generation,
@@ -405,32 +413,53 @@ class VisemDemandModel:
 
     def add_pgr_categories(self,
                            v: VisumTransfer,
+                           tabledef: Tabellendefinition,
                            userdef1: BenutzerdefiniertesAttribut) -> Netz:
         """Add userdefined net attribute"""
         netz = Netz(new_cols=['PgrCategories'])
         netz.add_rows([netz.Row()])
         v.tables['Netz'] = netz
 
+        TBL_pgrcat = create_userdefined_table(
+            name='PersonGroupCategories',
+            cols_types={'ActivityMatrixOBBPrefix': 'LongText',
+                        'ActivityMatrixPrefix': 'LongText',
+                        'Comment': 'LongText',
+                        'name': 'LongText',
+                        'PersonGroupPrefix': 'LongText',
+                        'Prefix_GG': 'LongText',
+                        'RSA': 'Bool',
+                        },
+            group='PersonGroupModel',
+            comment='Attribute der Personengruppen-Kategorien'
+        )
+
+        tbl_pgrcat = TBL_pgrcat(mode='')
         kommentar = 'Attribute der Personengruppen-Kategorien im json-Format'
         userdef1.add_daten_attribute('Netz',
-                                         name='Persongroup_Categories',
-                                         attid='PgrCategories',
-                                         datentyp='LongText',
-                                         maxstringlaenge=99999,
-                                         kommentar=kommentar,
-                                         )
-        return netz
+                                     name='Persongroup_Categories',
+                                     attid='PgrCategories',
+                                     datentyp='LongText',
+                                     maxstringlaenge=99999,
+                                     kommentar=kommentar,
+                                     )
+        return netz, tbl_pgrcat
 
 
     def add_category(self,
                      category: str,
                      attrs: dict,
                      netz: Netz,
+                     vt: VisumTransfer,
                      category_attribute: str = 'PgrCategories'):
         """
         Add category to the net-attribute category_attribute
         and set the attributes
         """
+        pgrcat = vt.tables['PersongroupCategories']
+        pgrcat.add_row(pgrcat.Row(name=category, **{k.lower(): v
+                                                    for k, v in attrs.items()}))
+
         categories = self.get_categories(netz)
         category_dict = categories.get(category, {})
         category_dict.update(attrs)
@@ -620,8 +649,17 @@ class VisemDemandModel:
         )
 
     def add_params_persongrupmodel(self,
+                                   tabledef: Tabellendefinition,
                                    userdef1: BenutzerdefiniertesAttribut,
-                                   pgr_summe: str='ASumme'):
+                                   pgr_summe: str = 'ASumme'):
+        TBL_model = create_userdefined_table(
+            name='ParamFilePersonGroupModel',
+            cols_types={'key': 'LongText', 'value': 'LongText', },
+            group='PersonGroupModel',
+            comment='Beschreibung der Excel-Datei für das Personengruppen-Modell'
+        )
+
+        tbl_model = TBL_model(mode='')
         params_pgrmodel = dict(
             excel_filename="ParamsPersongroupModel.xlsx",
             excel_folder='',
@@ -631,6 +669,9 @@ class VisemDemandModel:
             sn_lab_caravailability='lab_pkwverf',
             sn_lab_gebiet='lab_gebiet',
         )
+        for i, (k, v) in enumerate(params_pgrmodel.items()):
+            tbl_model.add_row(tbl_model.Row(nr=i, key=k, value=v))
+
         userdef1.add_daten_attribute(
             'Netz',
             'ParamFilePersongroupModel',
@@ -649,19 +690,35 @@ class VisemDemandModel:
                                      maxstringlaenge=99999,
                                      kommentar=kommentar,
                                      )
+        return tbl_model
 
-    def add_params_tripgeneration(self, userdef1: BenutzerdefiniertesAttribut):
+    def add_params_tripgeneration(self,
+                                  tabledef: Tabellendefinition,
+                                  userdef1: BenutzerdefiniertesAttribut):
+        TBL_model = create_userdefined_table(
+            name='ParamFileTripGenerationModel',
+            cols_types={'key': 'LongText', 'value': 'LongText', },
+            group='PersonGroupModel',
+            comment='Beschreibung der Excel-Datei für das Verkehrserzeugungs-Modell'
+        )
+
+        tbl_model = TBL_model(mode='')
         params_tcr = dict(
             excel_filename="params_long_2020.xlsx",
             excel_folder='',
             sn_trc='trip_chain_rates',
         )
+
+        for i, (k, v) in enumerate(params_tcr.items()):
+            tbl_model.add_row(tbl_model.Row(nr=i, key=k, value=v))
+
         userdef1.add_daten_attribute(
             'Netz',
             'ParamFileTripGenerationModel',
             datentyp='LongText',
             maxstringlaenge=99999,
             stringstandardwert=json.dumps(params_tcr))
+        return tbl_model
 
     def write_modification_iv_matrices(self, modification_number: int):
         v = VisumTransfer.new_transfer()
@@ -823,7 +880,7 @@ if __name__ == '__main__':
 
     params = dm.get_params(param_excel_fp)
     #dm.add_nsegs_userdefined(modification_no=5, nsegcodes_put=['O'])
-    dm.create_transfer(params, modification_number=3)
+    dm.create_transfer(params, modification_number=333)
     #dm.create_transfer_constants(params, modification_no=7)
     #dm.create_transfer_target_values(params, modification_no=8)
     #dm.write_modification_iv_matrices(modification_number=9)
