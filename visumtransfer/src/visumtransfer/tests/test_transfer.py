@@ -27,6 +27,12 @@ def visum_attribute_file() -> str:
                         'attributes.h5')
 
 
+@pytest.fixture
+def visum_attribute_excelfile() -> str:
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                        'attribute.xlsx')
+
+
 class DummyTable(VisumTable):
     name = 'Dummies'
     code = 'DUMMY'
@@ -49,12 +55,16 @@ class TestVisumTableCreation:
 class TestVisumAttributes:
     """test the visum attributes"""
     @pytest.mark.skip(msg="attributes are normally already converted")
-    def test_convert_attributes(self, visum_attribute_file):
-        visum_attributes = VisumAttributes(visum_attribute_file)
+    def test_convert_attributes(self,
+                                visum_attribute_file,
+                                visum_attribute_excelfile):
+        visum_attributes = VisumAttributes.from_excel(
+            h5file=visum_attribute_file,
+            excel_file=visum_attribute_excelfile)
 
     def test_get_attribute(self, visum_attribute_file):
         visum_attributes = VisumAttributes.from_hdf(visum_attribute_file)
-        tables = visum_attributes.tables.reset_index().set_index('Long(DEU)')
+        tables = visum_attributes.tables.reset_index().set_index('Plural(DEU)')
         row = tables.loc['Bezirke']
         assert row.Name == 'Zone'
 

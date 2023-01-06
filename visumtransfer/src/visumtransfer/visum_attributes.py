@@ -10,34 +10,36 @@ class VisumAttributes:
     purpose is to automatically create the VisumTable classes
     """
     @classmethod
-    def from_excel(cls, h5file: str, visum_version: int = 2023, language='Deu'):
+    def from_excel(cls,
+                   h5file: str,
+                   visum_version: int = 2023,
+                   language='Deu',
+                   excel_file: str = None):
 
         self = super().__new__(cls)
-        visum_attribute_file = 'attribute.xlsx'
-        visum_folder = rf'C:\Program Files\PTV Vision\PTV Visum {visum_version}\Doc\{language}'
-        fn = os.path.join(visum_folder, visum_attribute_file)
-        self.tables = pd.read_excel(fn, sheet_name='Tables', usecols=range(5))\
+        if not excel_file:
+            visum_attribute_file = 'attribute.xlsx'
+            visum_folder = rf'C:\Program Files\PTV Vision\PTV Visum {visum_version}\Doc\{language}'
+            excel_file = os.path.join(visum_folder, visum_attribute_file)
+        self.tables = pd.read_excel(excel_file,
+                                    sheet_name='Tables',
+                                    usecols=range(7))\
             .set_index('Name')
-        self.attributes = pd.read_excel(fn, sheet_name='Attributes',
+        self.attributes = pd.read_excel(excel_file,
+                                        sheet_name='Attributes',
                                         usecols=range(24))\
             .set_index(['Object', 'AttributeID'])
-        self.relations = pd.read_excel(fn, sheet_name='Relation', usecols=range(7))\
+        self.relations = pd.read_excel(excel_file,
+                                       sheet_name='Relation',
+                                       usecols=range(7))\
             .set_index(['TabFrom', 'TabTo', 'RoleName'])
-        #self.subattributes = pd.read_excel(fn, sheet_name='SubAttributes',
-                                           #usecols=range(6))\
-            #.set_index(['SubAttrName'])
 
-        #self.enumliterals = pd.read_excel(fn, sheet_name='EnumLiterals',
-                                          #usecols=9).set_index('Code')
         self.tables.to_hdf(h5file, 'tables', format='t', complevel=2)
         self.attributes.to_hdf(h5file, 'attributes', format='t',
                                complevel=2, mode='a')
         self.relations.to_hdf(h5file, 'relations', format='t',
                               complevel=2, mode='a')
-        #self.subattributes.to_hdf(h5file, 'subattributes', format='t',
-                                  #complevel=2, mode='a')
-        #self.enumliterals.to_hdf(h5file, 'enumliterals', format='t',
-        # complevel=2, mode='a')
+
         self.set_index()
 
     @classmethod
@@ -46,7 +48,6 @@ class VisumAttributes:
         self.tables = pd.read_hdf(h5file, 'tables')
         self.attributes = pd.read_hdf(h5file, 'attributes')
         self.relations = pd.read_hdf(h5file, 'relations')
-        #self.subattributes = pd.read_hdf(h5file, 'subattributes')
         self.set_index()
         return self
 
