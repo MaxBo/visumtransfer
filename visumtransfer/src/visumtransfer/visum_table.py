@@ -296,6 +296,9 @@ class VisumTable(metaclass=MetaClass):
     def __len__(self) -> int:
         return len(self.df)
 
+    def __bool__(self) -> bool:
+        return len(self.df) > 0
+
     def __repr__(self):
         return f'{self.name} ({self._mode}{len(self)})'
 

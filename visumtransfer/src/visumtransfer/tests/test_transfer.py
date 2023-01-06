@@ -2,9 +2,14 @@ import os
 import pytest
 import numpy as np
 import pandas as pd
-from visumtransfer.visum_table import (VisumTable, VisumTables,
+from visumtransfer.visum_table import (VisumTable,
+                                       VisumTables,
+                                       VisumTransfer,
                                        Version)
 from visumtransfer.visum_attributes import VisumAttributes
+from visumtransfer.visum_tables.usertables import (create_userdefined_table,
+                                                   Tabellendefinition,
+                                                   BenutzerdefiniertesAttribut)
 
 
 @pytest.fixture
@@ -12,6 +17,14 @@ def dataframe() -> pd.DataFrame:
     df = pd.DataFrame(data=np.array([(2, 'A', 33.3),
                                      (4, 'B', 44.4)]),
                       columns=['ID', 'NAME', 'Value'])
+    return df
+
+
+@pytest.fixture
+def df_zones() -> pd.DataFrame:
+    df = pd.DataFrame(data=np.array([(2, 'A-Stadt', 3),
+                                     (4, 'B-Dorf', 4)]),
+                      columns=['NO', 'NAME', 'TYPNR'])
     return df
 
 
@@ -39,6 +52,12 @@ class DummyTable(VisumTable):
     _cols = 'ID;NAME;VALUE'
     _pkey = 'ID'
     _defaults = {'VALUE': -11, }
+
+
+class Bezirke(VisumTable):
+    name = 'Bezirke'
+    code = 'BEZIRK'
+    _cols = 'NR'
 
 
 class TestVisumTableCreation:
@@ -120,3 +139,34 @@ class TestVisumTransfer:
         """
         df_row = table.df.reset_index().iloc[rowno].tolist()
         assert df_row == list(row)
+
+    def test_userdef_table(self, visum_tables):
+        """Test a userdefined table"""
+        tabledef = Tabellendefinition(mode='+')
+        userdef = BenutzerdefiniertesAttribut(mode='+')
+
+        TBL = create_userdefined_table('AAA',
+                                       cols_types={'Col1': 'Double',
+                                                   'Col2': 'Int',
+                                                   'Col3': 'LongText',
+                                                   'Col12': 'Double', },
+                                       defaults={'COL2': 42, },
+                                       col_attrs={'Col1': {'minwert': 0,
+                                                           'maxwert': 1, },
+                                                  'Col12': {'formel': '[Col1]*[Col2]',
+                                                            }, },
+                                       tabledef=tabledef,
+                                       userdef=userdef)
+
+        tbl = TBL(mode='')
+        tbl.add_row(tbl.Row(nr=3, col1=0.33, col3='Hallo'))
+
+        print(tabledef.df)
+        print(userdef.df)
+        print(tbl.df)
+
+        vt = VisumTransfer.new_transfer()
+        vt.tables['TabDefs'] = tabledef
+        vt.tables['BenutzerdefinierteAttribute'] = userdef
+        vt.tables['tbl1'] = tbl
+        vt.write(r'E:\tmp\a.tra')
