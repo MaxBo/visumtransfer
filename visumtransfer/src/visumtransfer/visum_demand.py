@@ -255,7 +255,7 @@ class VisemDemandModel:
             'ActivityMatrixOBBPrefix': 'Pendlermatrix_OBB_',
             'Prefix_GG': 'RSA_',
             'PersonGroupPrefix': 'Pgr_',
-            'RSA': True,
+            'RSA': 1,
         }
         self.add_category(category, attrs, netz, vt)
         tc_categories = ['occupation']
@@ -431,7 +431,9 @@ class VisemDemandModel:
                         'RSA': 'Bool',
                         },
             group='PersonGroupModel',
-            comment='Attribute der Personengruppen-Kategorien'
+            comment='Attribute der Personengruppen-Kategorien',
+            tabledef=tabledef,
+            userdef=userdef1,
         )
 
         tbl_pgrcat = TBL_pgrcat(mode='')
@@ -444,7 +446,6 @@ class VisemDemandModel:
                                      kommentar=kommentar,
                                      )
         return netz, tbl_pgrcat
-
 
     def add_category(self,
                      category: str,
@@ -656,7 +657,9 @@ class VisemDemandModel:
             name='ParamFilePersonGroupModel',
             cols_types={'key': 'LongText', 'value': 'LongText', },
             group='PersonGroupModel',
-            comment='Beschreibung der Excel-Datei für das Personengruppen-Modell'
+            comment='Beschreibung der Excel-Datei für das Personengruppen-Modell',
+            tabledef=tabledef,
+            userdef=userdef1,
         )
 
         tbl_model = TBL_model(mode='')
@@ -699,7 +702,9 @@ class VisemDemandModel:
             name='ParamFileTripGenerationModel',
             cols_types={'key': 'LongText', 'value': 'LongText', },
             group='PersonGroupModel',
-            comment='Beschreibung der Excel-Datei für das Verkehrserzeugungs-Modell'
+            comment='Beschreibung der Excel-Datei für das Verkehrserzeugungs-Modell',
+            tabledef=tabledef,
+            userdef=userdef1,
         )
 
         tbl_model = TBL_model(mode='')

@@ -7,9 +7,10 @@ from visumtransfer.visum_table import (VisumTable,
                                        VisumTransfer,
                                        Version)
 from visumtransfer.visum_attributes import VisumAttributes
-from visumtransfer.visum_tables.usertables import (create_userdefined_table,
-                                                   Tabellendefinition,
-                                                   BenutzerdefiniertesAttribut)
+from visumtransfer.visum_tables import (create_userdefined_table,
+                                        Tabellendefinition,
+                                        BenutzerdefiniertesAttribut,
+                                        Netz)
 
 
 @pytest.fixture
@@ -159,7 +160,10 @@ class TestVisumTransfer:
                                        userdef=userdef)
 
         tbl = TBL(mode='')
-        tbl.add_row(tbl.Row(nr=3, col1=0.33, col3='Hallo'))
+        tbl.add_row(tbl.Row(col1=0.33, col3='Hallo'))
+        tbl.add_row(tbl.Row(col1=0.2, col2=4, col3='Hallo'))
+        tbl.add_row(tbl.Row(nr=4, col1=0.2, col2=4, col3='Hallo'))
+        tbl.add_row(tbl.Row(col1=0.2, col2=4, col3='Hallo'))
 
         print(tabledef.df)
         print(userdef.df)
@@ -170,3 +174,12 @@ class TestVisumTransfer:
         vt.tables['BenutzerdefinierteAttribute'] = userdef
         vt.tables['tbl1'] = tbl
         vt.write(r'E:\tmp\a.tra')
+
+    def test_netz(self):
+        netz = Netz(new_cols=['A', 'B'])
+        netz.add_row(netz.Row(a=4, b=7))
+        print(netz.df)
+        with pytest.raises(ValueError):
+            netz.add_row(netz.Row(a=7, b=9))
+        assert netz.df.loc[0, 'A'] == 4
+        assert netz.df.loc[0, 'B'] == 7

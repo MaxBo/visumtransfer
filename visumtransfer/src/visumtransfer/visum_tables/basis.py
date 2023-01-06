@@ -11,11 +11,11 @@ class Netz(VisumTable):
     code = 'NETZ'
     _mode = ''
     _cols = ''
-    _pkey = ''
+    _defaults = {0: 0}
 
     @property
     def pkey(self):
-        return None
+        return [0]
 
     def validate_df(self, df: pd.DataFrame):
         """Validate the DataFrame, may be defined differently in the subclass"""

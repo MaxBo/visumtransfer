@@ -90,7 +90,7 @@ class VisumTable(metaclass=MetaClass):
             append the cols to the existing cols
         """
         if new_cols:
-            self._cols = ','.join(self.cols + new_cols).strip(',')
+            self._cols = ';'.join(self.cols + new_cols).strip(';')
 
         if mode is not None:
             self._mode = mode
@@ -185,7 +185,7 @@ class VisumTable(metaclass=MetaClass):
     def pkey(self):
         if not self._pkey:
             # assume that the first column is the primary key
-            return self.cols[0]
+            return [self.cols[0]]
         return self._pkey.split(';')
 
     def write_block(self, fobj: WriteLine, columns: str = None):
@@ -262,7 +262,7 @@ class VisumTable(metaclass=MetaClass):
 
     def df_from_array(self, data_arr) -> pd.DataFrame:
         df = pd.DataFrame((list(r) for r in data_arr), columns=self.cols)
-        if self.pkey:
+        if self.pkey and self.pkey != [0]:
             df.set_index(self.pkey, inplace=True)
         return df
 
@@ -276,6 +276,17 @@ class VisumTable(metaclass=MetaClass):
 
     def add_rows(self, rows: List[recordclass]):
         df2append = self.df_from_array(rows)
+        idx = df2append.index.to_frame(index=False)
+        first_index_is_null = pd.isna(idx.loc[:, self.pkey[0]])
+        if first_index_is_null.any():
+            first_index_old = self.df.index.get_level_values(0)
+            if first_index_old.any():
+                next_value = first_index_old.max() + 1
+            else:
+                next_value = 1
+            new = np.arange(next_value, next_value + len(first_index_is_null))
+            idx.loc[first_index_is_null, self.pkey[0]] = new
+            df2append.index = idx.set_index(self.pkey).index
         self.df = pd.concat([self.df, df2append], verify_integrity=True)
 
     def add_df(self, df: pd.DataFrame):

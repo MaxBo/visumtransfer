@@ -78,3 +78,8 @@ from .ganglinien import (
     Nachfragesegment,
     VisemGanglinie,
 )
+
+from .usertables import (
+    Tabellendefinition,
+    create_userdefined_table,
+)

@@ -15,7 +15,7 @@ def create_userdefined_table(name: str,
                              defaults: dict = {},
                              col_attrs: Dict[str, str] = {},
                              group: str = '',
-                             kommentar: str = '',
+                             comment: str = '',
                              tabledef: Tabellendefinition = None,
                              userdef: BenutzerdefiniertesAttribut = None) -> VisumTable:
     """create a userdefined table"""
@@ -24,14 +24,17 @@ def create_userdefined_table(name: str,
     tbl_name = f'Tabelleneinträge: {name}'
     tbl_code = f'TABLEENTRIES_{name}'
     defaults['TABELLENDEFINITIONNAME'] = name
+    defaults['NR'] = None
 
     cls = MetaClass(tbl_code, (VisumTable, ), {'name': tbl_name,
                                              'code': tbl_code,
                                              '_cols': ';'.join(colnames),
-                                             '_defaults': defaults, })
+                                             '_defaults': defaults,
+                                             '_pkey': 'NR',
+                                               })
 
     tabledef = Tabellendefinition(mode='+') if tabledef is None else tabledef
-    tabledef.add_row(tabledef.Row(name=name, gruppe=group))
+    tabledef.add_row(tabledef.Row(name=name, gruppe=group, kommentar=comment))
 
     userdef = BenutzerdefiniertesAttribut(mode='+') if userdef is None else userdef
     for col, dtype in cols_types.items():
