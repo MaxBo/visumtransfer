@@ -75,7 +75,7 @@ class TestVisumTableCreation:
 
 class TestVisumAttributes:
     """test the visum attributes"""
-    @pytest.mark.skip(msg="attributes are normally already converted")
+    @pytest.mark.skip(reason="attributes are normally already converted")
     def test_convert_attributes(self,
                                 visum_attribute_file,
                                 visum_attribute_excelfile):
