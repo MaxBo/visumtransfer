@@ -1,5 +1,6 @@
 import os
 import pytest
+import tempfile
 import numpy as np
 import pandas as pd
 from visumtransfer.visum_table import (VisumTable,
@@ -173,7 +174,8 @@ class TestVisumTransfer:
         vt.tables['TabDefs'] = tabledef
         vt.tables['BenutzerdefinierteAttribute'] = userdef
         vt.tables['tbl1'] = tbl
-        vt.write(r'E:\tmp\a.tra')
+        folder = tempfile.mkdtemp()
+        vt.write(os.path.join(folder, 'a.tra'))
 
     def test_netz(self):
         netz = Netz(new_cols=['A', 'B'])
