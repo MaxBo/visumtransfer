@@ -2,7 +2,6 @@
 
 
 import os
-import json
 import pandas as pd
 from argparse import ArgumentParser
 from typing import List
@@ -11,8 +10,6 @@ from visumtransfer.visum_table import (
     VisumTransfer)
 
 from visumtransfer.visum_tables import (
-    Netz,
-    Modus,
     Matrix,
     BenutzerdefiniertesAttribut,
     Nachfragemodell,

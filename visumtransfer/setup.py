@@ -4,15 +4,13 @@ Created on Fri Jun 10 20:33:08 2016
 
 @author: MaxBohnet
 """
-import numpy as np
-
 from setuptools import setup, find_packages
 
 
 setup(
     name="visumtransfer",
-    version="0.4",
-    description="Write Visum-Transfer Files - Modell NVV",
+    version="0.4.1",
+    description="Write Visum-Transfer Files",
     packages=find_packages('src'),
     namespace_packages=['visumtransfer'],
     package_dir={'': 'src'},
