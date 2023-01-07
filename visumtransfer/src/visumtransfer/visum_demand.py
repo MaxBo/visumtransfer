@@ -689,8 +689,8 @@ class VisemDemandModel:
             sn_lab_caravailability='lab_pkwverf',
             sn_lab_gebiet='lab_gebiet',
         )
-        for i, (k, v) in enumerate(params_pgrmodel.items()):
-            tbl_model.add_row(tbl_model.Row(nr=i, key=k, value=v))
+        for k, v in params_pgrmodel.items():
+            tbl_model.add_row(tbl_model.Row(key=k, value=v))
 
         userdef1.add_daten_attribute(
             'Netz',
@@ -748,8 +748,8 @@ class VisemDemandModel:
             sn_trc='trip_chain_rates',
         )
 
-        for i, (k, v) in enumerate(params_tcr.items()):
-            tbl_model.add_row(tbl_model.Row(nr=i, key=k, value=v))
+        for k, v in params_tcr.items():
+            tbl_model.add_row(tbl_model.Row(key=k, value=v))
 
         userdef1.add_daten_attribute(
             'Netz',
@@ -919,7 +919,7 @@ if __name__ == '__main__':
 
     params = dm.get_params(param_excel_fp)
     #dm.add_nsegs_userdefined(modification_no=5, nsegcodes_put=['O'])
-    dm.create_transfer(params, modification_number=333)
+    dm.create_transfer(params, modification_number=11)
     #dm.create_transfer_constants(params, modification_no=7)
     #dm.create_transfer_target_values(params, modification_no=8)
     #dm.write_modification_iv_matrices(modification_number=9)
