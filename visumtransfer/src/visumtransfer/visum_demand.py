@@ -55,7 +55,7 @@ class VisemDemandModel:
         vt.tables['BenutzerdefinierteAttribute1'] = userdef1
         userdef2 = BenutzerdefiniertesAttribut()
 
-        netz, tbl_pgrcat = self.add_pgr_categories(vt, tabledef, userdef1)
+        tbl_pgrcat = self.add_pgr_categories(vt, tabledef, userdef1)
         vt.tables['PersongroupCategories'] = tbl_pgrcat
 
         model_code = 'VisemGGR'
@@ -68,8 +68,12 @@ class VisemDemandModel:
             (params.group_definitions['category']=='agegroup') &
             (params.group_definitions['id_in_category']==-1),
             'code'].iloc[0]
-        tbl = self.add_params_persongrupmodel(tabledef, userdef1, pgr_summe=pgr_summe)
-        vt.tables['ParamfilePersongroupmodel'] = tbl
+        tbl_model, tbl_ca = self.add_params_persongrupmodel(
+            tabledef,
+            userdef1,
+            pgr_summe=pgr_summe)
+        vt.tables['ParamfilePersongroupmodel'] = tbl_model
+        vt.tables['CarAvailabiliity'] = tbl_ca
         tbl = self.add_params_tripgeneration(tabledef, userdef1)
         vt.tables['ParamFileTripGenerationModel'] = tbl
         self.add_strukturgroessen(params.activities, model_code, vt)
@@ -92,7 +96,7 @@ class VisemDemandModel:
         acts = self.add_activities(userdef1, userdef2, matrices,
                                    params, model_code, vt)
 
-        pg = self.add_persongroups(userdef1, userdef2, matrices, acts, netz,
+        pg = self.add_persongroups(userdef1, userdef2, matrices, acts,
                                    params, model_code, vt)
 
         ap = Aktivitaetenpaar()
@@ -224,7 +228,6 @@ class VisemDemandModel:
                          userdef2: BenutzerdefiniertesAttribut,
                          matrices: Matrix,
                          acts: Aktivitaet,
-                         netz: Netz,
                          params: Params,
                          model_code: str,
                          vt: VisumTransfer,
@@ -245,7 +248,7 @@ class VisemDemandModel:
         pg.add_df(params.group_definitions)
         # add the categories
         for pgr_category in params.group_definitions['CATEGORY'].unique():
-            self.add_category(pgr_category, {}, netz, vt)
+            self.add_category(pgr_category, {}, vt)
 
         # create the groups for the RSA-Model
         categories = ['RSA', 'occupation', 'car_availability', 'Teilraum', 'Gesamt']
@@ -267,7 +270,7 @@ class VisemDemandModel:
             'PersonGroupPrefix': 'Pgr_',
             'RSA': 1,
         }
-        self.add_category(category, attrs, netz, vt)
+        self.add_category(category, attrs, vt)
         tc_categories = ['occupation']
         pg.create_groups_destmode(params.groups_generation,
                                   params.trip_chain_rates_rsa,
@@ -303,7 +306,7 @@ class VisemDemandModel:
             'ActivityMatrixOBBPrefix': 'Activity_OBB_',
             'PersonGroupPrefix': 'Pgr_',
         }
-        self.add_category(category, attrs, netz, vt)
+        self.add_category(category, attrs, vt)
         categories = ['occupation', 'car_availability', 'Teilraum', 'Gesamt']
         tc_categories = ['occupation']
         pg.create_groups_destmode(params.groups_generation,
@@ -424,11 +427,8 @@ class VisemDemandModel:
     def add_pgr_categories(self,
                            v: VisumTransfer,
                            tabledef: Tabellendefinition,
-                           userdef1: BenutzerdefiniertesAttribut) -> Netz:
+                           userdef1: BenutzerdefiniertesAttribut):
         """Add userdefined net attribute"""
-        netz = Netz(new_cols=['PgrCategories'])
-        netz.add_rows([netz.Row()])
-        v.tables['Netz'] = netz
 
         TBL_pgrcat = create_userdefined_table(
             name='PersonGroupCategories',
@@ -447,20 +447,11 @@ class VisemDemandModel:
         )
 
         tbl_pgrcat = TBL_pgrcat(mode='')
-        kommentar = 'Attribute der Personengruppen-Kategorien im json-Format'
-        userdef1.add_daten_attribute('Netz',
-                                     name='Persongroup_Categories',
-                                     attid='PgrCategories',
-                                     datentyp='LongText',
-                                     maxstringlaenge=99999,
-                                     kommentar=kommentar,
-                                     )
-        return netz, tbl_pgrcat
+        return tbl_pgrcat
 
     def add_category(self,
                      category: str,
                      attrs: dict,
-                     netz: Netz,
                      vt: VisumTransfer,
                      category_attribute: str = 'PgrCategories'):
         """
@@ -470,22 +461,6 @@ class VisemDemandModel:
         pgrcat = vt.tables['PersongroupCategories']
         pgrcat.add_row(pgrcat.Row(name=category, **{k.lower(): v
                                                     for k, v in attrs.items()}))
-
-        categories = self.get_categories(netz)
-        category_dict = categories.get(category, {})
-        category_dict.update(attrs)
-        categories[category] = category_dict
-        netz.df.loc[0, category_attribute] = json.dumps(categories)
-
-    def get_categories(self,
-                       netz: Netz,
-                       category_attribute='PgrCategories') -> dict:
-        """Get the Categories from the category_attribute of the net"""
-        categories_json = netz.df.loc[0, category_attribute]
-        if not categories_json:
-            return {}
-        categories = json.loads(categories_json)
-        return categories
 
     def add_general_pgr_attributes(self,
                                    pg: Personengruppe,
@@ -692,26 +667,27 @@ class VisemDemandModel:
         for k, v in params_pgrmodel.items():
             tbl_model.add_row(tbl_model.Row(key=k, value=v))
 
-        userdef1.add_daten_attribute(
-            'Netz',
-            'ParamFilePersongroupModel',
-            datentyp='LongText',
-            maxstringlaenge=99999,
-            stringstandardwert=json.dumps(params_pgrmodel))
-
         # Attribute für Motorisierung
         userdef1.add_daten_attribute('Bezirk', 'Pkw_Personengruppen')
         formel = f'[Pkw_Personengruppen] / [ANZPERSONEN({pgr_summe})] * 1000'
         userdef1.add_formel_attribute('Bezirk', 'Motorisierung', formel=formel)
-        userdef1.add_daten_attribute('Netz', 'Pkw_per_CarAvailabilityGroup')
-        kommentar = 'Pkw nach Pkw-Verfügbarkeit im json-Format'
-        userdef1.add_daten_attribute('Netz',
-                                     name='Pkw nach PkwVerfügbarkeit',
-                                     attid='Cars_By_Caravailability',
-                                     datentyp='LongText',
-                                     maxstringlaenge=99999,
-                                     kommentar=kommentar,
-                                     )
+
+        kommentar = 'Pkw nach Pkw-Verfügbarkeit'
+
+        TBL_model = create_userdefined_table(
+            name='Cars_By_Caravailability',
+            cols_types={'key': 'LongText', 'value': 'Double', },
+            group='PersonGroupModel',
+            comment=kommentar,
+            tabledef=tabledef,
+            userdef=userdef1,
+        )
+        tbl_ca = TBL_model('')
+        pgr_ca = params.group_definitions.loc[
+            params.group_definitions['category']=='car_availability',
+            ['code', 'factor_pkwverf_anzpkw']]
+        for idx, row in pgr_ca.iterrows():
+            tbl_ca.add_row(tbl_ca.Row(key=row.code, value=row.factor_pkwverf_anzpkw))
 
         # OBB-Attribute für Kalibrierung Erwerbstätigkeit und Motorisierung
         userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_ERWERBST', standardwert=1.0)
@@ -727,7 +703,7 @@ class VisemDemandModel:
         userdef1.add_formel_attribute('Oberbezirk', 'MODELLIERUNGSRAUM',
                                       formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
 
-        return tbl_model
+        return tbl_model, tbl_ca
 
     def add_params_tripgeneration(self,
                                   tabledef: Tabellendefinition,
@@ -743,7 +719,7 @@ class VisemDemandModel:
 
         tbl_model = TBL_model(mode='')
         params_tcr = dict(
-            excel_filename="params_long_2020.xlsx",
+            excel_filename="params_long_2022_HL.xlsx",
             excel_folder='',
             sn_trc='trip_chain_rates',
         )
@@ -751,12 +727,6 @@ class VisemDemandModel:
         for k, v in params_tcr.items():
             tbl_model.add_row(tbl_model.Row(key=k, value=v))
 
-        userdef1.add_daten_attribute(
-            'Netz',
-            'ParamFileTripGenerationModel',
-            datentyp='LongText',
-            maxstringlaenge=99999,
-            stringstandardwert=json.dumps(params_tcr))
         return tbl_model
 
     def write_modification_iv_matrices(self, modification_number: int):
