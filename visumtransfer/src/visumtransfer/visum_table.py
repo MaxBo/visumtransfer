@@ -279,6 +279,7 @@ class VisumTable(metaclass=MetaClass):
         idx = df2append.index.to_frame(index=False)
         first_index_is_null = pd.isna(idx.loc[:, self.pkey[0]])
         if first_index_is_null.any():
+            idx = idx.astype({self.pkey[0]: 'Int64'})
             first_index_old = self.df.index.get_level_values(0)
             if first_index_old.any():
                 next_value = first_index_old.max() + 1
@@ -286,7 +287,8 @@ class VisumTable(metaclass=MetaClass):
                 next_value = 1
             new = np.arange(next_value, next_value + len(first_index_is_null))
             idx.loc[first_index_is_null, self.pkey[0]] = new
-            df2append.index = idx.set_index(self.pkey).index
+            new_index = idx.set_index(self.pkey).index
+            df2append.index = new_index
         self.df = pd.concat([self.df, df2append], verify_integrity=True)
 
     def add_df(self, df: pd.DataFrame):
