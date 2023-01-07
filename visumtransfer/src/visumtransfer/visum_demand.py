@@ -74,8 +74,7 @@ class VisemDemandModel:
             pgr_summe=pgr_summe)
         vt.tables['ParamfilePersongroupmodel'] = tbl_model
         vt.tables['CarAvailabiliity'] = tbl_ca
-        tbl = self.add_params_tripgeneration(tabledef, userdef1)
-        vt.tables['ParamFileTripGenerationModel'] = tbl
+
         self.add_strukturgroessen(params.activities, model_code, vt)
 
 
@@ -645,6 +644,10 @@ class VisemDemandModel:
                                    tabledef: Tabellendefinition,
                                    userdef1: BenutzerdefiniertesAttribut,
                                    pgr_summe: str = 'ASumme'):
+
+        userdef1.add_daten_attribute('Bezirk', 'OBB_OCCUPATION', datentyp='Int')
+        userdef1.add_daten_attribute('Bezirk', 'OBB_CARS', datentyp='Int')
+
         TBL_model = create_userdefined_table(
             name='ParamFilePersonGroupModel',
             cols_types={'key': 'LongText', 'value': 'LongText', },
@@ -704,30 +707,6 @@ class VisemDemandModel:
                                       formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
 
         return tbl_model, tbl_ca
-
-    def add_params_tripgeneration(self,
-                                  tabledef: Tabellendefinition,
-                                  userdef1: BenutzerdefiniertesAttribut):
-        TBL_model = create_userdefined_table(
-            name='ParamFileTripGenerationModel',
-            cols_types={'key': 'LongText', 'value': 'LongText', },
-            group='PersonGroupModel',
-            comment='Beschreibung der Excel-Datei für das Verkehrserzeugungs-Modell',
-            tabledef=tabledef,
-            userdef=userdef1,
-        )
-
-        tbl_model = TBL_model(mode='')
-        params_tcr = dict(
-            excel_filename="params_long_2022_HL.xlsx",
-            excel_folder='',
-            sn_trc='trip_chain_rates',
-        )
-
-        for k, v in params_tcr.items():
-            tbl_model.add_row(tbl_model.Row(key=k, value=v))
-
-        return tbl_model
 
     def write_modification_iv_matrices(self, modification_number: int):
         v = VisumTransfer.new_transfer()
