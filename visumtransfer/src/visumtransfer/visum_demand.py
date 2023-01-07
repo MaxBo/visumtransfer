@@ -121,6 +121,16 @@ class VisemDemandModel:
                                      datentyp='LongText',
                                      kommentar='Tarifmatrix der Nachfrageschicht')
         for m in params.mode_set.split(','):
+            userdef1.add_daten_attribute('Oberbezirk',
+                                         f'CONST_ORIGIN_{m}',
+                                         datentyp='Double',
+                                         standardwert=0.0,
+                                         kommentar=f'Kalibrierungsfaktor Oberbezirk Wohnort {m}')
+            userdef1.add_daten_attribute('Oberbezirk',
+                                         f'CONST_DESTINATION_{m}',
+                                         datentyp='Double',
+                                         standardwert=0.0,
+                                         kommentar=f'Kalibrierungsfaktor Oberbezirk Zielort {m}')
             userdef1.add_daten_attribute('Personengruppe',
                                          f'Factor_Cost_{m}',
                                          datentyp='Double',
@@ -537,10 +547,17 @@ class VisemDemandModel:
             'Personengruppe', 'Tarifmatrix', datentyp='LongText',
             kommentar='spezielle Tarifmatrix der Personengruppe',
         )
+        userdef1.add_daten_attribute(
+            objid='Personengruppe',
+            name='ZIELWAHL_FUNKTION_MATRIXCODES',
+            datentyp='LongText',
+            kommentar='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
+        )
         pg.add_cols(['CATEGORY', 'CODEPART', 'NAMEPART',
                      'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
                      'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'GROUP_GENERATION',
-                     'MAIN_ACT', 'PERSONS', 'FAKTOR_ERWERBSTAETIGKEIT', 'TARIFMATRIX'])
+                     'MAIN_ACT', 'PERSONS', 'FAKTOR_ERWERBSTAETIGKEIT', 'TARIFMATRIX',
+                     'ZIELWAHL_FUNKTION_MATRIXCODES'])
 
         # Wege Gesamt und Verkehrsleistung der Gruppe
         formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
@@ -683,8 +700,10 @@ class VisemDemandModel:
             stringstandardwert=json.dumps(params_pgrmodel))
 
         # Attribute für Motorisierung
-        userdef1.add_daten_attribute('Bezirk', 'Pkw_Personengruppen')        formel = f'[Pkw_Personengruppen] / [ANZPERSONEN({pgr_summe})] * 1000'
-        userdef1.add_formel_attribute('Bezirk', 'Motorisierung', formel=formel)        userdef1.add_daten_attribute('Netz', 'Pkw_per_CarAvailabilityGroup')
+        userdef1.add_daten_attribute('Bezirk', 'Pkw_Personengruppen')
+        formel = f'[Pkw_Personengruppen] / [ANZPERSONEN({pgr_summe})] * 1000'
+        userdef1.add_formel_attribute('Bezirk', 'Motorisierung', formel=formel)
+        userdef1.add_daten_attribute('Netz', 'Pkw_per_CarAvailabilityGroup')
         kommentar = 'Pkw nach Pkw-Verfügbarkeit im json-Format'
         userdef1.add_daten_attribute('Netz',
                                      name='Pkw nach PkwVerfügbarkeit',
@@ -693,6 +712,21 @@ class VisemDemandModel:
                                      maxstringlaenge=99999,
                                      kommentar=kommentar,
                                      )
+
+        # OBB-Attribute für Kalibrierung Erwerbstätigkeit und Motorisierung
+        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_ERWERBST', standardwert=1.0)
+        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_PKW', standardwert=1.0)
+        userdef1.add_formel_attribute('Oberbezirk', 'EINWOHNER',
+                                      formel='[SUM:BEZIRKE\SG_EINWOHNER]')
+        userdef1.add_formel_attribute('Oberbezirk', 'SGB2_EMPFAENGER',
+                                      formel='[ARBEITSLOSE]*2.5')
+        userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_ERWERBSTAETIGKEIT',
+                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+        userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_PKWVERFUEGBARKEIT',
+                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+        userdef1.add_formel_attribute('Oberbezirk', 'MODELLIERUNGSRAUM',
+                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+
         return tbl_model
 
     def add_params_tripgeneration(self,
@@ -870,9 +904,9 @@ class VisemDemandModel:
 
 if __name__ == '__main__':
     argpase = ArgumentParser()
-    argpase.add_argument('--infolder', type=str, default=r'D:\GGR\KS\55 Nachfragemodell')
-    argpase.add_argument('--param_excel_fp', type=str, default='params_long_2022.xlsx')
-    argpase.add_argument('--visum_folder', type=str, default=r'D:\GGR\KS\55 Nachfragemodell')
+    argpase.add_argument('--infolder', type=str, default=r'D:\GGR\HL\55 Nachfragemodell')
+    argpase.add_argument('--param_excel_fp', type=str, default='params_long_2022_HL.xlsx')
+    argpase.add_argument('--visum_folder', type=str, default=r'D:\GGR\HL\55 Nachfragemodell')
     options = argpase.parse_args()
 
     param_excel_fp = os.path.join(options.infolder, options.param_excel_fp)
