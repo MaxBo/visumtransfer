@@ -696,12 +696,12 @@ class VisemDemandModel:
                                       formel='[SUM:BEZIRKE\SG_EINWOHNER]')
         userdef1.add_formel_attribute('Oberbezirk', 'SGB2_EMPFAENGER',
                                       formel='[ARBEITSLOSE]*2.5')
-        userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_ERWERBSTAETIGKEIT',
-                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
-        userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_PKWVERFUEGBARKEIT',
-                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
         userdef1.add_formel_attribute('Oberbezirk', 'MODELLIERUNGSRAUM',
                                       formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+        userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_ERWERBSTAETIGKEIT',
+                                      formel='([MODELLIERUNGSRAUM] * ([AGS] != "01003") + ([CODE]="Sozialraum"))>0')
+        userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_PKWVERFUEGBARKEIT',
+                                      formel='([MODELLIERUNGSRAUM] * ([AGS] != "01003") + ([CODE]="Stadtbezirk"))>0')
 
         return tbl_model, tbl_ca
 
