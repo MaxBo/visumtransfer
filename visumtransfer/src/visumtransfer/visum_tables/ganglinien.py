@@ -70,7 +70,7 @@ class Ganglinie(VisumTable):
             for t, ts in time_series.iterrows():
                 from_hour = ts['from_hour']
                 to_hour = ts['to_hour']
-                anteil = ap_timeserie[from_hour:to_hour].sum()
+                anteil = ap_timeserie.iloc[from_hour:to_hour].sum()
                 if anteil:
                     row_ganglinienelement = ganglinienelement.Row(
                         gangliniennr=nr,

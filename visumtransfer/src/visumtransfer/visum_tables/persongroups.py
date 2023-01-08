@@ -82,7 +82,7 @@ class Personengruppe(VisumTable):
 
         # create common column to merge Persongrups and TripChainRates
         pgr_generation['gr_tc'] = ''
-        for pg_code, gr_const in pgr_generation['GROUPS_CONSTANTS'].iteritems():
+        for pg_code, gr_const in pgr_generation['GROUPS_CONSTANTS'].items():
             gr_split = gr_const.split(',')
             gr_tc = ','.join(sorted([gr
                                      for gr in gr_split
@@ -92,7 +92,7 @@ class Personengruppe(VisumTable):
         pgr_generation.index.name = 'PGRCODES'
 
         trip_chain_rates['gr_tc'] = ''
-        for idx, gr_const in trip_chain_rates['group_generation'].iteritems():
+        for idx, gr_const in trip_chain_rates['group_generation'].items():
             gr_split = gr_const.split(',')
             gr_tc = ','.join(sorted([gr for gr in gr_split]))
             trip_chain_rates.loc[idx, 'gr_tc'] = gr_tc
@@ -123,7 +123,7 @@ class Personengruppe(VisumTable):
                 groups_output = [gr
                                  for gr in gr_split
                                  if gr in pgr_in_output_categories]
-                grcodes_output = ','.join(groups_output)
+                grcodes_output = ','.join(sorted(groups_output))
 
                 # get the tarifmatrix of the main-activity
                 tarifmatrix_main_act = activities.df.loc[main_act, 'TARIFMATRIX']
@@ -179,11 +179,11 @@ class Personengruppe(VisumTable):
             gr = self.df.loc[group_output]
             str_name = f'Wege der {gr.CATEGORY}-Gruppe {gr.NAME}'
             code = f'{prefix}{gr.name}'
-            pgrset = ','.join(detailed_groups.index)
+            pgrset = ','.join(sorted(detailed_groups.index))
             matrices.add_daten_matrix(
                 code=code,
                 name=str_name,
-                modusset=','.join(modes['code']),
+                modusset=','.join(sorted(modes['code'])),
                 personengruppenset=pgrset,
                 pgruppencode=group_output,
             )
@@ -195,7 +195,7 @@ class Personengruppe(VisumTable):
                 code=vl_code,
                 formel=formel_vl,
                 name=vl_name,
-                modusset=','.join(modes['code']),
+                modusset=','.join(sorted(modes['code'])),
                 personengruppenset=pgrset,
                 pgruppencode=group_output,
             )
@@ -205,7 +205,7 @@ class Personengruppe(VisumTable):
                 # add output matrix
                 str_name = f'Wege mit Verkehrsmittel {mode_name} der {gr.CATEGORY}-Gruppe {gr.NAME}'
                 code = f'{prefix}{gr.name}_{mode.code}'
-                pgrset = ','.join(detailed_groups.index)
+                pgrset = ','.join(sorted(detailed_groups.index))
                 matrices.add_daten_matrix(
                     code=code,
                     name=str_name,
@@ -221,7 +221,7 @@ class Personengruppe(VisumTable):
                     code=vl_code,
                     formel=formel_vl,
                     name=vl_name,
-                    modusset=','.join(modes['code']),
+                    modusset=','.join(sorted(modes['code'])),
                     personengruppenset=pgrset,
                     pgruppencode=group_output,
                 )

@@ -46,7 +46,7 @@ class Params:
                 for colname in df.columns:
                     try:
                         converted = pd.to_numeric(df[colname])
-                        df.loc[:, colname] = converted
+                        df[colname] = converted
                     except ValueError:
                         pass
                 self.dataframes[k] = df

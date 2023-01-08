@@ -34,7 +34,7 @@ def create_userdefined_table(name: str,
                                                })
 
     tabledef = Tabellendefinition(mode='+') if tabledef is None else tabledef
-    tabledef.add_row(tabledef.Row(name=name, gruppe=group, kommentar=comment))
+    tabledef.add(name=name, gruppe=group, kommentar=comment)
 
     userdef = BenutzerdefiniertesAttribut(mode='+') if userdef is None else userdef
     for col, dtype in cols_types.items():

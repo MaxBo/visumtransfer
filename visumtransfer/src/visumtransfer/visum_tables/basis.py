@@ -23,13 +23,20 @@ class Netz(VisumTable):
             raise ValueError(f'{self.__class__} may have only one row')
 
 
+class BenutzerdefinierteGruppe(VisumTable):
+    name = 'Benutzerdefinierte Gruppen'
+    code = 'BENUTZERDEFINIERTEGRUPPE'
+
+    _cols = 'NAME;BESCHREIBUNG'
+
+
 class BenutzerdefiniertesAttribut(VisumTable):
     name = 'Benutzerdefinierte Attribute'
     code = 'BENUTZERDEFATTRIBUTE'
 
     _cols = ('OBJID;ATTID;CODE;NAME;DATENTYP;MINWERT;MAXWERT;'
     'STANDARDWERT;STRINGSTANDARDWERT;KOMMENTAR;MAXSTRINGLAENGE;ANZDEZSTELLEN;'
-    'DATENQUELLENTYP;FORMEL;QUERSCHNITTSLOGIK')
+    'DATENQUELLENTYP;FORMEL;QUERSCHNITTSLOGIK;BENUTZERDEFINIERTERGRUPPENNAME')
 
     _pkey = 'OBJID;ATTID'
 
@@ -42,11 +49,12 @@ class BenutzerdefiniertesAttribut(VisumTable):
                  }
 
     def add_formel_attribute(self,
-                             objid,
-                             name,
-                             formel,
-                             attid=None,
-                             code=None,
+                             objid: str,
+                             name: str,
+                             formel: str,
+                             attid: str=None,
+                             code: str=None,
+                             benutzerdefiniertergruppenname: str=None,
                              **kwargs):
         """
         add Formel-Attribut
@@ -67,20 +75,21 @@ class BenutzerdefiniertesAttribut(VisumTable):
         """
         attid = attid or code or name
         code = code or name
-        row = self.Row(objid=objid,
-                       datenquellentyp='FORMEL',
-                       name=name,
-                       attid=attid,
-                       code=code,
-                       formel=formel,
-                       **kwargs)
-        self.add_row(row)
+        self.add(objid=objid,
+                 datenquellentyp='FORMEL',
+                 name=name,
+                 attid=attid,
+                 code=code,
+                 formel=formel,
+                 benutzerdefiniertergruppenname=benutzerdefiniertergruppenname,
+                 **kwargs)
 
     def add_daten_attribute(self,
-                            objid,
-                            name,
-                            attid=None,
-                            code=None,
+                            objid: str,
+                            name: str,
+                            attid: str=None,
+                            code: str=None,
+                            benutzerdefiniertergruppenname: str=None,
                             **kwargs):
         """
         add Daten-Attribut
@@ -104,6 +113,7 @@ class BenutzerdefiniertesAttribut(VisumTable):
                        name=name,
                        attid=attid,
                        code=code,
+                       benutzerdefiniertergruppenname=benutzerdefiniertergruppenname,
                        **kwargs)
         self.add_row(row)
 
@@ -113,7 +123,7 @@ class Verkehrssystem(VisumTable):
     name = 'Verkehrssysteme'
     code = 'VSYS'
 
-    _cols = ('CODE;TYP')
+    _cols = 'CODE;TYP'
 
 
 class Oberbezirk(VisumTable):

@@ -130,16 +130,15 @@ class Matrix(VisumTable):
         name = name or code
         datname = datname or code
         nr = self.next_number()
-        row = self.Row(nr=nr,
-                       code=code,
-                       name=name,
-                       datenquellentyp='DATEN',
-                       loadmatrix=loadmatrix,
-                       matrixfolder=matrixfolder,
-                       datname=datname,
-                       category=category or self.matrix_category,
-                       ** kwargs)
-        self.add_row(row)
+        self.add(nr=nr,
+                 code=code,
+                 name=name,
+                 datenquellentyp='DATEN',
+                 loadmatrix=loadmatrix,
+                 matrixfolder=matrixfolder,
+                 datname=datname,
+                 category=category or self.matrix_category,
+                 ** kwargs)
         return nr
 
     def add_formel_matrix(self,
@@ -177,16 +176,15 @@ class Matrix(VisumTable):
         name = name or code
         datname = datname or code
         nr = self.next_number()
-        row = self.Row(nr=nr,
-                       code=code,
-                       formel=formel,
-                       name=name,
-                       loadmatrix=0,
-                       datenquellentyp='FORMEL',
-                       datname=datname,
-                       category=category or self.matrix_category,
-                       **kwargs)
-        self.add_row(row)
+        self.add(nr=nr,
+                 code=code,
+                 formel=formel,
+                 name=name,
+                 loadmatrix=0,
+                 datenquellentyp='FORMEL',
+                 datname=datname,
+                 category=category or self.matrix_category,
+                 **kwargs)
         return nr
 
     def get_timestring(self, hour: float) -> str:
@@ -749,7 +747,7 @@ class Matrix(VisumTable):
                                   savematrix=savematrix,
                                   )
 
-    def add_commuter_matrices(self, userdef: BenutzerdefiniertesAttribut,
+    def add_commuter_matrices(self,
                               loadmatrix=1,
                               savematrix=1):
         """Add Commuter Matrices"""

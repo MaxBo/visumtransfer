@@ -38,6 +38,7 @@ from .netz import (
 
 from .basis import (
     Netz,
+    BenutzerdefinierteGruppe,
     BenutzerdefiniertesAttribut,
     Verkehrssystem,
     Bezirke,
