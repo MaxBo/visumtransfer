@@ -125,6 +125,18 @@ class TestVisumTransfer:
         # the penultimate should have the no 13
         self.assert_row_equals(tbl, tbl.Row(id=13), -2, )
 
+        # test add()
+        tbl.add(id=15, name='XYZ', value=42.3)
+        self.assert_row_equals(tbl, tbl.Row(id=15, name='XYZ', value=42.3), -1, )
+
+        # test upsert()
+        with pytest.raises(ValueError):
+            tbl.upsert(name='DEF')
+        tbl.upsert(id=15, name='ABC')
+        self.assert_row_equals(tbl, tbl.Row(id=15, name='ABC', value=42.3), -1, )
+        tbl.upsert(id=16, name='DEF')
+        self.assert_row_equals(tbl, tbl.Row(id=16, name='DEF', value=-11), -1, )
+
     def assert_row_equals(self,
                           table: VisumTable,
                           row: 'VisumTable.Row',

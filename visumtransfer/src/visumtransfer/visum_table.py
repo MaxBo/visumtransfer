@@ -2,10 +2,12 @@
 
 import datetime
 import csv
+import tempfile
 from collections import OrderedDict
 from typing import Dict, Iterable, List
 from copy import copy
 import os
+import shutil
 import io
 import numpy as np
 from recordclass import recordclass
@@ -271,8 +273,28 @@ class VisumTable(metaclass=MetaClass):
         df = self.df_from_array(data_arr)
         return df
 
+    def add(self, **kwargs):
+        """add a row defined by the kwargs provided"""
+        self.add_row(self.Row(**kwargs))
+
     def add_row(self, row: recordclass):
         self.add_rows([list(row)])
+
+    def upsert(self, **kwargs):
+        """update existing row matched by pkey or insert if not exists"""
+        keys = [k.upper() for k in kwargs.keys()]
+        if not set(self.pkey).issubset(set(keys)):
+            raise ValueError(f'{self.pkey} not in {keys}')
+        key = tuple(kwargs[k.lower()] for k in self.pkey)
+        try:
+            row = self.df.loc[key]
+        except KeyError:
+            self.add(**kwargs)
+        else:
+            for k, v in kwargs.items():
+                k_upper = k.upper()
+                if k_upper not in self.pkey:
+                    self.df.loc[key, k_upper] = v
 
     def add_rows(self, rows: List[recordclass]):
         df2append = self.df_from_array(rows)
@@ -433,6 +455,30 @@ class VisumTransfer:
             fobj.writeln(f'* {self.date}')
             for table in self.tables.values():
                 table.write_block(fobj)
+
+    def prepend(self, fn: str):
+        """Prepend tables after the VERSION-section to the existing transfer file `fn`"""
+        fn2 = tempfile.mktemp(suffix='.tra')
+        with open(fn, 'r') as f:
+            with open(fn2, 'w') as f2:
+                found = False
+                while not found:
+                    line = f.readline()
+                    f2.write(line)
+                    if line.startswith('$VERSION:'):
+                        found = True
+                        for i in range(2):
+                            f2.write(f.readline())
+                        break
+
+                fobj = WriteLine(f2)
+                for table in self.tables.values():
+                    #  skip Version when appending to existing tra-file
+                    if table.code == 'VERSION':
+                        continue
+                    table.write_block(fobj)
+                f2.writelines(f.readlines())
+        shutil.move(fn2, fn)
 
     def append(self, fn: str):
         """Append tables except the VERSION-section to the existing transfer file `fn`"""
