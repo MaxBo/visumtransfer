@@ -743,8 +743,10 @@ class VisemDemandModel:
                                    userdef1: BenutzerdefiniertesAttribut,
                                    pgr_summe: str = 'ASumme'):
 
-        userdef1.add_daten_attribute('Bezirk', 'OBB_OCCUPATION', datentyp='Int')
-        userdef1.add_daten_attribute('Bezirk', 'OBB_CARS', datentyp='Int')
+        userdef1.add_daten_attribute('Bezirk', 'OBB_OCCUPATION', datentyp='Int',
+                                     benutzerdefiniertergruppenname='Gebietszuordnung')
+        userdef1.add_daten_attribute('Bezirk', 'OBB_CARS', datentyp='Int',
+                                     benutzerdefiniertergruppenname='Gebietszuordnung')
 
         TBL_model = create_userdefined_table(
             name='ParamFilePersonGroupModel',
@@ -772,7 +774,8 @@ class VisemDemandModel:
         userdef1.add_daten_attribute('Bezirk', 'Pkw_Personengruppen',
                                      benutzerdefiniertergruppenname='Bevölkerungsstruktur')
         formel = f'[Pkw_Personengruppen] / [ANZPERSONEN({pgr_summe})] * 1000'
-        userdef1.add_formel_attribute('Bezirk', 'Motorisierung', formel=formel)
+        userdef1.add_formel_attribute('Bezirk', 'Motorisierung', formel=formel,
+                                      benutzerdefiniertergruppenname='Bevölkerungsstruktur')
 
         kommentar = 'Pkw nach Pkw-Verfügbarkeit'
 
