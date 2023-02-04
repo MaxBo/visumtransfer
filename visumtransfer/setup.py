@@ -9,7 +9,6 @@ from setuptools import setup, find_packages
 
 setup(
     name="visumtransfer",
-    version="0.4.2",
     description="Write Visum-Transfer Files",
     packages=find_packages('src'),
     namespace_packages=['visumtransfer'],
@@ -30,7 +29,6 @@ setup(
         'xarray',
         'openpyxl',
         'recordclass',
-        #'tables',
         'pytest',
     ],
 )

@@ -1,0 +1,4 @@
+recordclass
+openpyxl
+xarray
+pandas>=1.5
