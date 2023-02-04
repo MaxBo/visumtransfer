@@ -795,8 +795,8 @@ class VisemDemandModel:
             tbl_ca.add(key=row.code, value=row.factor_pkwverf_anzpkw)
 
         # OBB-Attribute für Kalibrierung Erwerbstätigkeit und Motorisierung
-        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_ERWERBST', standardwert=1.0)
-        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_PKW', standardwert=1.0)
+        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_ERWERBST', standardwert=0.0)
+        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_PKW', standardwert=0.0)
         userdef1.add_formel_attribute('Oberbezirk', 'EINWOHNER',
                                       formel='[SUM:BEZIRKE\SG_EINWOHNER]')
         userdef1.add_formel_attribute('Oberbezirk', 'SGB2_EMPFAENGER',
@@ -804,9 +804,9 @@ class VisemDemandModel:
         userdef1.add_formel_attribute('Oberbezirk', 'MODELLIERUNGSRAUM',
                                       formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
         userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_ERWERBSTAETIGKEIT',
-                                      formel='([MODELLIERUNGSRAUM] * ([AGS] != "01003") + ([CODE]="Sozialraum"))>0')
+                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
         userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_PKWVERFUEGBARKEIT',
-                                      formel='([MODELLIERUNGSRAUM] * ([AGS] != "01003") + ([CODE]="Stadtbezirk"))>0')
+                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
 
         return tbl_model, tbl_ca
 
@@ -947,9 +947,9 @@ class VisemDemandModel:
 
 if __name__ == '__main__':
     argpase = ArgumentParser()
-    argpase.add_argument('--infolder', type=str, default=r'D:\GGR\HL\55 Nachfragemodell')
-    argpase.add_argument('--param_excel_fp', type=str, default='params_long_2022_HL.xlsx')
-    argpase.add_argument('--visum_folder', type=str, default=r'D:\GGR\HL\55 Nachfragemodell')
+    argpase.add_argument('--infolder', type=str, default=r'D:\GGR\KS\55 Nachfragemodell')
+    argpase.add_argument('--param_excel_fp', type=str, default='params_long_2023_NVV.xlsx')
+    argpase.add_argument('--visum_folder', type=str, default=r'D:\GGR\KS\55 Nachfragemodell')
     options = argpase.parse_args()
 
     param_excel_fp = os.path.join(options.infolder, options.param_excel_fp)
@@ -962,7 +962,7 @@ if __name__ == '__main__':
 
     params = dm.get_params(param_excel_fp)
     #dm.add_nsegs_userdefined(modification_no=5, nsegcodes_put=['O'])
-    dm.create_transfer(params, modification_number=11)
+    dm.create_transfer(params, modification_number=3)
     #dm.create_transfer_constants(params, modification_no=7)
     #dm.create_transfer_target_values(params, modification_no=8)
     #dm.write_modification_iv_matrices(modification_number=9)
