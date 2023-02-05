@@ -1,4 +1,5 @@
 recordclass
 openpyxl
 xarray
+tables
 pandas>=1.5

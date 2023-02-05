@@ -34,6 +34,7 @@ from visumtransfer.params import Params
 
 class VisemDemandModel:
     """create a transfer file for a VisemModel"""
+
     def __init__(self,
                  modifications: str,
                  param_excel_fp: str):
@@ -66,8 +67,8 @@ class VisemDemandModel:
         matrices = Matrix()
 
         pgr_summe = params.group_definitions.loc[
-            (params.group_definitions['category']=='agegroup') &
-            (params.group_definitions['id_in_category']==-1),
+            (params.group_definitions['category'] == 'agegroup')
+            & (params.group_definitions['id_in_category'] == -1),
             'code'].iloc[0]
         tbl_model, tbl_ca = self.add_params_persongrupmodel(
             tabledef,
@@ -78,10 +79,8 @@ class VisemDemandModel:
 
         self.add_strukturgroessen(params.activities, model_code, vt)
 
-
         # Kenngrößenmatrizen
         self.add_skim_matrices(matrices, params, userdef1, nsegcodes)
-
 
         acts = self.add_activities(userdefgroups, userdef1, userdef2, matrices,
                                    params, model_code, vt)
@@ -139,12 +138,12 @@ class VisemDemandModel:
                                          )
             formel = f'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Factor_Cost_{m}])'
             userdef1.add_formel_attribute('Personengruppe',
-                                         f'Factor_Cost_{m}_MainAct',
-                                         formel=formel,
-                                         datentyp='Double',
-                                         kommentar=f'Kostenfaktor {m} der Hauptaktivität',
-                                         benutzerdefiniertergruppenname=gr_coeff,
-                                         )
+                                          f'Factor_Cost_{m}_MainAct',
+                                          formel=formel,
+                                          datentyp='Double',
+                                          kommentar=f'Kostenfaktor {m} der Hauptaktivität',
+                                          benutzerdefiniertergruppenname=gr_coeff,
+                                          )
             userdef1.add_daten_attribute('Personengruppe',
                                          f'Factor_Time_{m}',
                                          datentyp='Double',
@@ -153,20 +152,20 @@ class VisemDemandModel:
                                          )
             formel = f'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Factor_Time_{m}])'
             userdef1.add_formel_attribute('Personengruppe',
-                                         f'Factor_Time_{m}_MainAct',
-                                         formel=formel,
-                                         datentyp='Double',
-                                         kommentar='Zeitfaktor {m} der Hauptaktivität',
-                                         benutzerdefiniertergruppenname=gr_coeff,
-                                         )
+                                          f'Factor_Time_{m}_MainAct',
+                                          formel=formel,
+                                          datentyp='Double',
+                                          kommentar='Zeitfaktor {m} der Hauptaktivität',
+                                          benutzerdefiniertergruppenname=gr_coeff,
+                                          )
         formel = 'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Tarifmatrix])'
         userdef1.add_formel_attribute('Personengruppe',
-                                     f'Tarifmatrix_MainAct',
-                                     formel=formel,
-                                     datentyp='LongText',
-                                     kommentar='Tarifmatrix der Hauptaktivität',
-                                     benutzerdefiniertergruppenname=gr_coeff,
-                                     )
+                                      f'Tarifmatrix_MainAct',
+                                      formel=formel,
+                                      datentyp='LongText',
+                                      kommentar='Tarifmatrix der Hauptaktivität',
+                                      benutzerdefiniertergruppenname=gr_coeff,
+                                      )
 
         ns.create_tables_gd(personengruppe=pg,
                             aktivitaet=acts,
@@ -233,12 +232,12 @@ class VisemDemandModel:
         vt.tables['MatrizenLogsum'] = matrices_logsum
 
     def add_accessibility_matrices(self,
-                          matrices: Matrix,
-                          userdefgroups: BenutzerdefinierteGruppe,
-                          userdefined: BenutzerdefiniertesAttribut,
-                          model: str,
-                          matrix_range: str='Logsums',
-                          ):
+                                   matrices: Matrix,
+                                   userdefgroups: BenutzerdefinierteGruppe,
+                                   userdefined: BenutzerdefiniertesAttribut,
+                                   model: str,
+                                   matrix_range: str = 'Logsums',
+                                   ):
         """Add logsum matrices for Accessibility Calculation"""
 
         gr_acc = 'Erreichbarkeit'
@@ -253,17 +252,17 @@ class VisemDemandModel:
             category='Accessibility',
             matrixtyp='Kenngröße',
             nachfrmodellcode=model,
-            pgruppencode='SThP_L_HS',
+            pgruppencode='SThP_K_HS',
             aktivcode='HS')
         nr = matrices.add_formel_matrix(
             'Erreichbarkeit_HS',
             category='Accessibility',
             matrixtyp='Kenngröße',
             nachfrmodellcode=model,
-            pgruppencode='SThP_L_HS',
+            pgruppencode='SThP_K_HS',
             aktivcode='HS',
             formel=f'EXP(Matrix([CODE] = "{ls_matname}")) * TO[SG_HS]',
-            )
+        )
         userdefined.add_formel_attribute('BEZIRK',
                                          'LS_HS',
                                          formel=f'LN([MATZEILENSUMME({nr})])',
@@ -298,7 +297,7 @@ class VisemDemandModel:
         vt.tables['VisemGanglinien'] = vgl
 
     def add_persongroups(self,
-                         userdefgroups:BenutzerdefinierteGruppe,
+                         userdefgroups: BenutzerdefinierteGruppe,
                          userdef1: BenutzerdefiniertesAttribut,
                          userdef2: BenutzerdefiniertesAttribut,
                          matrices: Matrix,
@@ -403,7 +402,6 @@ class VisemDemandModel:
                                   category_generation,
                                   output_categories=categories)
 
-
         # Create the Dataframe
         pg.create_df_from_group_list()
 
@@ -424,11 +422,11 @@ class VisemDemandModel:
         acts = Aktivitaet()
         userdef1.add_daten_attribute('Aktivitaet', 'RSA', datentyp='Bool')
         userdef1.add_daten_attribute('Aktivitaet', 'Autocalibrate',
-                                         datentyp='Bool')
+                                     datentyp='Bool')
         userdef1.add_daten_attribute('Aktivitaet', 'Composite_Activities',
-                                         datentyp='Text')
+                                     datentyp='Text')
         userdef1.add_daten_attribute('Aktivitaet', 'Aktivitaetset',
-                                         datentyp='Text')
+                                     datentyp='Text')
         userdef1.add_daten_attribute('Aktivitaet',
                                      code='CalcDestMode',
                                      name='CalculateDestinationAndModeChoice',
@@ -460,7 +458,7 @@ class VisemDemandModel:
             objid='AKTIVITAET',
             name='TARIFMATRIX',
             datentyp='LongText',
-            kommentar='Name einer speziellen Tarifmatrix, '\
+            kommentar='Name einer speziellen Tarifmatrix, '
             'die bei dieser Hauptaktivität verwendet werden soll',
         )
 
@@ -545,7 +543,7 @@ class VisemDemandModel:
         gr_dist = 'Distanz'
 
         userdef1.add_daten_attribute('Personengruppe', 'CATEGORY', datentyp='Text',
-                                         kommentar='Kategorie der Personengruppe')
+                                     kommentar='Kategorie der Personengruppe')
         userdef1.add_daten_attribute(
             'Personengruppe', 'CODEPART', datentyp='Text',
             kommentar='Code-Bestandteil der Zusammengesetzten Personengruppen'
@@ -743,6 +741,8 @@ class VisemDemandModel:
                                    userdef1: BenutzerdefiniertesAttribut,
                                    pgr_summe: str = 'ASumme'):
 
+        userdef1.add_daten_attribute('Bezirk', 'MODELLIERUNGSRAUM', datentyp='Int',
+                                     benutzerdefiniertergruppenname='Gebietszuordnung')
         userdef1.add_daten_attribute('Bezirk', 'OBB_OCCUPATION', datentyp='Int',
                                      benutzerdefiniertergruppenname='Gebietszuordnung')
         userdef1.add_daten_attribute('Bezirk', 'OBB_CARS', datentyp='Int',
@@ -789,7 +789,7 @@ class VisemDemandModel:
         )
         tbl_ca = TBL_model('')
         pgr_ca = params.group_definitions.loc[
-            params.group_definitions['category']=='car_availability',
+            params.group_definitions['category'] == 'car_availability',
             ['code', 'factor_pkwverf_anzpkw']]
         for idx, row in pgr_ca.iterrows():
             tbl_ca.add(key=row.code, value=row.factor_pkwverf_anzpkw)
@@ -818,7 +818,6 @@ class VisemDemandModel:
         v.tables['Matrizen'] = matrices
         v.write(fn=v.get_modification(modification_number, self.modifications))
 
-
     def write_modification_ov_matrices(self, modification_number: int):
         v = VisumTransfer.new_transfer()
 
@@ -826,7 +825,6 @@ class VisemDemandModel:
         matrices.add_ov_demand()
         v.tables['Matrizen'] = matrices
         v.write(fn=v.get_modification(modification_number, self.modifications))
-
 
     def add_nsegs_userdefined(self, modification_no: int, nsegcodes_put: List[str]):
         vt = VisumTransfer.new_transfer()
@@ -844,7 +842,7 @@ class VisemDemandModel:
 
         # Netzattribute
         userdef0.add_daten_attribute('Netz', 'COST_PER_KM_PKW',
-                                         standardwert=0.15)
+                                     standardwert=0.15)
         userdef0.add_daten_attribute('Netz', 'MINUS_ONE', standardwert=-1)
 
         # VSys-Attribute
@@ -857,7 +855,6 @@ class VisemDemandModel:
         userdef0.add_daten_attribute('Modus', 'COEFF_TRAVELTIME', standardwert=0.0)
         userdef0.add_daten_attribute('Modus', 'COEFF_TRAVEL_COST', standardwert=0.0)
         userdef0.add_daten_attribute('Modus', 'COST_PER_KM', standardwert=0.0)
-
 
         mode_lkw = 'LKW_XL'
         # Nachfragesegmente
@@ -907,7 +904,6 @@ class VisemDemandModel:
         fn = v.get_modification(modification_no, self.modifications)
         v.write(fn=fn)
 
-
     def create_transfer_constants(self, params: Params, modification_no: int):
         cols = [f'BASECONST_{mode.code}' for _, mode in params.modes.iterrows()]
 
@@ -923,7 +919,7 @@ class VisemDemandModel:
 
         # Aktivitätenspezifische Konstanten
         va = params.validation_activities.set_index('code')
-        va = va.loc[va['in_model']==1]
+        va = va.loc[va['in_model'] == 1]
         va = va[cols]
         va = va.loc[va.any(axis=1)]
         ac = Aktivitaet(mode='*')
