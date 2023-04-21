@@ -353,7 +353,7 @@ class VisumTable(metaclass=MetaClass):
         print(self.df.shape, new_df.shape)
         add_df = new_df.reset_index()[columns].set_index(self.pkey)
         new_rows = add_df[~add_df.index.isin(self.new_df.index)]
-        self.new_df = self.new_df.append(new_rows)
+        self.new_df = pd.concat([self.new_df, new_rows])
         print(self, new_rows.shape, self.new_df.shape)
 
 
@@ -428,7 +428,7 @@ class VisumTransfer:
         df = pd.DataFrame()
         for name, table in self.tables.items():
             if table.code == code and table._mode == mode:
-                df = df.append(table.df)
+                df = pd.concat([df, table.df])
         return df
 
     def get_tables(self, code: str, modes: Iterable = '') -> TablesDict:
