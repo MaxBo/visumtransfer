@@ -40,6 +40,7 @@ class VisumTables:
 
 class WriteLine:
     """Wrapper around file object"""
+
     def __init__(self, fobj: io.TextIOWrapper):
         self.fobj = fobj
 
@@ -369,7 +370,7 @@ class Version(VisumTable):
         'LANGUAGE': 'DEU',
         'FILETYPE': 'Demand',
         'UNIT': 'KM',
-                     }
+    }
     _mode = ''
 
     def add_netfile_header(self):
@@ -388,6 +389,7 @@ class VisumTransfer:
     Class VisumTransfer holds the information on the sections in a transfer file
     in self.tables
     """
+
     def __init__(self,
                  user: str,
                  date=None,
