@@ -214,11 +214,11 @@ class VisemDemandModel:
         matrices.add_daten_matrix('Diagonal',
                                   category='General',
                                   matrixtyp='Kenngröße',
-                                  loadmatrix=1)
+                                  loadmatrix=0)
         matrices.add_daten_matrix('NoDiagonal',
                                   category='General',
                                   matrixtyp='Kenngröße',
-                                  loadmatrix=1)
+                                  loadmatrix=0)
         matrices.add_ov_kg_matrices(params, userdef1, nsegcodes=nsegcodes)
         matrices.add_iv_kg_matrices(userdef1)
 
