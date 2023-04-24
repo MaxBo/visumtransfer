@@ -60,11 +60,11 @@ class Matrix(VisumTable):
     matrix_category = ''
 
     _cols = ('NR;CODE;NAME;MATRIXTYP;BEZUGSTYP;NSEGCODE;NSCHICHTSET;DATNAME;'
-    'ANZDEZSTELLEN;DATENQUELLENTYP;FORMEL;TAG;VONZEIT;BISZEIT;ZEITBEZUG;'
-    'MODUSCODE;MODUSSET;PERSONENGRUPPENSET;PGRUPPENCODE;AKTIVCODE;'
-    'QUELLAKTIVITAETSET;ZIELAKTIVITAETSET;'
-    'INITMATRIX;SAVEMATRIX;LOADMATRIX;MATRIXFOLDER;'
-    'CALIBRATIONCODE;NACHFRMODELLCODE;CATEGORY;OBB_MATRIX_REF')
+             'ANZDEZSTELLEN;DATENQUELLENTYP;FORMEL;TAG;VONZEIT;BISZEIT;ZEITBEZUG;'
+             'MODUSCODE;MODUSSET;PERSONENGRUPPENSET;PGRUPPENCODE;AKTIVCODE;'
+             'QUELLAKTIVITAETSET;ZIELAKTIVITAETSET;'
+             'INITMATRIX;SAVEMATRIX;LOADMATRIX;MATRIXFOLDER;'
+             'CALIBRATIONCODE;NACHFRMODELLCODE;CATEGORY;OBB_MATRIX_REF')
 
     _defaults = {'ANZDEZSTELLEN': 2,
                  'MATRIXTYP': 'Nachfrage',
@@ -223,7 +223,7 @@ class Matrix(VisumTable):
                            factor=.8,
                            exponent=.8,
                            time_interval=1,
-                           nsegcodes: List[str]=[],
+                           nsegcodes: List[str] = [],
                            ):
         """Add OV Kenngrößen-Matrizen für Zeitscheiben"""
         time_series = params.time_series
@@ -375,10 +375,9 @@ class Matrix(VisumTable):
                 code=ticketart,
                 matrixtyp='Kenngröße',
                 moduscode='O',
-                loadmatrix=1,
+                loadmatrix=0,
                 savematrix=savematrix,
             )
-
 
         self.add_daten_matrix(
             code='OVDIS',
@@ -386,15 +385,15 @@ class Matrix(VisumTable):
             name='OV Reiseweite',
             datname='OVDIS',
             nsegcode=nsegcode,
-            loadmatrix=1,
+            loadmatrix=0,
             savematrix=savematrix,
             moduscode='O',
         )
 
         userdef.add_daten_attribute('Netz', 'DistanceKorrBisKm_OV',
-                                         standardwert=3)
+                                    standardwert=3)
         userdef.add_daten_attribute('Netz', 'DistanceKorrFaktor_OV',
-                                         standardwert=-1.5)
+                                    standardwert=-1.5)
 
         self.add_formel_matrix(
             code='DistanzKorrektur_OV',
@@ -455,7 +454,7 @@ class Matrix(VisumTable):
         for nsegcode in ['P', 'PG']:
             self.add_daten_matrix(code='DIS',
                                   name=f'Fahrweite Pkw ({nsegcode})',
-                                  loadmatrix=1,
+                                  loadmatrix=0,
                                   matrixtyp='Kenngröße',
                                   nsegcode=nsegcode,
                                   vonzeit='',
@@ -463,7 +462,7 @@ class Matrix(VisumTable):
                                   savematrix=savematrix)
             self.add_daten_matrix(code='TT0',
                                   name=f't0 Pkw ({nsegcode})',
-                                  loadmatrix=1,
+                                  loadmatrix=0,
                                   matrixtyp='Kenngröße',
                                   nsegcode=nsegcode,
                                   vonzeit='',
@@ -471,26 +470,26 @@ class Matrix(VisumTable):
                                   savematrix=savematrix)
             self.add_daten_matrix(code='TTC',
                                   name=f'tAkt Pkw ({nsegcode})',
-                                  loadmatrix=1,
+                                  loadmatrix=0,
                                   matrixtyp='Kenngröße',
                                   nsegcode=nsegcode,
                                   vonzeit='',
                                   biszeit='',
                                   savematrix=savematrix)
 
-        self.add_daten_matrix(code='TFUSS', name='tFuss', loadmatrix=1,
+        self.add_daten_matrix(code='TFUSS', name='tFuss', loadmatrix=0,
                               matrixtyp='Kenngröße',
                               nsegcode='F',
                               moduscode='F',
                               savematrix=savematrix)
-        self.add_daten_matrix(code='TRAD', name='tRad', loadmatrix=1,
+        self.add_daten_matrix(code='TRAD', name='tRad', loadmatrix=0,
                               matrixtyp='Kenngröße',
                               nsegcode='R',
                               moduscode='R',
                               savematrix=savematrix)
         self.add_daten_matrix(code='TTC_boxcox',
                               name='tAkt Pkw BoxCox-Transformiert',
-                              loadmatrix=1,
+                              loadmatrix=0,
                               matrixtyp='Kenngröße',
                               nsegcode='P',
                               moduscode='P',
@@ -501,7 +500,7 @@ class Matrix(VisumTable):
             name='Binnendistanz_area',
             formel='SQRT([FLAECHEKM2]) / 3',
             kommentar='geschätzte Binnendistanz in km',
-                                    )
+        )
 
         self.add_formel_matrix(
             code='PkwKosten',
@@ -523,25 +522,24 @@ class Matrix(VisumTable):
                   #'Matrix([CODE] = "DIS" & [NSEGCODE] = "R"))')
 
         self.add_formel_matrix(code='KM', name='Reiseweite',
-                                   matrixtyp='Kenngröße',
-                                   formel=formel)
+                               matrixtyp='Kenngröße',
+                               formel=formel)
 
         userdef.add_daten_attribute('Netz', 'DistanceKorrBisKm_Pkw',
-                                             standardwert=1.2)
+                                    standardwert=1.2)
         userdef.add_daten_attribute('Netz', 'DistanceKorrFaktor_Pkw',
-                                             standardwert=-4)
+                                    standardwert=-4)
 
         self.add_formel_matrix(
-                code='DistanzKorrektur_Pkw',
-                matrixtyp='Kenngröße',
-                name='DistanzKorrektur_Pkw',
-                datname='DistanzKorrektur_Pkw',
-                moduscode='P',
-                formel='(Matrix([CODE] = "KM") < [DistanceKorrBisKm_Pkw]) *'
-                ' [DistanceKorrFaktor_Pkw] * '
-                '([DistanceKorrBisKm_Pkw] - Matrix([CODE] = "KM"))',
-            )
-
+            code='DistanzKorrektur_Pkw',
+            matrixtyp='Kenngröße',
+            name='DistanzKorrektur_Pkw',
+            datname='DistanzKorrektur_Pkw',
+            moduscode='P',
+            formel='(Matrix([CODE] = "KM") < [DistanceKorrBisKm_Pkw]) *'
+            ' [DistanceKorrFaktor_Pkw] * '
+            '([DistanceKorrBisKm_Pkw] - Matrix([CODE] = "KM"))',
+        )
 
     def add_iv_demand(self, savematrix=0, loadmatrix=1):
         """Add PrT Demand Matrices"""
@@ -630,7 +628,7 @@ class Matrix(VisumTable):
         """Add PrT Demand Matrices"""
         self.set_category('Visem_Demand')
         self.add_daten_matrix(code='Visem_O', name='ÖPNV',
-                              loadmatrix=loadmatrix,
+                              loadmatrix=0,
                               matrixtyp='Nachfrage',
                               nsegcode='O',
                               moduscode='O',
@@ -685,7 +683,6 @@ class Matrix(VisumTable):
                                   savematrix=savematrix,
                                   obb_matrix_ref=f'[CODE]="Visem_OBB_{code}"',
                                   )
-
 
         for m, mode in params.modes.iterrows():
             code = mode['code']
@@ -772,15 +769,12 @@ class Matrix(VisumTable):
         formel = 'Matrix([CODE]="Pendlermatrix_OBB") * [SUM:PGRUPPEN\ERWERBSTAETIGE] '\
             '/ MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB"))'
         self.add_daten_matrix(
-        #self.add_formel_matrix(
             code='Pendlermatrix_OBB_Gesamt',
             name='Pendlermatrix_OBB incl Nicht-SVB-Beschäftigte',
             matrixtyp='Nachfrage',
             bezugstyp='Oberbezirk',
             matrixfolder='Pendler',
             savematrix=0,
-            #savematrix=1,
-            #formel=formel,
         )
 
         self.set_category('DestinationChoiceSkims')
@@ -827,4 +821,4 @@ class Matrix(VisumTable):
                     nachfrmodellcode=nmc,
                     pgruppencode=pgr,
                     aktivcode=activity,
-                    )
+                )
