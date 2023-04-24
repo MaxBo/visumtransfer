@@ -252,7 +252,7 @@ class Aktivitaet(VisumTable):
 
     def add_balancing_output_matrices(self,
                                       matrices: Matrix,
-                                      userdefgroups:BenutzerdefinierteGruppe,
+                                      userdefgroups: BenutzerdefinierteGruppe,
                                       userdef: BenutzerdefiniertesAttribut,
                                       loadmatrix=0,
                                       savematrix=0):
@@ -325,7 +325,7 @@ class Aktivitaet(VisumTable):
                 threshold_min = 0.95
                 threshold_max = 1.05
                 formel = f'[MIN:BEZIRKE\ZONE_KF_{code}] < {threshold_min} | '\
-                f'[MAX:BEZIRKE\ZONE_KF_{code}] > {threshold_max}'
+                    f'[MAX:BEZIRKE\ZONE_KF_{code}] > {threshold_max}'
                 attid = f'NOT_CONVERGED_{code}'
                 userdef.add_formel_attribute(
                     objid='NETZ',
@@ -389,7 +389,7 @@ class Aktivitaet(VisumTable):
     def add_parkzone_attrs(self,
                            userdefgroups: BenutzerdefinierteGruppe,
                            userdef: BenutzerdefiniertesAttribut,
-                           n_parkzones:int=10,
+                           n_parkzones: int = 10,
                            ):
         """
         Add Activity-Attributes
@@ -464,7 +464,7 @@ class Aktivitaet(VisumTable):
                     initmatrix=init_matrix,
                     obb_matrix_ref=obb_matrix_ref,
                 )
-                ges=self.matrixnummern_activity[code]
+                ges = self.matrixnummern_activity[code]
                 userdef.add_formel_attribute(
                     'BEZIRK',
                     benutzerdefiniertergruppenname=gr_ms_act,
@@ -495,7 +495,7 @@ class Aktivitaet(VisumTable):
                         f'[MATSPALTENSUMME({ges:d})]',
                     )
 
-                    ges=self.matrixnummer_activity_w
+                    ges = self.matrixnummer_activity_w
                     userdef.add_formel_attribute(
                         'BEZIRK',
                         benutzerdefiniertergruppenname=gr_ms_home,
@@ -506,8 +506,8 @@ class Aktivitaet(VisumTable):
 
                     # add Verkehrsleistung
                     matrices.set_category('VL_Activities')
-                    formel = f'Matrix([CODE]="Activity_{code}_{mode_code}") '
-                    f'* Matrix([CODE] = "KM")'
+                    formel = f'Matrix([CODE]="Activity_{code}_{mode_code}") '\
+                        f'* Matrix([CODE] = "KM")'
                     nr_vl = matrices.add_formel_matrix(
                         code=f'VL_Activity_{code}_{mode_code}',
                         name=f'Verkehrsleistung Aktivität {code} mit {mode_code}',
