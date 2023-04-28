@@ -118,9 +118,23 @@ class Aktivitaet(VisumTable):
         )
         userdef.add_formel_attribute(
             objid='AKTIVITAET',
+            name='TotalTrips_MR',
+            formel='TableLookup(MATRIX Mat: '
+            'Mat[CODE]="MR_Activity_"+[CODE]: Mat[SUMME])',
+            kommentar='Gesamtzahl der Wege von Wohnung aus Modellierungsraum'
+        )
+        userdef.add_formel_attribute(
+            objid='AKTIVITAET',
+            name='TotalTrips_HB',
+            formel='TableLookup(MATRIX Mat: '
+            'Mat[CODE]="HB_Activity_"+[CODE]: Mat[SUMME])',
+            kommentar='Gesamtzahl der Wege von Wohnung aus im Gesamtraum'
+        )
+        userdef.add_formel_attribute(
+            objid='AKTIVITAET',
             name='MeanTripDistance',
             formel='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="VL_Activity_"+[CODE]: Mat[SUMME]) / [TotalTrips]',
+            'Mat[CODE]="MR_VL_Activity_"+[CODE]: Mat[SUMME]) / [TotalTrips_MR]',
         )
         userdef.add_daten_attribute(
             objid='AKTIVITAET',
@@ -176,7 +190,7 @@ class Aktivitaet(VisumTable):
             if not t.ISTHEIMATAKTIVITAET:
                 matrices.set_category('Activities_Homebased')
                 nr = matrices.add_daten_matrix(
-                    code=f'Activity_HomeBased_{code}',
+                    code=f'HB_Activity_{code}',
                     name=f'Gesamtzahl der Wege von der Wohnung zu Aktivität {name}',
                     aktivcode=code,
                     quellaktivitaetset=self._homeactivity,
@@ -185,10 +199,32 @@ class Aktivitaet(VisumTable):
 
                 matrices.set_category('VL_Activities_Homebased')
                 nr_vl = matrices.add_formel_matrix(
-                    code=f'VL_Activity_{code}',
-                    name=f'Fahrleistung Wohnnung-Aktivität {name}',
-                    formel=f'Matrix([CODE] = "Activity_HomeBased_{code}") * '
+                    code=f'HB_VL_Activity_{code}',
+                    name=f'Fahrleistung Wohnung-Aktivität {name}',
+                    formel=f'Matrix([CODE] = "HB_Activity_{code}") * '
                     'Matrix([CODE] = "KM")',
+                    aktivcode=code,
+                    quellaktivitaetset=self._homeactivity,
+                    zielaktivitaetset=t.AKTIVITAETSET,
+                )
+
+                matrices.set_category('Activities_Modellierungsraum')
+                nr = matrices.add_formel_matrix(
+                    code=f'MR_Activity_{code}',
+                    name=f'Gesamtzahl der Wege aus dem Modellierungsraum zur Aktivität {name}',
+                    formel=f'Matrix([CODE] = "HB_Activity_{code}") * '
+                    'FROM[MODELLIERUNGSRAUM]',
+                    aktivcode=code,
+                    quellaktivitaetset=self._homeactivity,
+                    zielaktivitaetset=t.AKTIVITAETSET,
+                )
+
+                matrices.set_category('VL_Activities_Modellierungsraum')
+                nr_vl = matrices.add_formel_matrix(
+                    code=f'MR_VL_Activity_{code}',
+                    name=f'Fahrleistung Wohnung(im Modellierungsraum)-Aktivität {name}',
+                    formel=f'Matrix([CODE] = "HB_VL_Activity_{code}") * '
+                    'FROM[MODELLIERUNGSRAUM]',
                     aktivcode=code,
                     quellaktivitaetset=self._homeactivity,
                     zielaktivitaetset=t.AKTIVITAETSET,

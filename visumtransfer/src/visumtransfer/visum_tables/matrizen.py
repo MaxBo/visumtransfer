@@ -27,6 +27,8 @@ class MatrixCategories(dict):
         'Commuters': 1100,
         'VL_Activities': 1200,
         'VL_Activities_Homebased': 1300,
+        'Activities_Modellierungsraum': 1400,
+        'VL_Activities_Modellierungsraum': 1500,
         'VL_Activities_OBB': 1600,
         'Activities_OBB': 1700,
         'OV_TimeSeries_Skims_Formula': 1800,
