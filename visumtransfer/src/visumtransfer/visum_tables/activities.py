@@ -132,6 +132,18 @@ class Aktivitaet(VisumTable):
         )
         userdef.add_formel_attribute(
             objid='AKTIVITAET',
+            name='Pkm_Total',
+            formel='TableLookup(MATRIX Mat: '
+            'Mat[CODE]="VL_Activity_"+[CODE]: Mat[SUMME])',
+        )
+        userdef.add_formel_attribute(
+            objid='AKTIVITAET',
+            name='Pkm_Modellierungsraum',
+            formel='TableLookup(MATRIX Mat: '
+            'Mat[CODE]="MR_VL_Activity_"+[CODE]: Mat[SUMME])',
+        )
+        userdef.add_formel_attribute(
+            objid='AKTIVITAET',
             name='MeanTripDistance',
             formel='TableLookup(MATRIX Mat: '
             'Mat[CODE]="MR_VL_Activity_"+[CODE]: Mat[SUMME]) / [TotalTrips_MR]',
