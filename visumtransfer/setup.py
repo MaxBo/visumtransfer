@@ -7,7 +7,6 @@ setup(
     name="visumtransfer",
     description="Write Visum-Transfer Files",
     packages=find_namespace_packages('src'),
-    #namespace_packages=['visumtransfer'],
     package_dir={'': 'src'},
     package_data={'': ['attributes.h5'], },
     include_package_data=True,

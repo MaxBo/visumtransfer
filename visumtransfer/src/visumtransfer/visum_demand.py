@@ -53,9 +53,9 @@ class VisemDemandModel:
         userdefgroups = BenutzerdefinierteGruppe(mode='+')
         vt.tables['UserDefsGroups'] = userdefgroups
 
-        userdef1 = BenutzerdefiniertesAttribut()
+        userdef1 = BenutzerdefiniertesAttribut(mode='')
         vt.tables['BenutzerdefinierteAttribute1'] = userdef1
-        userdef2 = BenutzerdefiniertesAttribut()
+        userdef2 = BenutzerdefiniertesAttribut(mode='')
 
         tbl_pgrcat = self.add_pgr_categories(vt, tabledef, userdef1)
         vt.tables['PersongroupCategories'] = tbl_pgrcat
@@ -67,8 +67,8 @@ class VisemDemandModel:
         matrices = Matrix()
 
         pgr_summe = params.group_definitions.loc[
-            (params.group_definitions['category'] == 'agegroup')
-            & (params.group_definitions['id_in_category'] == -1),
+            (params.group_definitions['category'] == 'agegroup') &
+            (params.group_definitions['id_in_category'] == -1),
             'code'].iloc[0]
         tbl_model, tbl_ca = self.add_params_persongrupmodel(
             tabledef,
@@ -187,6 +187,7 @@ class VisemDemandModel:
 
         # Erreichbarkeiten
         self.add_accessibility_matrices(matrices,
+                                        params,
                                         userdefgroups,
                                         userdef2,
                                         model=model_code)
@@ -233,6 +234,7 @@ class VisemDemandModel:
 
     def add_accessibility_matrices(self,
                                    matrices: Matrix,
+                                   params: Params,
                                    userdefgroups: BenutzerdefinierteGruppe,
                                    userdefined: BenutzerdefiniertesAttribut,
                                    model: str,
@@ -246,27 +248,30 @@ class VisemDemandModel:
         userdefgroups.add(name=gr_popstruct, beschreibung='Bevölkerungsstruktur')
 
         matrices.set_category(matrix_range)
-        ls_matname = 'LogSum_HS'
-        matrices.add_daten_matrix(
-            ls_matname,
-            category='Accessibility',
-            matrixtyp='Kenngröße',
-            nachfrmodellcode=model,
-            pgruppencode='SThP_K_HS',
-            aktivcode='HS')
-        nr = matrices.add_formel_matrix(
-            'Erreichbarkeit_HS',
-            category='Accessibility',
-            matrixtyp='Kenngröße',
-            nachfrmodellcode=model,
-            pgruppencode='SThP_K_HS',
-            aktivcode='HS',
-            formel=f'EXP(Matrix([CODE] = "{ls_matname}")) * TO[SG_HS]',
-        )
-        userdefined.add_formel_attribute('BEZIRK',
-                                         'LS_HS',
-                                         formel=f'LN([MATZEILENSUMME({nr})])',
-                                         benutzerdefiniertergruppenname=gr_acc)
+
+        for idx, row in params.accessibilities.iterrows():
+
+            ls_matname = row.matname_logsum
+            matrices.add_daten_matrix(
+                ls_matname,
+                category='Accessibility',
+                matrixtyp='Kenngröße',
+                nachfrmodellcode=model,
+                pgruppencode=row.pgruppencode,
+                aktivcode=row.aktivcode)
+            nr = matrices.add_formel_matrix(
+                row.matname_accessibility,
+                category='Accessibility',
+                matrixtyp='Kenngröße',
+                nachfrmodellcode=model,
+                pgruppencode=row.pgruppencode,
+                aktivcode=row.aktivcode,
+                formel=f'EXP(Matrix([CODE] = "{ls_matname}")) * TO[{row.potential}]',
+            )
+            userdefined.add_formel_attribute('BEZIRK',
+                                             row.zone_attribute,
+                                             formel=f'LN([MATZEILENSUMME({nr})])',
+                                             benutzerdefiniertergruppenname=gr_acc)
         userdefined.add_formel_attribute('BEZIRK',
                                          'Anteil_Studis',
                                          formel='[ANZPERSONEN(ST)]/([ANZPERSONEN(ASUMME)])',
