@@ -703,6 +703,39 @@ class Matrix(VisumTable):
                                   moduscode=code,
                                   bezugstyp='Oberbezirk')
 
+        # ÖV-Fahrten Schüler für Standi
+        code_sch = 'Visem_O_Schueler'
+        matcode_obb = 'Visem_OBB_OV_Schueler'
+
+        self.add_daten_matrix(code=code_sch,
+                              name=code_sch,
+                              loadmatrix=loadmatrix,
+                              savematrix=savematrix,
+                              matrixtyp='Nachfrage',
+                              obb_matrix_ref=f'[CODE]="{matcode_obb}"')
+
+        self.add_daten_matrix(code=matcode_obb,
+                              name=matcode_obb,
+                              loadmatrix=loadmatrix,
+                              savematrix=savematrix,
+                              matrixtyp='Nachfrage',
+                              bezugstyp='Oberbezirk')
+
+        code = 'Visem_O_Erwachsene'
+        matcode_obb = 'Visem_OBB_OV_Erwachsene'
+
+        self.add_formel_matrix(code=code,
+                              name=code,
+                              matrixtyp='Nachfrage',
+                              formel=f'Matrix([CODE]="Visem_O") - Matrix([CODE]="{code_sch}")',
+                              obb_matrix_ref=f'[CODE]="{matcode_obb}"')
+
+        self.add_daten_matrix(code=matcode_obb,
+                              name=matcode_obb,
+                              matrixtyp='Nachfrage',
+                              bezugstyp='Oberbezirk')
+
+        # Verkehrsleistung
         self.set_category('Demand_Verkehrsleistung')
         for m, mode in params.modes.iterrows():
             distance_matrix = mode['distance_matrix']
@@ -733,6 +766,32 @@ class Matrix(VisumTable):
                                   matrixtyp='Nachfrage',
                                   moduscode=code,
                                   bezugstyp='Oberbezirk')
+
+        # Verkehrsleistung Standi
+        mode_code = 'O'
+        mode = params.modes.loc[params.modes['code']==mode_code].iloc[0]
+        distance_matrix = mode['distance_matrix']
+        for code in ['Schueler', 'Erwachsene']:
+            matcode = f'VL_{mode_code}_{code}'
+
+            formel = f'Matrix([CODE]="Visem_{mode_code}_{code}") * '\
+                f'Matrix([CODE]="{distance_matrix}")'
+            matcode_obb = f'VL_OBB_{mode_code}_{code}'
+            self.add_formel_matrix(code=matcode,
+                                   name=matcode,
+                                   formel=formel,
+                                   matrixtyp='Nachfrage',
+                                   moduscode=code,
+                                   obb_matrix_ref=f'[CODE]="{matcode_obb}"',
+                                   )
+            self.add_daten_matrix(code=matcode_obb,
+                                  name=name,
+                                  loadmatrix=0,
+                                  matrixtyp='Nachfrage',
+                                  moduscode=code,
+                                  bezugstyp='Oberbezirk')
+
+
 
     def add_ov_haupt_ap_demand_matrices(self,
                                         ds_tagesgang: xr.Dataset,
