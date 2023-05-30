@@ -781,14 +781,14 @@ class Matrix(VisumTable):
                                    name=matcode,
                                    formel=formel,
                                    matrixtyp='Nachfrage',
-                                   moduscode=code,
+                                   moduscode=mode_code,
                                    obb_matrix_ref=f'[CODE]="{matcode_obb}"',
                                    )
             self.add_daten_matrix(code=matcode_obb,
                                   name=name,
                                   loadmatrix=0,
                                   matrixtyp='Nachfrage',
-                                  moduscode=code,
+                                  moduscode=mode_code,
                                   bezugstyp='Oberbezirk')
 
 
