@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import os
 import pandas as pd
 
@@ -45,9 +46,13 @@ class VisumAttributes:
     @classmethod
     def from_hdf(cls, h5file):
         self = super().__new__(cls)
+        executable_backup = sys.executable
+        visum_version = os.path.split(executable_backup)[-1]
+        sys.executable = sys.executable.replace(visum_version, "PythonModules\\Scripts\\pythonw.exe")        
         self.tables = pd.read_hdf(h5file, 'tables')
         self.attributes = pd.read_hdf(h5file, 'attributes')
         self.relations = pd.read_hdf(h5file, 'relations')
+        sys.executable = executable_backup
         self.set_index()
         return self
 
