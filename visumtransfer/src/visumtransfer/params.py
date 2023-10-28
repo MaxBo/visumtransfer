@@ -17,6 +17,7 @@ class Params:
     validation_activities: pd.DataFrame
     validation_activities_hauptweg: pd.DataFrame
     trip_chain_rates_rsa: pd.DataFrame
+    accessibilities: pd.DataFrame
     """"""
     attr2tablename = dict(
         group_definitions='group_definitions',
@@ -31,6 +32,7 @@ class Params:
         validation_activities_hauptweg='validation_hauptweg',
         modes='modes',
         trip_chain_rates_rsa='trip_chain_rates_rsa',
+        accessibilities='accessibilities',
     )
 
     def __init__(self, excel_fp: str):

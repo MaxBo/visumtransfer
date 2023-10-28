@@ -592,7 +592,7 @@ class Aktivitaet(VisumTable):
         # Add User Defined Attributes for the trips
         formel_trips_mode = 'TableLookup(MATRIX Mat, Mat[CODE]="Activity_"+[CODE]+"_{m}", Mat[SUM])'
         formel_trips = 'TableLookup(MATRIX Mat, Mat[CODE]="Activity_"+[CODE], Mat[SUM])'
-        formel_ms = '[TRIPS_{m}] / [TRIPS]'
+        formel_ms = '[TRIPS_{m}] / [TotalTrips_HB]'
 
         userdef.add_formel_attribute(
             'AKTIVITAET',
