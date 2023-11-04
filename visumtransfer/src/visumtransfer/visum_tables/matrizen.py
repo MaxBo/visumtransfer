@@ -546,6 +546,9 @@ class Matrix(VisumTable):
             ' [DistanceKorrFaktor_Pkw] * '
             '([DistanceKorrBisKm_Pkw] - Matrix([CODE] = "KM"))',
         )
+        self.add_daten_matrix(code='UDS', name='Benutzerdefiniert PG',
+                              matrixtyp='Kenngröße',
+                              nsegcode='PG')
 
     def add_iv_demand(self, savematrix=0, loadmatrix=1):
         """Add PrT Demand Matrices"""
@@ -725,10 +728,10 @@ class Matrix(VisumTable):
         matcode_obb = 'Visem_OBB_OV_Erwachsene'
 
         self.add_formel_matrix(code=code,
-                              name=code,
-                              matrixtyp='Nachfrage',
-                              formel=f'Matrix([CODE]="Visem_O") - Matrix([CODE]="{code_sch}")',
-                              obb_matrix_ref=f'[CODE]="{matcode_obb}"')
+                               name=code,
+                               matrixtyp='Nachfrage',
+                               formel=f'Matrix([CODE]="Visem_O") - Matrix([CODE]="{code_sch}")',
+                               obb_matrix_ref=f'[CODE]="{matcode_obb}"')
 
         self.add_daten_matrix(code=matcode_obb,
                               name=matcode_obb,
@@ -769,7 +772,7 @@ class Matrix(VisumTable):
 
         # Verkehrsleistung Standi
         mode_code = 'O'
-        mode = params.modes.loc[params.modes['code']==mode_code].iloc[0]
+        mode = params.modes.loc[params.modes['code'] == mode_code].iloc[0]
         distance_matrix = mode['distance_matrix']
         for code in ['Schueler', 'Erwachsene']:
             matcode = f'VL_{mode_code}_{code}'
@@ -790,8 +793,6 @@ class Matrix(VisumTable):
                                   matrixtyp='Nachfrage',
                                   moduscode=mode_code,
                                   bezugstyp='Oberbezirk')
-
-
 
     def add_ov_haupt_ap_demand_matrices(self,
                                         ds_tagesgang: xr.Dataset,

@@ -445,6 +445,7 @@ class VisumTransfer:
 
     def write_modification(self, number: int, modification_folder: str):
         """Write a modification file with the given number"""
+        os.makedirs(modification_folder, exist_ok=True)
         fn = self.get_modification(number, modification_folder)
         self.write(fn)
 
