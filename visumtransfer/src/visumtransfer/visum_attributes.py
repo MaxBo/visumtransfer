@@ -3,6 +3,7 @@
 import sys
 import os
 import pandas as pd
+import wingdbstub
 
 
 class VisumAttributes:
@@ -35,11 +36,17 @@ class VisumAttributes:
                                        usecols=range(7))\
             .set_index(['TabFrom', 'TabTo', 'RoleName'])
 
-        self.tables.to_hdf(h5file, 'tables', format='t', complevel=2)
-        self.attributes.to_hdf(h5file, 'attributes', format='t',
-                               complevel=2, mode='a')
-        self.relations.to_hdf(h5file, 'relations', format='t',
-                              complevel=2, mode='a')
+        executable_backup = sys.executable
+        visum_version = os.path.split(executable_backup)[-1]
+        sys.executable = sys.executable.replace(visum_version, "Python\\pythonw.exe")
+        try:
+            self.tables.to_hdf(h5file, 'tables', format='t', complevel=2)
+            self.attributes.to_hdf(h5file, 'attributes', format='t',
+                                   complevel=2, mode='a')
+            self.relations.to_hdf(h5file, 'relations', format='t',
+                                  complevel=2, mode='a')
+        finally:
+            sys.executable = executable_backup
 
         self.set_index()
 
@@ -48,11 +55,13 @@ class VisumAttributes:
         self = super().__new__(cls)
         executable_backup = sys.executable
         visum_version = os.path.split(executable_backup)[-1]
-        sys.executable = sys.executable.replace(visum_version, "PythonModules\\Scripts\\pythonw.exe")        
-        self.tables = pd.read_hdf(h5file, 'tables')
-        self.attributes = pd.read_hdf(h5file, 'attributes')
-        self.relations = pd.read_hdf(h5file, 'relations')
-        sys.executable = executable_backup
+        sys.executable = sys.executable.replace(visum_version, "Python\\pythonw.exe")
+        try:
+            self.tables = pd.read_hdf(h5file, 'tables')
+            self.attributes = pd.read_hdf(h5file, 'attributes')
+            self.relations = pd.read_hdf(h5file, 'relations')
+        finally:
+            sys.executable = executable_backup
         self.set_index()
         return self
 
