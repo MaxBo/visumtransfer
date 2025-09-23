@@ -803,7 +803,7 @@ class VisemDemandModel:
         userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_ERWERBST', standardwert=0.0)
         userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_PKW', standardwert=0.0)
         userdef1.add_formel_attribute('Oberbezirk', 'EINWOHNER',
-                                      formel='[SUM:BEZIRKE\SG_EINWOHNER]')
+                                      formel='[SUM:BEZIRKE\ZP_EINWOHNER]')
         userdef1.add_formel_attribute('Oberbezirk', 'SGB2_EMPFAENGER',
                                       formel='[ARBEITSLOSE]*2.5')
         userdef1.add_formel_attribute('Oberbezirk', 'MODELLIERUNGSRAUM',
