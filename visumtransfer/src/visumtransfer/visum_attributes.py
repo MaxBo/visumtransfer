@@ -3,7 +3,7 @@
 import sys
 import os
 import pandas as pd
-import wingdbstub
+from . import wingdbstub
 
 
 class VisumAttributes:
