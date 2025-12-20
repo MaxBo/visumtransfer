@@ -85,7 +85,7 @@ class TestVisumAttributes:
 
     def test_get_attribute(self, visum_attribute_file):
         visum_attributes = VisumAttributes.from_hdf(visum_attribute_file)
-        tables = visum_attributes.tables.reset_index().set_index('Plural(DEU)')
+        tables = visum_attributes.tables.reset_index().set_index('Plural(ENG)')
         row = tables.loc['Bezirke']
         assert row.Name == 'Zone'
 
