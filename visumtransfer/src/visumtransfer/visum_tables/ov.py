@@ -6,22 +6,22 @@ from visumtransfer.visum_table import VisumTable
 class Haltestelle(VisumTable):
     name = 'Haltestellen'
     code = 'HALTESTELLE'
-    _cols = 'NR;XKOORD;YKOORD'
-    _pkey = 'NR'
+    _cols = 'NO;XKOORD;YKOORD'
+    _pkey = 'NO'
 
 
 class Haltestellenbereich(VisumTable):
     name = 'Haltestellenbereiche'
     code = 'HALTESTELLENBEREICH'
-    _cols = 'NR;HSTNR;XKOORD;YKOORD'
-    _pkey = 'NR'
+    _cols = 'NO;HSTNR;XKOORD;YKOORD'
+    _pkey = 'NO'
 
 
 class Haltepunkt(VisumTable):
     name = 'Haltepunkte'
     code = 'HALTEPUNKT'
-    _cols = 'NR;HSTBERNR;CODE;NAME;TYPNR;VSYSSET;DEPOTFZGKOMBMENGE;GERICHTET;KNOTNR;VONKNOTNR;STRNR;RELPOS;ZWERT1'
-    _pkey = 'NR'
+    _cols = 'NO;HSTBERNR;CODE;NAME;TYPNR;VSYSSET;DEPOTFZGKOMBMENGE;GERICHTET;KNOTNR;VONKNOTNR;STRNR;RELPOS;ZWERT1'
+    _pkey = 'NO'
 
 
 class HaltestellenbereichsUebergangsgehzeiten(VisumTable):
@@ -41,7 +41,7 @@ class HaltestellenZuTarifzonen(VisumTable):
 class Oberlinie(VisumTable):
     name = 'Oberlinien'
     code = 'OBERLINIE'
-    _cols = 'NAME;KOMMENTAR'
+    _cols = 'NAME;COMMENT'
     _pkey = 'NAME'
 
 
@@ -99,15 +99,15 @@ class Fahrzeitprofilelement(VisumTable):
 class Fahrplanfahrt(VisumTable):
     name = 'Fahrplanfahrten'
     code = 'FAHRPLANFAHRT'
-    _cols = 'NR;NAME;ABFAHRT;LINNAME;LINROUTENAME;RICHTUNGCODE;FZPROFILNAME;VONFZPELEMINDEX;NACHFZPELEMINDEX;BETREIBERNR;TAKTFAHRTGRPNR'
-    _pkey = 'NR'
+    _cols = 'NO;NAME;ABFAHRT;LINNAME;LINROUTENAME;RICHTUNGCODE;FZPROFILNAME;VONFZPELEMINDEX;NACHFZPELEMINDEX;BETREIBERNR;TAKTFAHRTGRPNR'
+    _pkey = 'NO'
 
 
 class Fahrplanfahrtabschnitt(VisumTable):
     name = 'Fahrplanfahrtabschnitte'
     code = 'FAHRPLANFAHRTABSCHNITT'
-    _cols = 'FPLFAHRTNR;NR;VONFZPELEMINDEX;NACHFZPELEMINDEX;VTAGNR;FZGKOMBNR;FZGKOMBSET'
-    _pkey = 'FPLFAHRTNR;NR'
+    _cols = 'FPLFAHRTNR;NO;VONFZPELEMINDEX;NACHFZPELEMINDEX;VTAGNR;FZGKOMBNR;FZGKOMBSET'
+    _pkey = 'FPLFAHRTNR;NO'
 
 
 class Fahrplanfahrtkoppelabschnitt(VisumTable):
@@ -134,15 +134,15 @@ class Fahrplanfahrtelement(VisumTable):
 class Fahrzeugeinheiten(VisumTable):
     name = 'Fahrzeugeinheiten'
     code = 'FZGEINHEIT'
-    _cols = 'NR;CODE;NAME;VSYSSET;TRIEBFZG;SITZPL;GESAMTPL;KOSTENSATZSTDSERVICE;KOSTENSATZSTDLEER;KOSTENSATZSTDSTAND;KOSTENSATZSTDDEPOT;KOSTENSATZKMSERVICE;KOSTENSATZKMLEER;KOSTENSATZFZGEINHEIT'
-    _pkey = 'NR'
+    _cols = 'NO;CODE;NAME;VSYSSET;TRIEBFZG;SITZPL;GESAMTPL;KOSTENSATZSTDSERVICE;KOSTENSATZSTDLEER;KOSTENSATZSTDSTAND;KOSTENSATZSTDDEPOT;KOSTENSATZKMSERVICE;KOSTENSATZKMLEER;KOSTENSATZFZGEINHEIT'
+    _pkey = 'NO'
 
 
 class Fahrzeugkombinationen(VisumTable):
     name = 'Fahrzeugkombinationen'
     code = 'FZGKOMB'
-    _cols = 'NR;CODE;FZGKOMBSET;NAME'
-    _pkey = 'NR'
+    _cols = 'NO;CODE;FZGKOMBSET;NAME'
+    _pkey = 'NO'
 
 
 class FahrzeugkombinationsElemente(VisumTable):
@@ -155,4 +155,4 @@ class FahrzeugkombinationsElemente(VisumTable):
 class FahrkartenartZuTarifsystemNSeg(VisumTable):
     name = 'Tarifsystem-NSeg-Fahrkartenarten'
     code = 'FahrkartenartZuTarifsystemNSeg'
-    _cols = 'TarifsystemNr;NSegCode;FahrkartenartNr'
+    _cols = 'TarifsystemNr;DSEGCODE;FahrkartenartNr'

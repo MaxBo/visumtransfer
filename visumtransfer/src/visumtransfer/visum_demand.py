@@ -11,7 +11,7 @@ from visumtransfer.visum_table import (
 
 from visumtransfer.visum_tables import (
     Matrix,
-    BenutzerdefinierteGruppe,
+    UserDefinedGroup,
     BenutzerdefiniertesAttribut,
     Nachfragemodell,
     Strukturgr,
@@ -50,7 +50,7 @@ class VisemDemandModel:
         tabledef = Tabellendefinition(mode='+')
         vt.tables['TabDefs'] = tabledef
 
-        userdefgroups = BenutzerdefinierteGruppe(mode='+')
+        userdefgroups = UserDefinedGroup(mode='+')
         vt.tables['UserDefsGroups'] = userdefgroups
 
         userdef1 = BenutzerdefiniertesAttribut(mode='')
@@ -99,72 +99,72 @@ class VisemDemandModel:
         ns = Nachfrageschicht()
         userdef1.add_daten_attribute('Nachfrageschicht',
                                      'MainActCode',
-                                     datentyp='LongText',
+                                     valuetype='LongText',
                                      )
         userdef1.add_daten_attribute('Nachfrageschicht',
                                      'Mobilitaetsrate')
         userdef1.add_daten_attribute('Nachfrageschicht',
                                      'Tours',
-                                     kommentar='Touren der Nachfrageschicht')
+                                     comment='Touren der Nachfrageschicht')
         userdef1.add_daten_attribute('Nachfrageschicht',
                                      'Trips',
-                                     kommentar='Wege der Nachfrageschicht')
+                                     comment='Wege der Nachfrageschicht')
         userdef1.add_daten_attribute('Nachfrageschicht',
                                      'Tarifmatrix',
-                                     datentyp='LongText',
-                                     kommentar='Tarifmatrix der Nachfrageschicht')
+                                     valuetype='LongText',
+                                     comment='Tarifmatrix der Nachfrageschicht')
 
         gr_coeff = 'Koeffizienten'
         for m in params.mode_set.split(','):
             userdef1.add_daten_attribute('Oberbezirk',
                                          f'CONST_ORIGIN_{m}',
-                                         datentyp='Double',
-                                         standardwert=0.0,
-                                         kommentar=f'Kalibrierungsfaktor Oberbezirk Wohnort {m}',
-                                         benutzerdefiniertergruppenname=gr_coeff,
+                                         valuetype='Double',
+                                         defaultvalue=0.0,
+                                         comment=f'Kalibrierungsfaktor Oberbezirk Wohnort {m}',
+                                         userdefinedgroupname=gr_coeff,
                                          )
             userdef1.add_daten_attribute('Oberbezirk',
                                          f'CONST_DESTINATION_{m}',
-                                         datentyp='Double',
-                                         standardwert=0.0,
-                                         kommentar=f'Kalibrierungsfaktor Oberbezirk Zielort {m}',
-                                         benutzerdefiniertergruppenname=gr_coeff,
+                                         valuetype='Double',
+                                         defaultvalue=0.0,
+                                         comment=f'Kalibrierungsfaktor Oberbezirk Zielort {m}',
+                                         userdefinedgroupname=gr_coeff,
                                          )
             userdef1.add_daten_attribute('Personengruppe',
                                          f'Factor_Cost_{m}',
-                                         datentyp='Double',
-                                         kommentar=f'Kostenfaktor {m}',
-                                         benutzerdefiniertergruppenname=gr_coeff,
+                                         valuetype='Double',
+                                         comment=f'Kostenfaktor {m}',
+                                         userdefinedgroupname=gr_coeff,
                                          )
-            formel = f'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Factor_Cost_{m}])'
+            formula = f'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Factor_Cost_{m}])'
             userdef1.add_formel_attribute('Personengruppe',
                                           f'Factor_Cost_{m}_MainAct',
-                                          formel=formel,
-                                          datentyp='Double',
-                                          kommentar=f'Kostenfaktor {m} der Hauptaktivität',
-                                          benutzerdefiniertergruppenname=gr_coeff,
+                                          formula=formula,
+                                          valuetype='Double',
+                                          comment=f'Kostenfaktor {m} der Hauptaktivität',
+                                          userdefinedgroupname=gr_coeff,
                                           )
             userdef1.add_daten_attribute('Personengruppe',
                                          f'Factor_Time_{m}',
-                                         datentyp='Double',
-                                         kommentar=f'Zeitfaktor {m}',
-                                         benutzerdefiniertergruppenname=gr_coeff,
+                                         valuetype='Double',
+                                         comment=f'Zeitfaktor {m}',
+                                         userdefinedgroupname=gr_coeff,
                                          )
-            formel = f'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Factor_Time_{m}])'
+            formula = f'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Factor_Time_{m}])'
             userdef1.add_formel_attribute('Personengruppe',
                                           f'Factor_Time_{m}_MainAct',
-                                          formel=formel,
-                                          datentyp='Double',
-                                          kommentar='Zeitfaktor {m} der Hauptaktivität',
-                                          benutzerdefiniertergruppenname=gr_coeff,
+                                          formula=formula,
+                                          valuetype='Double',
+                                          comment='Zeitfaktor {m} der Hauptaktivität',
+                                          userdefinedgroupname=gr_coeff,
                                           )
-        formel = 'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Tarifmatrix])'
+        formula = 'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Tarifmatrix])'
         userdef1.add_formel_attribute('Personengruppe',
                                       f'Tarifmatrix_MainAct',
-                                      formel=formel,
-                                      datentyp='LongText',
-                                      kommentar='Tarifmatrix der Hauptaktivität',
-                                      benutzerdefiniertergruppenname=gr_coeff,
+                                      formula=formula,
+                                      valuetype='LongText',
+                                      comment='Tarifmatrix der Hauptaktivität',
+                                      userdefinedgroupname=gr_coeff,
                                       )
 
         ns.create_tables_gd(personengruppe=pg,
@@ -214,11 +214,11 @@ class VisemDemandModel:
         matrices.set_category('General')
         matrices.add_daten_matrix('Diagonal',
                                   category='General',
-                                  matrixtyp='Kenngröße',
+                                  matrixtype='Skim',
                                   loadmatrix=0)
         matrices.add_daten_matrix('NoDiagonal',
                                   category='General',
-                                  matrixtyp='Kenngröße',
+                                  matrixtype='Skim',
                                   loadmatrix=0)
         matrices.add_ov_kg_matrices(params, userdef1, nsegcodes=nsegcodes)
         matrices.add_iv_kg_matrices(userdef1)
@@ -235,7 +235,7 @@ class VisemDemandModel:
     def add_accessibility_matrices(self,
                                    matrices: Matrix,
                                    params: Params,
-                                   userdefgroups: BenutzerdefinierteGruppe,
+                                   userdefgroups: UserDefinedGroup,
                                    userdefined: BenutzerdefiniertesAttribut,
                                    model: str,
                                    matrix_range: str = 'Logsums',
@@ -244,8 +244,8 @@ class VisemDemandModel:
 
         gr_acc = 'Erreichbarkeit'
         gr_popstruct = 'Bevölkerungsstruktur'
-        userdefgroups.add(name=gr_acc, beschreibung='Erreichbarkeit')
-        userdefgroups.add(name=gr_popstruct, beschreibung='Bevölkerungsstruktur')
+        userdefgroups.add(name=gr_acc, description='Erreichbarkeit')
+        userdefgroups.add(name=gr_popstruct, description='Bevölkerungsstruktur')
 
         matrices.set_category(matrix_range)
 
@@ -255,32 +255,32 @@ class VisemDemandModel:
             matrices.add_daten_matrix(
                 ls_matname,
                 category='Accessibility',
-                matrixtyp='Kenngröße',
+                matrixtype='Skim',
                 nachfrmodellcode=model,
-                pgruppencode=row.pgruppencode,
-                aktivcode=row.aktivcode)
-            nr = matrices.add_formel_matrix(
+                persongroupcode=row.persongroupcode,
+                activitycode=row.activitycode)
+            no = matrices.add_formel_matrix(
                 row.matname_accessibility,
                 category='Accessibility',
-                matrixtyp='Kenngröße',
+                matrixtype='Skim',
                 nachfrmodellcode=model,
-                pgruppencode=row.pgruppencode,
-                aktivcode=row.aktivcode,
-                formel=f'EXP(Matrix([CODE] = "{ls_matname}")) * TO[{row.potential}]',
+                persongroupcode=row.persongroupcode,
+                activitycode=row.activitycode,
+                formula=f'EXP(Matrix([CODE] = "{ls_matname}")) * TO[{row.potential}]',
             )
             userdefined.add_formel_attribute('BEZIRK',
                                              row.zone_attribute,
-                                             formel=f'LN([MATZEILENSUMME({nr})])',
-                                             benutzerdefiniertergruppenname=gr_acc)
+                                             formula=f'LN([MATZEILENSUMME({no})])',
+                                             userdefinedgroupname=gr_acc)
         userdefined.add_formel_attribute('BEZIRK',
                                          'Anteil_Studis',
-                                         formel='[ANZPERSONEN(ST)]/([ANZPERSONEN(ASUMME)])',
-                                         benutzerdefiniertergruppenname=gr_popstruct,
+                                         formula='[ANZPERSONEN(ST)]/([ANZPERSONEN(ASUMME)])',
+                                         userdefinedgroupname=gr_popstruct,
                                          )
         userdefined.add_formel_attribute('BEZIRK',
                                          'Anteil_Erwerbstaetige',
-                                         formel='([ANZPERSONEN(VZ)]+[ANZPERSONEN(TZ)])/([ANZPERSONEN(ASUMME)])',
-                                         benutzerdefiniertergruppenname=gr_popstruct,
+                                         formula='([ANZPERSONEN(VZ)]+[ANZPERSONEN(TZ)])/([ANZPERSONEN(ASUMME)])',
+                                         userdefinedgroupname=gr_popstruct,
                                          )
 
     def add_ganglinien(self,
@@ -302,7 +302,7 @@ class VisemDemandModel:
         vt.tables['VisemGanglinien'] = vgl
 
     def add_persongroups(self,
-                         userdefgroups: BenutzerdefinierteGruppe,
+                         userdefgroups: UserDefinedGroup,
                          userdef1: BenutzerdefiniertesAttribut,
                          userdef2: BenutzerdefiniertesAttribut,
                          matrices: Matrix,
@@ -414,7 +414,7 @@ class VisemDemandModel:
         return pg
 
     def add_activities(self,
-                       userdefgroups: BenutzerdefinierteGruppe,
+                       userdefgroups: UserDefinedGroup,
                        userdef1: BenutzerdefiniertesAttribut,
                        userdef2: BenutzerdefiniertesAttribut,
                        matrices: Matrix,
@@ -425,45 +425,45 @@ class VisemDemandModel:
         """Add the activities and create the related tables"""
         # Aktivitäten
         acts = Aktivitaet()
-        userdef1.add_daten_attribute('Aktivitaet', 'RSA', datentyp='Bool')
+        userdef1.add_daten_attribute('Aktivitaet', 'RSA', valuetype='Bool')
         userdef1.add_daten_attribute('Aktivitaet', 'Autocalibrate',
-                                     datentyp='Bool')
+                                     valuetype='Bool')
         userdef1.add_daten_attribute('Aktivitaet', 'Composite_Activities',
-                                     datentyp='Text')
+                                     valuetype='Text')
         userdef1.add_daten_attribute('Aktivitaet', 'Aktivitaetset',
-                                     datentyp='Text')
+                                     valuetype='Text')
         userdef1.add_daten_attribute('Aktivitaet',
                                      code='CalcDestMode',
                                      name='CalculateDestinationAndModeChoice',
-                                     datentyp='Bool')
+                                     valuetype='Bool')
         # spezifische Attribute für die Zielwahl
         userdef1.add_daten_attribute('Aktivitaet', 'LS',
-                                     standardwert=1.0,
-                                     kommentar='LogSum-Parameter der Aktivität, '
+                                     defaultvalue=1.0,
+                                     comment='LogSum-Parameter der Aktivität, '
                                      'berechnet als Multiplikation der LS_Factors '
                                      'aller zugehörigen Aktivitäten')
         # spezifische Attribute für die Zielwahl
         userdef1.add_daten_attribute('Aktivitaet', 'BASE_LS',
-                                     standardwert=1.0,
-                                     kommentar='Basis-LogSum-Faktor der Aktivität, '
+                                     defaultvalue=1.0,
+                                     comment='Basis-LogSum-Faktor der Aktivität, '
                                      'wird mit anderen Faktoren multipliziert')
         # spezifische Attribute für die Zielwahl
         userdef1.add_daten_attribute('Aktivitaet', 'KF_BASE_LS',
-                                     standardwert=1.0,
-                                     kommentar='Korrekturfaktor für LogSum der Aktivität, '
+                                     defaultvalue=1.0,
+                                     comment='Korrekturfaktor für LogSum der Aktivität, '
                                      'während Kalibrierung')
         # spezifische Attribute für die Verkehrsmittelwahl
         userdef1.add_daten_attribute(
             objid='AKTIVITAET',
             name='ZIELWAHL_FUNKTION_MATRIXCODES',
-            datentyp='LongText',
-            kommentar='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
+            valuetype='LongText',
+            comment='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
         )
         userdef1.add_daten_attribute(
             objid='AKTIVITAET',
             name='TARIFMATRIX',
-            datentyp='LongText',
-            kommentar='Name einer speziellen Tarifmatrix, '
+            valuetype='LongText',
+            comment='Name einer speziellen Tarifmatrix, '
             'die bei dieser Hauptaktivität verwendet werden soll',
         )
 
@@ -498,7 +498,7 @@ class VisemDemandModel:
         model.add(code=model_code,
                   name=model_name,
                   typ='VISEM',
-                  modusset=mode_set)
+                  modeset=mode_set)
         v.tables['Nachfragemodell'] = model
 
     def add_pgr_categories(self,
@@ -547,66 +547,66 @@ class VisemDemandModel:
         gr_trips = 'Wege'
         gr_dist = 'Distanz'
 
-        userdef1.add_daten_attribute('Personengruppe', 'CATEGORY', datentyp='Text',
-                                     kommentar='Kategorie der Personengruppe')
+        userdef1.add_daten_attribute('Personengruppe', 'CATEGORY', valuetype='Text',
+                                     comment='Kategorie der Personengruppe')
         userdef1.add_daten_attribute(
-            'Personengruppe', 'CODEPART', datentyp='Text',
-            kommentar='Code-Bestandteil der Zusammengesetzten Personengruppen'
+            'Personengruppe', 'CODEPART', valuetype='Text',
+            comment='Code-Bestandteil der Zusammengesetzten Personengruppen'
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', 'NAMEPART', datentyp='Text',
-            kommentar='Namens-Bestandteil der Zusammengesetzten Personengruppen'
+            'Personengruppe', 'NAMEPART', valuetype='Text',
+            comment='Namens-Bestandteil der Zusammengesetzten Personengruppen'
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', 'CALIBRATION_HIERARCHY', datentyp='Int',
-            kommentar='Hierarchie bei der Kalibrierung des Modal Splits'
+            'Personengruppe', 'CALIBRATION_HIERARCHY', valuetype='Int',
+            comment='Hierarchie bei der Kalibrierung des Modal Splits'
             'Der Modal Split der höchsten Hierarchiestufe wird zuletzt kalibriert'
             'und wird damit am genauesten getroffen.'
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', 'ID_IN_CATEGORY', datentyp='Int',
-            kommentar='Fortlaufende id innerhalb einer Kategorie')
+            'Personengruppe', 'ID_IN_CATEGORY', valuetype='Int',
+            comment='Fortlaufende id innerhalb einer Kategorie')
         userdef1.add_daten_attribute(
-            'Personengruppe', 'GROUPS_CONSTANTS', datentyp='Text',
-            kommentar='Komma-getrennte Liste der Obergruppen, deren '
+            'Personengruppe', 'GROUPS_CONSTANTS', valuetype='Text',
+            comment='Komma-getrennte Liste der Obergruppen, deren '
             'verkehrsmittelspezifische Konstante in die Nutzenfunktion einer '
             'Obergruppe einbezogen werden soll.'
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', 'GROUPS_OUTPUT', datentyp='Text',
-            kommentar='Komma-getrennte Liste der Obergruppen, in die die Berechnungs-'
+            'Personengruppe', 'GROUPS_OUTPUT', valuetype='Text',
+            comment='Komma-getrennte Liste der Obergruppen, in die die Berechnungs-'
             'Ergebnisse der Gruppe einfließen soll.'
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', 'GROUP_GENERATION', datentyp='Text',
-            kommentar='Code der Personengruppe für das Erzeugungsmodell'
+            'Personengruppe', 'GROUP_GENERATION', valuetype='Text',
+            comment='Code der Personengruppe für das Erzeugungsmodell'
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', 'MAIN_ACT', datentyp='Text',
-            kommentar='Hauptaktivität der Personengruppe'
+            'Personengruppe', 'MAIN_ACT', valuetype='Text',
+            comment='Hauptaktivität der Personengruppe'
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', 'Persons', datentyp='Double',
-            kommentar='Personen in Personengruppe'
+            'Personengruppe', 'Persons', valuetype='Double',
+            comment='Personen in Personengruppe'
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', 'Faktor_Erwerbstaetigkeit', datentyp='Double',
-            kommentar='Anteil der Erwerbstätigen an der Personengruppe',
+            'Personengruppe', 'Faktor_Erwerbstaetigkeit', valuetype='Double',
+            comment='Anteil der Erwerbstätigen an der Personengruppe',
         )
         userdef1.add_formel_attribute(
-            'Personengruppe', 'Erwerbstaetige', datentyp='Double',
-            formel='[PERSONS] * [FAKTOR_ERWERBSTAETIGKEIT]',
-            kommentar='Erwerbstätige Personen',
+            'Personengruppe', 'Erwerbstaetige', valuetype='Double',
+            formula='[PERSONS] * [FAKTOR_ERWERBSTAETIGKEIT]',
+          comment='Erwerbstätige Personen',
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', 'Tarifmatrix', datentyp='LongText',
-            kommentar='spezielle Tarifmatrix der Personengruppe',
+            'Personengruppe', 'Tarifmatrix', valuetype='LongText',
+          comment='spezielle Tarifmatrix der Personengruppe',
         )
         userdef1.add_daten_attribute(
             objid='Personengruppe',
             name='ZIELWAHL_FUNKTION_MATRIXCODES',
-            datentyp='LongText',
-            kommentar='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
+            valuetype='LongText',
+          comment='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
         )
         pg.add_cols(['CATEGORY', 'CODEPART', 'NAMEPART',
                      'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
@@ -615,44 +615,44 @@ class VisemDemandModel:
                      'ZIELWAHL_FUNKTION_MATRIXCODES'])
 
         # Wege Gesamt und Verkehrsleistung der Gruppe
-        formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
+        formula = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUMME])'
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'Trips',
-            formel=formel,
-            kommentar=f'Gesamtzahl der Wege der Gruppe',
-            benutzerdefiniertergruppenname=gr_trips,
+            formula=formula,
+          comment=f'Gesamtzahl der Wege der Gruppe',
+            userdefinedgroupname=gr_trips,
         )
-        formel = f'TableLookup(MATRIX Mat: Mat[CODE]="VL_Pgr_"+[CODE]: Mat[SUMME])'
+        formula = f'TableLookup(MATRIX Mat: Mat[CODE]="VL_Pgr_"+[CODE]: Mat[SUMME])'
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'Km',
-            formel=formel,
-            kommentar=f'Gesamte Verkehrsleistung der Gruppe',
-            benutzerdefiniertergruppenname=gr_dist,
+            formula=formula,
+          comment=f'Gesamte Verkehrsleistung der Gruppe',
+            userdefinedgroupname=gr_dist,
         )
         # Mittlere Wegelänge
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'MeanTripLength',
-            formel='[Km]/[Trips]',
-            kommentar=f'Mittlere Wegelänge [km]',
-            benutzerdefiniertergruppenname=gr_dist,
+            formula='[Km]/[Trips]',
+          comment=f'Mittlere Wegelänge [km]',
+            userdefinedgroupname=gr_dist,
         )
         # Wege und Verkehrsleistung pro Person
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'Trips_per_Person',
-            formel='[Trips]/[Persons]',
-            kommentar=f'Wege Pro Person',
-            benutzerdefiniertergruppenname=gr_trips,
+            formula='[Trips]/[Persons]',
+          comment=f'Wege Pro Person',
+            userdefinedgroupname=gr_trips,
         )
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'Km_per_Person',
-            formel='[Km]/[Persons]',
-            kommentar=f'Wege Pro Person',
-            benutzerdefiniertergruppenname=gr_dist,
+            formula='[Km]/[Persons]',
+          comment=f'Wege Pro Person',
+            userdefinedgroupname=gr_dist,
         )
 
     def add_mode_specific_pgr_attributes(self,
@@ -668,77 +668,77 @@ class VisemDemandModel:
 
         m = mode.code
         userdef1.add_daten_attribute(
-            'Personengruppe', f'BASECONST_{m}', datentyp='Double',
-            kommentar=f'Konstante für Verkehrsmittel {mode.name}',
-            benutzerdefiniertergruppenname=gr_coeff,
+            'Personengruppe', f'BASECONST_{m}', valuetype='Double',
+          comment=f'Konstante für Verkehrsmittel {mode.name}',
+            userdefinedgroupname=gr_coeff,
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', f'CONST_{m}', datentyp='Double',
-            kommentar=f'Konstante für Verkehrsmittel {mode.name}',
-            benutzerdefiniertergruppenname=gr_coeff,
+            'Personengruppe', f'CONST_{m}', valuetype='Double',
+            comment=f'Konstante für Verkehrsmittel {mode.name}',
+            userdefinedgroupname=gr_coeff,
         )
         userdef1.add_daten_attribute(
-            'Personengruppe', f'TARGET_MS_{m}', datentyp='Double',
-            kommentar=f'Ziel-ModalSplit für Verkehrsmittel {mode.name}',
-            benutzerdefiniertergruppenname=gr_ms,
+            'Personengruppe', f'TARGET_MS_{m}', valuetype='Double',
+        commentntar=f'Ziel-ModalSplit für Verkehrsmittel {mode.name}',
+            userdefinedgroupname=gr_ms,
         )
         userdef1.add_daten_attribute(
             objid='PERSONENGRUPPE',
             name=f'KF_CONST_{m}',
-            standardwert=0,
-            kommentar=f'Korrektur der Konstante bei Kalibrierung für {mode.name}',
-            benutzerdefiniertergruppenname=gr_coeff,
+            defaultvalue=0,
+        commentntar=f'Korrektur der Konstante bei Kalibrierung für {mode.name}',
+            userdefinedgroupname=gr_coeff,
         )
 
         pg.add_cols([f'BASECONST_{m}', f'CONST_{m}', f'TARGET_MS_{m}', f'KF_CONST_{m}'])
 
         # Wege nach Modus und Modal Split der Gruppe
-        formel = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]+"_{m}": Mat[SUMME])'
+        formula = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]+"_{m}": Mat[SUMME])'
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'Trips_{m}',
-            formel=formel,
-            kommentar=f'Gesamtzahl der Wege mit Verkehrsmittel {mode.name}',
-            benutzerdefiniertergruppenname=gr_trips,
+            formula=formula,
+            comment=f'Gesamtzahl der Wege mit Verkehrsmittel {mode.name}',
+            userdefinedgroupname=gr_trips,
         )
-        formel = f'TableLookup(MATRIX Mat: Mat[CODE]="VL_Pgr_"+[CODE]+"_{m}": Mat[SUMME])'
+        formula = f'TableLookup(MATRIX Mat: Mat[CODE]="VL_Pgr_"+[CODE]+"_{m}": Mat[SUMME])'
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'Km_{m}',
-            formel=formel,
-            kommentar=f'Verkehrsleistung mit Verkehrsmittel {mode.name} der Gruppe',
-            benutzerdefiniertergruppenname=gr_dist,
+            formula=formula,
+            comment=f'Verkehrsleistung mit Verkehrsmittel {mode.name} der Gruppe',
+            userdefinedgroupname=gr_dist,
         )
         # Modal Split der Gruppe
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'MS_{m}',
-            formel=f'[Trips_{m}] / [Trips]',
-            kommentar=f'Modal Split-Anteil {mode.name}',
-            benutzerdefiniertergruppenname=gr_ms,
+            formula=f'[Trips_{m}] / [Trips]',
+            comment=f'Modal Split-Anteil {mode.name}',
+            userdefinedgroupname=gr_ms,
         )
         # Mittlere Wegelänge
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'MeanTripLength_{m}',
-            formel=f'[Km_{m}]/[Trips_{m}]',
-            kommentar=f'Mittlere Wegelänge {mode.name}',
-            benutzerdefiniertergruppenname=gr_dist,
+            formula=f'[Km_{m}]/[Trips_{m}]',
+            comment=f'Mittlere Wegelänge {mode.name}',
+            userdefinedgroupname=gr_dist,
         )
         # Wege und Verkehrsleistung pro Person
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'Trips_Per_Person_{m}',
-            formel=f'[Trips_{m}] / [Persons]',
-            kommentar=f'Modal Split-Anteil {mode.name}',
-            benutzerdefiniertergruppenname=gr_trips,
+            formula=f'[Trips_{m}] / [Persons]',
+            comment=f'Modal Split-Anteil {mode.name}',
+            userdefinedgroupname=gr_trips,
         )
         userdef2.add_formel_attribute(
             objid='PERSONENGRUPPE',
             name=f'Km_Per_Person_{m}',
-            formel=f'[Km_{m}] / [Persons]',
-            kommentar=f'Km pro Person {mode.name}',
-            benutzerdefiniertergruppenname=gr_dist,
+            formula=f'[Km_{m}] / [Persons]',
+            comment=f'Km pro Person {mode.name}',
+            userdefinedgroupname=gr_dist,
         )
 
     def add_params_persongrupmodel(self,
@@ -746,12 +746,12 @@ class VisemDemandModel:
                                    userdef1: BenutzerdefiniertesAttribut,
                                    pgr_summe: str = 'ASumme'):
 
-        userdef1.add_daten_attribute('Bezirk', 'MODELLIERUNGSRAUM', datentyp='Int',
-                                     benutzerdefiniertergruppenname='Gebietszuordnung')
-        userdef1.add_daten_attribute('Bezirk', 'OBB_OCCUPATION', datentyp='Int',
-                                     benutzerdefiniertergruppenname='Gebietszuordnung')
-        userdef1.add_daten_attribute('Bezirk', 'OBB_CARS', datentyp='Int',
-                                     benutzerdefiniertergruppenname='Gebietszuordnung')
+        userdef1.add_daten_attribute('Bezirk', 'MODELLIERUNGSRAUM', valuetype='Int',
+                                     userdefinedgroupname='Gebietszuordnung')
+        userdef1.add_daten_attribute('Bezirk', 'OBB_OCCUPATION', valuetype='Int',
+                                     userdefinedgroupname='Gebietszuordnung')
+        userdef1.add_daten_attribute('Bezirk', 'OBB_CARS', valuetype='Int',
+                                     userdefinedgroupname='Gebietszuordnung')
 
         TBL_model = create_userdefined_table(
             name='ParamFilePersonGroupModel',
@@ -777,18 +777,18 @@ class VisemDemandModel:
 
         # Attribute für Motorisierung
         userdef1.add_daten_attribute('Bezirk', 'Pkw_Personengruppen',
-                                     benutzerdefiniertergruppenname='Bevölkerungsstruktur')
-        formel = f'[Pkw_Personengruppen] / [ANZPERSONEN({pgr_summe})] * 1000'
-        userdef1.add_formel_attribute('Bezirk', 'Motorisierung', formel=formel,
+                                     userdefinedgroupname='Bevölkerungsstruktur')
+        formula = f'[Pkw_Personengruppen] / [ANZPERSONEN({pgr_summe})] * 1000'
+        userdef1.add_formel_attribute('Bezirk', 'Motorisierung', formula=formula,
                                       benutzerdefiniertergruppenname='Bevölkerungsstruktur')
 
-        kommentar = 'Pkw nach Pkw-Verfügbarkeit'
+        comment = 'Pkw nach Pkw-Verfügbarkeit'
 
         TBL_model = create_userdefined_table(
             name='Cars_By_Caravailability',
             cols_types={'key': 'LongText', 'value': 'Double', },
             group='PersonGroupModel',
-            comment=kommentar,
+            comment=comment,
             tabledef=tabledef,
             userdef=userdef1,
         )
@@ -800,18 +800,18 @@ class VisemDemandModel:
             tbl_ca.add(key=row.code, value=row.factor_pkwverf_anzpkw)
 
         # OBB-Attribute für Kalibrierung Erwerbstätigkeit und Motorisierung
-        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_ERWERBST', standardwert=0.0)
-        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_PKW', standardwert=0.0)
+        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_ERWERBST', defaultvalue=0.0)
+        userdef1.add_daten_attribute('Oberbezirk', 'BF_OBB_PKW', defaultvalue=0.0)
         userdef1.add_formel_attribute('Oberbezirk', 'EINWOHNER',
-                                      formel='[SUM:BEZIRKE\SG_EINWOHNER]')
+                                      formula='[SUM:BEZIRKE\SG_EINWOHNER]')
         userdef1.add_formel_attribute('Oberbezirk', 'SGB2_EMPFAENGER',
-                                      formel='[ARBEITSLOSE]*2.5')
+                                      formula='[ARBEITSLOSE]*2.5')
         userdef1.add_formel_attribute('Oberbezirk', 'MODELLIERUNGSRAUM',
-                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+                                      formula='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
         userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_ERWERBSTAETIGKEIT',
-                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+                                      formula='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
         userdef1.add_formel_attribute('Oberbezirk', 'CALIBRATION_PKWVERFUEGBARKEIT',
-                                      formel='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+                                      formula='[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
 
         return tbl_model, tbl_ca
 
@@ -831,35 +831,35 @@ class VisemDemandModel:
         v.tables['Matrizen'] = matrices
         v.write(fn=v.get_modification(modification_number, self.modifications))
 
-    def add_nsegs_userdefined(self, modification_no: int, nsegcodes_put: List[str]):
+    def add_nsegs_userdefined(self, modification_no: int, dsegcodes_put: List[str]):
         vt = VisumTransfer.new_transfer()
         userdef0 = BenutzerdefiniertesAttribut()
         vt.tables['BenutzerdefinierteAttribute0'] = userdef0
 
         # Matrizen
-        userdef0.add_daten_attribute('Matrix', 'INITMATRIX', datentyp='Bool')
-        userdef0.add_daten_attribute('Matrix', 'LOADMATRIX', datentyp='Bool')
-        userdef0.add_daten_attribute('Matrix', 'SAVEMATRIX', datentyp='Bool')
-        userdef0.add_daten_attribute('Matrix', 'MATRIXFOLDER', datentyp='Text')
-        userdef0.add_daten_attribute('Matrix', 'CALIBRATIONCODE', datentyp='Text')
-        userdef0.add_daten_attribute('Matrix', 'CATEGORY', datentyp='Text')
-        userdef0.add_daten_attribute('Matrix', 'OBB_MATRIX_REF', datentyp='LongText')
+        userdef0.add_daten_attribute('Matrix', 'INITMATRIX', valuetype='Bool')
+        userdef0.add_daten_attribute('Matrix', 'LOADMATRIX', valuetype='Bool')
+        userdef0.add_daten_attribute('Matrix', 'SAVEMATRIX', valuetype='Bool')
+        userdef0.add_daten_attribute('Matrix', 'MATRIXFOLDER', valuetype='Text')
+        userdef0.add_daten_attribute('Matrix', 'CALIBRATIONCODE', valuetype='Text')
+        userdef0.add_daten_attribute('Matrix', 'CATEGORY', valuetype='Text')
+        userdef0.add_daten_attribute('Matrix', 'OBB_MATRIX_REF', valuetype='LongText')
 
         # Netzattribute
-        userdef0.add_daten_attribute('Netz', 'COST_PER_KM_PKW',
-                                     standardwert=0.15)
-        userdef0.add_daten_attribute('Netz', 'MINUS_ONE', standardwert=-1)
+        userdef0.add_daten_attribute('Network', 'COST_PER_KM_PKW',
+                                     defaultvalue=0.15)
+        userdef0.add_daten_attribute('Network', 'MINUS_ONE', defaultvalue=-1)
 
         # VSys-Attribute
-        userdef0.add_daten_attribute('VSys', 'VSYS_TRAVELTIME_BONUS', standardwert=1.0)
-        userdef0.add_daten_attribute('VSys', 'VSYS_MALUS', standardwert=6.0)
+        userdef0.add_daten_attribute('VSys', 'VSYS_TRAVELTIME_BONUS', defaultvalue=1.0)
+        userdef0.add_daten_attribute('VSys', 'VSYS_MALUS', defaultvalue=6.0)
 
         # Mode-Attribute
-        userdef0.add_daten_attribute('Modus', 'BASEMODE', datentyp='Bool', standardwert=0)
-        userdef0.add_daten_attribute('Modus', 'COEFF_PARKING', standardwert=0.0)
-        userdef0.add_daten_attribute('Modus', 'COEFF_TRAVELTIME', standardwert=0.0)
-        userdef0.add_daten_attribute('Modus', 'COEFF_TRAVEL_COST', standardwert=0.0)
-        userdef0.add_daten_attribute('Modus', 'COST_PER_KM', standardwert=0.0)
+        userdef0.add_daten_attribute('Modus', 'BASEMODE', valuetype='Bool', defaultvalue=0)
+        userdef0.add_daten_attribute('Modus', 'COEFF_PARKING', defaultvalue=0.0)
+        userdef0.add_daten_attribute('Modus', 'COEFF_TRAVELTIME', defaultvalue=0.0)
+        userdef0.add_daten_attribute('Modus', 'COEFF_TRAVEL_COST', defaultvalue=0.0)
+        userdef0.add_daten_attribute('Modus', 'COST_PER_KM', defaultvalue=0.0)
 
         mode_lkw = 'LKW_XL'
         # Nachfragesegmente
@@ -876,8 +876,8 @@ class VisemDemandModel:
         nseg.add(code='SV', name='Schwerverkehr', modus=mode_lkw)
         nseg.add(code='PG', name='Kfz bis 3,5 to', modus='P')
 
-        for nsegcode in nsegcodes_put:
-            nseg.add(code=nsegcode, modus='O')
+        for dsegcode in dsegcodes_put:
+            nseg.add(code=dsegcode, modus='O')
 
         fn = vt.get_modification(modification_no, self.modifications)
         vt.write(fn=fn)

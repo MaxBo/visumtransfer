@@ -240,7 +240,7 @@ class VisumTable(metaclass=MetaClass):
     def tablename(self) -> str:
         """get the english tablename"""
         visum_attributes = VisumTables().visum_attributes
-        tables = visum_attributes.tables.reset_index().set_index('Long(DEU)')
+        tables = visum_attributes.tables.reset_index().set_index('Long(ENG)')
         try:
             row = tables.loc[self.name]
         except KeyError:
@@ -367,7 +367,7 @@ class Version(VisumTable):
     _cols = 'VERSNR;FILETYPE;LANGUAGE;UNIT'
     _defaults = {
         'VERSNR': 10.0,
-        'LANGUAGE': 'DEU',
+        'LANGUAGE': 'ENG',
         'FILETYPE': 'Demand',
         'UNIT': 'KM',
     }

@@ -11,7 +11,7 @@ from visumtransfer.visum_attributes import VisumAttributes
 from visumtransfer.visum_tables import (create_userdefined_table,
                                         Tabellendefinition,
                                         BenutzerdefiniertesAttribut,
-                                        Netz)
+                                        Network)
 
 
 @pytest.fixture
@@ -59,7 +59,7 @@ class DummyTable(VisumTable):
 class Bezirke(VisumTable):
     name = 'Bezirke'
     code = 'BEZIRK'
-    _cols = 'NR'
+    _cols = 'NO'
 
 
 class TestVisumTableCreation:
@@ -165,9 +165,9 @@ class TestVisumTransfer:
                                                    'Col3': 'LongText',
                                                    'Col12': 'Double', },
                                        defaults={'COL2': 42, },
-                                       col_attrs={'Col1': {'minwert': 0,
-                                                           'maxwert': 1, },
-                                                  'Col12': {'formel': '[Col1]*[Col2]',
+                                       col_attrs={'Col1': {'minvalue': 0,
+                                                           'maxvalue': 1, },
+                                                  'Col12': {'formula': '[Col1]*[Col2]',
                                                             }, },
                                        tabledef=tabledef,
                                        userdef=userdef)
@@ -175,7 +175,7 @@ class TestVisumTransfer:
         tbl = TBL(mode='')
         tbl.add_row(tbl.Row(col1=0.33, col3='Hallo'))
         tbl.add_row(tbl.Row(col1=0.2, col2=4, col3='Hallo'))
-        tbl.add_row(tbl.Row(nr=4, col1=0.2, col2=4, col3='Hallo'))
+        tbl.add_row(tbl.Row(no=4, col1=0.2, col2=4, col3='Hallo'))
         tbl.add_row(tbl.Row(col1=0.2, col2=4, col3='Hallo'))
 
         print(tabledef.df)
@@ -190,10 +190,10 @@ class TestVisumTransfer:
         vt.write(os.path.join(folder, 'a.tra'))
 
     def test_netz(self):
-        netz = Netz(new_cols=['A', 'B'])
-        netz.add_row(netz.Row(a=4, b=7))
-        print(netz.df)
+        network = Network(new_cols=['A', 'B'])
+        network.add_row(network.Row(a=4, b=7))
+        print(network.df)
         with pytest.raises(ValueError):
-            netz.add_row(netz.Row(a=7, b=9))
-        assert netz.df.loc[0, 'A'] == 4
-        assert netz.df.loc[0, 'B'] == 7
+            network.add_row(network.Row(a=7, b=9))
+        assert network.df.loc[0, 'A'] == 4
+        assert network.df.loc[0, 'B'] == 7

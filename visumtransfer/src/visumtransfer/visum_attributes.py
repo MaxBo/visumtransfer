@@ -15,7 +15,7 @@ class VisumAttributes:
     def from_excel(cls,
                    h5file: str,
                    visum_version: int = 2023,
-                   language='Deu',
+                   language='Eng',
                    excel_file: str = None):
 
         self = super().__new__(cls)
@@ -68,7 +68,7 @@ class VisumAttributes:
     def set_index(self):
         """set the shortGerman-name as index"""
         attrs = self.attributes.reset_index()
-        attrs['col'] = attrs['AttributeShort(DEU)'].str.upper()
+        attrs['col'] = attrs['AttributeShort(ENG)'].str.upper()
         is_empty = attrs['col'].isna()
         attrs.loc[is_empty, 'col'] = attrs.loc[is_empty,
                                                'AttributeID'].str.upper()

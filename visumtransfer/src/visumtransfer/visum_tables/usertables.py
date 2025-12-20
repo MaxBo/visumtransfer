@@ -6,7 +6,7 @@ from visumtransfer.visum_tables.basis import BenutzerdefiniertesAttribut
 class Tabellendefinition(VisumTable):
     name = 'Tabellendefinitionen'
     code = 'TABELLENDEFINITION'
-    _cols = 'NAME;GRUPPE;KOMMENTAR'
+    _cols = 'NAME;GRUPPE;COMMENT'
     _pk = 'name'
 
 
@@ -19,37 +19,37 @@ def create_userdefined_table(name: str,
                              tabledef: Tabellendefinition = None,
                              userdef: BenutzerdefiniertesAttribut = None) -> VisumTable:
     """create a userdefined table"""
-    colnames = ['TABELLENDEFINITIONNAME', 'NR'] + [col for col in cols_types.keys()
-                                               if not 'formel' in col_attrs.get(col, {})]
+    colnames = ['TABELLENDEFINITIONNAME', 'NO'] + [col for col in cols_types.keys()
+                                               if not 'formula' in col_attrs.get(col, {})]
     tbl_name = f'Tabelleneinträge: {name}'
     tbl_code = f'TABLEENTRIES_{name}'
     defaults['TABELLENDEFINITIONNAME'] = name
-    defaults['NR'] = None
+    defaults['NO'] = None
 
     cls = MetaClass(tbl_code, (VisumTable, ), {'name': tbl_name,
                                              'code': tbl_code,
                                              '_cols': ';'.join(colnames),
                                              '_defaults': defaults,
-                                             '_pkey': 'NR',
+                                             '_pkey': 'NO',
                                                })
 
     tabledef = Tabellendefinition(mode='+') if tabledef is None else tabledef
-    tabledef.add(name=name, gruppe=group, kommentar=comment)
+    tabledef.add(name=name, gruppe=group, comment=comment)
 
     userdef = BenutzerdefiniertesAttribut(mode='+') if userdef is None else userdef
     for col, dtype in cols_types.items():
         attrs = col_attrs.get(col, {})
-        if 'formel' in attrs:
-            datenquellentyp = attrs.pop('datenquellentyp', None)
+        if 'formula' in attrs:
+            datasourcetype = attrs.pop('datasourcetype', None)
             userdef.add_formel_attribute(objid=tbl_code,
                                         name=col,
-                                        datentyp=dtype,
+                                        valuetype=dtype,
                                         **attrs,
                                          )
         else:
             userdef.add_daten_attribute(objid=tbl_code,
                                         name=col,
-                                        datentyp=dtype,
+                                        valuetype=dtype,
                                         **attrs,
                                         )
     return cls

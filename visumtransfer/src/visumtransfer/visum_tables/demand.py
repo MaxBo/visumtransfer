@@ -13,7 +13,7 @@ class Modus(VisumTable):
 class Nachfragemodell(VisumTable):
     name = 'Nachfragemodelle'
     code = 'NACHFRAGEMODELL'
-    _cols = 'CODE;NAME;TYP;MODUSSET'
+    _cols = 'CODE;NAME;TYP;MODESET'
 
 
 class Strukturgr(VisumTable):
@@ -48,7 +48,7 @@ class Strukturgroessenwert(VisumTable):
 class PersonengruppeJeBezirk(VisumTable):
     name = 'Personengruppe je Bezirk'
     code = 'PERSONENGRUPPEJEBEZIRK'
-    _cols = 'BEZNR;PGRUPPENCODE;ANZPERSONEN'
+    _cols = 'BEZNR;PERSONGROUPCODE;ANZPERSONEN'
     _longformat = True
     _mode = ''
 
@@ -56,5 +56,5 @@ class PersonengruppeJeBezirk(VisumTable):
 class Nachfragebeschreibung(VisumTable):
     name = 'Nachfragebeschreibungen'
     code = 'NACHFRAGEBESCHREIBUNG'
-    _cols = 'NSEGCODE;NACHFRAGEGLNR;MATRIX'
+    _cols = 'DSEGCODE;NACHFRAGEGLNR;MATRIX'
     _defaults = {'NACHFRAGEGLNR': 1}

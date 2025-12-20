@@ -18,20 +18,20 @@ class Ganglinienelement(VisumTable):
 class Nachfrageganglinie(VisumTable):
     name = 'NACHFRAGEGANGLINIE'
     code = 'NACHFRAGEGANGLINIE'
-    _cols = 'NR;CODE;NAME;GANGLINIENNR'
+    _cols = 'NO;CODE;NAME;GANGLINIENNR'
 
 
 class VisemGanglinie(VisumTable):
     name = 'VISEM-Ganglinien'
     code = 'VISEMGANGLINIE'
-    _cols = 'AKTPAARCODE;PGRUPPENCODE;GANGLINIENNR'
-    _pkey = 'AKTPAARCODE;PGRUPPENCODE'
+    _cols = 'AKTPAARCODE;PERSONGROUPCODE;GANGLINIENNR'
+    _pkey = 'AKTPAARCODE;PERSONGROUPCODE'
 
 
 class Ganglinie(VisumTable):
     name = 'Ganglinien'
     code = 'GANGLINIE'
-    _cols = 'NR;NAME;WERTETYP'
+    _cols = 'NO;NAME;WERTETYP'
     _defaults = {'WERTETYP': 'Anteile'}
 
     def create_tables(self,
@@ -56,13 +56,13 @@ class Ganglinie(VisumTable):
         for a, ap in activitypairs.iterrows():
             ap_code = ap['code']
             idx = ap['idx']
-            nr = idx + start_idx
-            row = self.Row(nr=nr, name=ap_code)
+            no = idx + start_idx
+            row = self.Row(no=no, name=ap_code)
             rows.append(row)
 
             # Nachfrageganglinie
             row_nachfrageganglinie = nachfrageganglinie.Row(
-                nr=nr, code=ap_code, name=ap_code, gangliniennr=nr)
+                no=no, code=ap_code, name=ap_code, gangliniennr=no)
             rows_nachfrageganglinien.append(row_nachfrageganglinie)
 
             # Ganglinie
@@ -73,7 +73,7 @@ class Ganglinie(VisumTable):
                 anteil = ap_timeserie.iloc[from_hour:to_hour].sum()
                 if anteil:
                     row_ganglinienelement = ganglinienelement.Row(
-                        gangliniennr=nr,
+                        gangliniennr=no,
                         startzeit=from_hour * 3600,
                         endzeit=to_hour * 3600,
                         gewicht=anteil)
@@ -82,7 +82,7 @@ class Ganglinie(VisumTable):
             # Personengruppen
             for pg_code, pg in personengruppe.df.iterrows():
                 row_visem_ganglinie = visem_ganglinie.Row(
-                    pgruppencode=pg_code, gangliniennr=nr)
+              persongroupcodeencode=pg_code, gangliniennr=no)
                 if not pg['DEMANDMODELCODE'] == 'VisemGeneration':
                     row_visem_ganglinie.aktpaarcode = ap_code
                 rows_visem_nachfrageganglinien.append(row_visem_ganglinie)
@@ -127,10 +127,10 @@ class Nachfragesegment(VisumTable):
             hap_id = hap.hap.values
             nachfr_gl_nr = gl_nr = hap_id + start_idx
             gl_name = f'OV_{hap_name}'
-            rows_ganglinie.append(ganglinie.Row(nr=gl_nr, name=gl_name))
+            rows_ganglinie.append(ganglinie.Row(no=gl_nr, name=gl_name))
 
             row_nachfrageganglinie = nachfrageganglinie.Row(
-                nr=nachfr_gl_nr, code=gl_name, name=gl_name,
+                no=nachfr_gl_nr, code=gl_name, name=gl_name,
                 gangliniennr=gl_nr)
             rows_nachfrageganglinien.append(row_nachfrageganglinie)
 
@@ -153,7 +153,7 @@ class Nachfragesegment(VisumTable):
                                       name=nseg_name,
                                       modus=modus))
             rows_nachfragebeschreibung.append(nachfrage_beschr.Row(
-                nsegcode=nsg_code,
+                dsegcode=nsg_code,
                 nachfrageglnr=nachfr_gl_nr,
                 matrix=matrix_descr
             ))

@@ -37,9 +37,9 @@ from .netz import (
 )
 
 from .basis import (
-    Netz,
-    BenutzerdefinierteGruppe,
-    BenutzerdefiniertesAttribut,
+    Network,
+    UserDefinedGroup,
+    UserDefinedAttribute,
     Verkehrssystem,
     Bezirke,
     Oberbezirk,

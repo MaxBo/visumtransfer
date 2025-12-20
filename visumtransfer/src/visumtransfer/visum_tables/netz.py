@@ -6,8 +6,8 @@ from visumtransfer.visum_table import VisumTable
 class Gebiete(VisumTable):
     name = 'Gebiete'
     code = 'GEBIET'
-    _cols = 'NR;XKOORD;YKOORD'
-    _pkey = 'NR'
+    _cols = 'NO;XKOORD;YKOORD'
+    _pkey = 'NO'
 
 
 class Anbindung(VisumTable):
@@ -34,8 +34,8 @@ class Zwischenpunkt(VisumTable):
 class POI1(VisumTable):
     name = 'Points of Interest'
     code = 'POIOFCAT_1'
-    _cols = 'KATNR;NR;XKOORD;YKOORD'
-    _pkey = 'KATNR;NR'
+    _cols = 'KATNR;NO;XKOORD;YKOORD'
+    _pkey = 'KATNR;NO'
 
 
 class Screenlinepolygon(VisumTable):
@@ -48,15 +48,15 @@ class Screenlinepolygon(VisumTable):
 class Knoten(VisumTable):
     name = 'Knoten'
     code = 'KNOTEN'
-    _cols = 'NR;XKOORD;YKOORD'
-    _pkey = 'NR'
+    _cols = 'NO;XKOORD;YKOORD'
+    _pkey = 'NO'
 
 
 class Strecke(VisumTable):
     name = 'Strecken'
     code = 'STRECKE'
-    _cols = 'NR;VONKNOTNR;NACHKNOTNR;LAENGE;VONKNOTENORIENTIERUNG;NACHKNOTENORIENTIERUNG'
-    _pkey = 'NR;VONKNOTNR;NACHKNOTNR'
+    _cols = 'NO;VONKNOTNR;NACHKNOTNR;LAENGE;VONKNOTENORIENTIERUNG;NACHKNOTENORIENTIERUNG'
+    _pkey = 'NO;VONKNOTNR;NACHKNOTNR'
 
 
 class Streckenpolygone(VisumTable):

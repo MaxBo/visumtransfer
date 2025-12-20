@@ -6,9 +6,9 @@ from visumtransfer.visum_table import VisumTable
 
 
 
-class Netz(VisumTable):
-    name = 'Netz'
-    code = 'NETZ'
+class Network(VisumTable):
+    name = 'Network'
+    code = 'NETWORK'
     _mode = ''
     _cols = ''
     _defaults = {0: 0}
@@ -23,50 +23,50 @@ class Netz(VisumTable):
             raise ValueError(f'{self.__class__} may have only one row')
 
 
-class BenutzerdefinierteGruppe(VisumTable):
-    name = 'Benutzerdefinierte Gruppen'
-    code = 'BENUTZERDEFINIERTEGRUPPE'
+class UserDefinedGroup(VisumTable):
+    name = 'Userdefined Groups'
+    code = 'USERDEFINEDGROUP'
 
-    _cols = 'NAME;BESCHREIBUNG'
+    _cols = 'NAME;DESCRIPTION'
 
 
-class BenutzerdefiniertesAttribut(VisumTable):
-    name = 'Benutzerdefinierte Attribute'
-    code = 'BENUTZERDEFATTRIBUTE'
+class UserDefinedAttribute(VisumTable):
+    name = 'Userdefined Attributes'
+    code = 'USERDEFINEDATTRIBUTE'
 
-    _cols = ('OBJID;ATTID;CODE;NAME;DATENTYP;MINWERT;MAXWERT;'
-    'STANDARDWERT;STRINGSTANDARDWERT;KOMMENTAR;MAXSTRINGLAENGE;ANZDEZSTELLEN;'
-    'DATENQUELLENTYP;FORMEL;QUERSCHNITTSLOGIK;BENUTZERDEFINIERTERGRUPPENNAME')
+    _cols = ('OBJID;ATTID;CODE;NAME;VALUETYPE;MINVALUE;MAXVALUE;'
+    'DEFAULTVALUE;DEFAULTSTRINGVALUE;COMMENT;MAXSTRINGLENGTH;NUMDECPLACES;'
+    'DATASOURCETYPE;FORMULA;CROSSSECTIONLOGIC;USERDEFINEDGROUPNAME')
 
     _pkey = 'OBJID;ATTID'
 
-    _defaults = {'DATENTYP': 'Double',
-                 'QUERSCHNITTSLOGIK': 'SUM',
-                 'ANZDEZSTELLEN': 3,
-                 'MAXSTRINGLAENGE': 255,
-                 'MINWERT': 'MIN',
-                 'MAXWERT': 'MAX',
+    _defaults = {'VALUETYPE': 'Double',
+                 'CROSSSECTIONLOGIC': 'SUM',
+                 'NUMDECPLACES': 3,
+                 'MAXSTRINGLENGTH': 255,
+                 'MINVALUE': 'MIN',
+                 'MAXVALUE': 'MAX',
                  }
 
-    def add_formel_attribute(self,
+    def add_formula_attribute(self,
                              objid: str,
                              name: str,
-                             formel: str,
+                             formula: str,
                              attid: str=None,
                              code: str=None,
-                             benutzerdefiniertergruppenname: str=None,
+                             userdefinedgroupname: str=None,
                              **kwargs):
         """
-        add Formel-Attribut
+        add formula-attribute
 
         Parameters
         ----------
         objid : str
-            the network type like NETZ, AKTIVITAET etc.
+            the network type like NETWORK, ACTIVITY etc.
         name : str
             the name of the attribute, will be used as code and attid, too,
             if they are not explicitely specified
-        formel : str
+        formula : str
             the formula
         attid : str, optional
             the attid. If None, the code, and if the code is None, name will be taken
@@ -76,28 +76,28 @@ class BenutzerdefiniertesAttribut(VisumTable):
         attid = attid or code or name
         code = code or name
         self.add(objid=objid,
-                 datenquellentyp='FORMEL',
+                 datasourcetype='FORMULA',
                  name=name,
                  attid=attid,
                  code=code,
-                 formel=formel,
-                 benutzerdefiniertergruppenname=benutzerdefiniertergruppenname,
+                 formula=formula,
+                 userdefinedgroupname=userdefinedgroupname,
                  **kwargs)
 
-    def add_daten_attribute(self,
+    def add_data_attribute(self,
                             objid: str,
                             name: str,
                             attid: str=None,
                             code: str=None,
-                            benutzerdefiniertergruppenname: str=None,
+                            userdefinedgroupname: str=None,
                             **kwargs):
         """
-        add Daten-Attribut
+        add Data-Attribute
 
         Parameters
         ----------
         objid : str
-            the network type like NETZ, AKTIVITAET etc.
+            the network type like NETWORK, ACTIVITY etc.
         name : str
             the name of the attribute, will be used as code and attid, too,
             if they are not explicitely specified
@@ -109,11 +109,11 @@ class BenutzerdefiniertesAttribut(VisumTable):
         attid = attid or code or name
         code = code or name
         row = self.Row(objid=objid,
-                       datenquellentyp='DATEN',
+                       datasourcetype='DATEN',
                        name=name,
                        attid=attid,
                        code=code,
-                       benutzerdefiniertergruppenname=benutzerdefiniertergruppenname,
+                       userdefinedgroupname=userdefinedgroupname,
                        **kwargs)
         self.add_row(row)
 
@@ -129,13 +129,13 @@ class Verkehrssystem(VisumTable):
 class Oberbezirk(VisumTable):
     name = 'Oberbezirke'
     code = 'OBERBEZIRK'
-    _cols = 'NR;XKOORD;YKOORD'
+    _cols = 'NO;XKOORD;YKOORD'
 
 
 class Bezirke(VisumTable):
     name = 'Bezirke'
     code = 'BEZIRK'
-    _cols = 'NR'
+    _cols = 'NO'
 
     def read_pgr(self, fn):
         r = np.recfromtxt(open(fn, mode='rb').readlines(), delimiter=',',

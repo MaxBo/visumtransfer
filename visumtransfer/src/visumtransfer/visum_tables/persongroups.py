@@ -183,9 +183,9 @@ class Personengruppe(VisumTable):
             matrices.add_daten_matrix(
                 code=code,
                 name=str_name,
-                modusset=','.join(sorted(modes['code'])),
-                personengruppenset=pgrset,
-                pgruppencode=group_output,
+                modeset=','.join(sorted(modes['code'])),
+                persongroupset=pgrset,
+                persongroupcode=group_output,
             )
             vl_code = f'VL_{code}'
             formel_vl = f'Matrix([CODE]="{code}") * Matrix([CODE]="KM")'
@@ -193,11 +193,11 @@ class Personengruppe(VisumTable):
 
             matrices.add_formel_matrix(
                 code=vl_code,
-                formel=formel_vl,
+                formula=formel_vl,
                 name=vl_name,
-                modusset=','.join(sorted(modes['code'])),
-                personengruppenset=pgrset,
-                pgruppencode=group_output,
+                modeset=','.join(sorted(modes['code'])),
+                persongroupset=pgrset,
+                persongroupcode=group_output,
             )
 
             for _, mode in modes.iterrows():
@@ -209,19 +209,19 @@ class Personengruppe(VisumTable):
                 matrices.add_daten_matrix(
                     code=code,
                     name=str_name,
-                    moduscode=mode.code,
-                    modusset=mode.code,
-                    personengruppenset=pgrset,
-                    pgruppencode=group_output,
+                    modecode=mode.code,
+                    modeset=mode.code,
+                    persongroupset=pgrset,
+                    persongroupcode=group_output,
                 )
                 vl_code = f'VL_{code}'
                 formel_vl = f'Matrix([CODE]="{code}") * Matrix([CODE]="KM")'
                 vl_name = f'Verkehrsleistung mit Verkehrsmittel {mode_name} der {gr.CATEGORY}-Gruppe {gr.NAME}'
                 matrices.add_formel_matrix(
                     code=vl_code,
-                    formel=formel_vl,
+                    formula=formel_vl,
                     name=vl_name,
-                    modusset=','.join(sorted(modes['code'])),
-                    personengruppenset=pgrset,
-                    pgruppencode=group_output,
+                    modeset=','.join(sorted(modes['code'])),
+                    persongroupset=pgrset,
+                    persongroupcode=group_output,
                 )
