@@ -19,7 +19,7 @@ class Nachfragemodell(VisumTable):
 class Strukturgr(VisumTable):
     name = 'Strukturgrößen'
     code = 'STRUKTURGROESSE'
-    _cols = 'CODE;NAME;NACHFRAGEMODELLCODE'
+    _cols = 'CODE;NAME;DEMANDMODELCODE'
 
     def create_tables(self,
                       activities: pd.DataFrame,
@@ -30,7 +30,7 @@ class Strukturgr(VisumTable):
             # Heimataktivität hat keine Strukturgröße
             if not a['potential']:
                 continue
-            row = self.Row(nachfragemodellcode=model)
+            row = self.Row(demandmodelcode=model)
             row.code = a['potential'] + suffix
             row.name = a['name']
             rows.append(row)

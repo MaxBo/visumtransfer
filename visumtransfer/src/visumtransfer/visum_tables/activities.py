@@ -9,11 +9,11 @@ from .matrizen import Matrix
 from visumtransfer.visum_table import VisumTable
 
 
-class Aktivitaet(VisumTable):
-    name = 'Aktivitäten'
-    code = 'AKTIVITAET'
-    _cols = ('CODE;RANG;NAME;NACHFRAGEMODELLCODE;ISTHEIMATAKTIVITAET;'
-             'STRUKTURGROESSENCODES;KOPPLUNGZIEL;RSA;'
+class Activity(VisumTable):
+    name = 'Activities'
+    code = 'ACTIVITY'
+    _cols = ('CODE;RANK;NAME;DEMANDMODELCODE;ISHOMEACTIVITY;'
+             'STRUCTURALPROPCODES;CONSTRAINTDEST;RSA;'
              'COMPOSITE_ACTIVITIES;AUTOCALIBRATE;CALCDESTMODE;AKTIVITAETSET;BASE_LS'
              ';TARIFMATRIX;ZIELWAHL_FUNKTION_MATRIXCODES')
 
@@ -23,16 +23,16 @@ class Aktivitaet(VisumTable):
                       suffix=''):
         rows = []
         for idx, a in activities.iterrows():
-            row = self.Row(nachfragemodellcode=model)
+            row = self.Row(demandmodelcode=model)
             row.code = a['code'] + suffix
             row.name = a['name']
-            row.strukturgroessencodes = a['potential'] + suffix
+            row.structuralpropcodes = a['potential'] + suffix
             is_home_activity = a['home']
-            row.rang = a['rank'] or 1
+            row.rank = a['rank'] or 1
             row.rsa = a['rsa']
             row.autocalibrate = a['autocalibrate']
-            row.istheimataktivitaet = is_home_activity
-            row.kopplungziel = is_home_activity
+            row.ishomeactivity = is_home_activity
+            row.constraintdest = is_home_activity
             row.composite_activities = a['composite_activities']
             row.calcdestmode = a['calcdestmode']
             row.tarifmatrix = a['TARIFMATRIX']
@@ -44,12 +44,12 @@ class Aktivitaet(VisumTable):
     @property
     def _homeactivity(self) -> str:
         """get the home activity"""
-        return self.df.loc[self.df.ISTHEIMATAKTIVITAET == 1].index[0]
+        return self.df.loc[self.df.ISHOMEACTIVITY == 1].index[0]
 
     @property
     def all_non_composite_activites(self) -> str:
         """returns all the activities that are not composed by others"""
-        non_composite = (self.df['ISTHEIMATAKTIVITAET'] | self.df['CALCDESTMODE'])
+        non_composite = (self.df['ISHOMEACTIVITY'] | self.df['CALCDESTMODE'])
         codes = self.df.index[non_composite.astype(bool)]
         return ','.join(sorted(codes))
 
@@ -58,7 +58,7 @@ class Aktivitaet(VisumTable):
         activitysets = defaultdict(set)
         for code, act in self.df.iterrows():
             # add the activity itself, if its no composite activity
-            if act['CALCDESTMODE'] or act['ISTHEIMATAKTIVITAET']:
+            if act['CALCDESTMODE'] or act['ISHOMEACTIVITY']:
                 activitysets[code].add(code)
             # if an activity is part of a composite activity
             for comp_act in act['COMPOSITE_ACTIVITIES'].split(','):
@@ -97,7 +97,7 @@ class Aktivitaet(VisumTable):
         hierarchy : dict
         """
         sorted_df = self.df.reset_index()\
-            .sort_values(['ISTHEIMATAKTIVITAET', 'RANG', 'CODE'])
+            .sort_values(['ISHOMEACTIVITY', 'RANK', 'CODE'])
         codes = sorted_df[['CODE']].copy()
         codes['idx'] = range(len(codes))
         hierarchy = codes.set_index('CODE').to_dict()['idx']
@@ -199,7 +199,7 @@ class Aktivitaet(VisumTable):
                 obb_matrix_ref=f'[CODE]="Activity_VL_OBB_{code}"',
             )
 
-            if not t.ISTHEIMATAKTIVITAET:
+            if not t.ISHOMEACTIVITY:
                 matrices.set_category('Activities_Homebased')
                 nr = matrices.add_daten_matrix(
                     code=f'HB_Activity_{code}',
@@ -292,7 +292,7 @@ class Aktivitaet(VisumTable):
             )
             self.matrixnummern_activity[code] = nr
 
-            if t.ISTHEIMATAKTIVITAET:
+            if t.ISHOMEACTIVITY:
                 self.matrixnummer_activity_w = nr
                 self.matrixnummer_activity_vl_w = nr_vl
                 self.obbmatrixnummer_activity_w = obb_nr
@@ -495,7 +495,7 @@ class Aktivitaet(VisumTable):
         for code, t in self.df.iterrows():
             # not initmatrix at the moment...
             init_matrix = 0
-            #init_matrix = 0 if t.ISTHEIMATAKTIVITAET else 1
+            #init_matrix = 0 if t.ISHOMEACTIVITY else 1
             for _, mode in modes.iterrows():
                 matrices.set_category('Modes_Demand_Activities')
 
@@ -503,7 +503,7 @@ class Aktivitaet(VisumTable):
                 # add output matrix
                 str_name = f'Wege mit Verkehrsmittel {mode_code} der für Aktivität {code}'
                 obb_matrix_ref = f'[CODE]="OBB_Activity_{code}_{mode_code}"'\
-                    if t.ISTHEIMATAKTIVITAET else None
+                    if t.ISHOMEACTIVITY else None
                 nr = matrices.add_daten_matrix(
                     code=f'Activity_{code}_{mode_code}',
                     name=str_name,
@@ -521,7 +521,7 @@ class Aktivitaet(VisumTable):
                     f'[MATSPALTENSUMME({ges:d})]',
                 )
 
-                if t.ISTHEIMATAKTIVITAET:
+                if t.ISHOMEACTIVITY:
                     # add output Oberbezirks-Matrix
                     str_name = f'OBB-Wege mit Verkehrsmittel {mode_code}'
                     f'für Aktivität {code}'
@@ -671,7 +671,7 @@ class Aktivitaet(VisumTable):
         reference_column = 'OBB_Kreis'
         formel = 'TableLookup(MAINZONE OBB, OBB[NO]=[{col}], OBB[KF_LOGSUM_{a}])'
         for code, t in self.df.iterrows():
-            if not t.ISTHEIMATAKTIVITAET:
+            if not t.ISHOMEACTIVITY:
                 userdef.add_daten_attribute(
                     'Oberbezirk',
                     f'kf_logsum_{code}',
@@ -687,12 +687,12 @@ class Aktivitaet(VisumTable):
                 )
 
 
-class Aktivitaetenpaar(VisumTable):
-    name = 'Aktivitätenpaare'
-    code = 'AKTIVITAETENPAAR'
-    _cols = 'CODE;NAME;NACHFRAGEMODELLCODE;QUELLAKTIVITAETCODE;ZIELAKTIVITAETCODE;QUELLEZIELTYP'
+class Activitypair(VisumTable):
+    name = 'Activitypairs'
+    code = 'ACTPAIR'
+    _cols = 'CODE;NAME;DEMANDMODELCODE;ORIGACTIVITYCODE;DESTACTIVITYCODE;ORIGDESTTYPE'
     _pkey = 'CODE'
-    _defaults = {'QUELLZIELTYP': 3,
+    _defaults = {'ORIGDESTTYPE': 3,
                  }
 
     def create_tables(self,
@@ -706,17 +706,17 @@ class Aktivitaetenpaar(VisumTable):
             ap_new_code = '_'.join([origin_code, dest_code])
             row = self.Row(code=ap_new_code,
                            name=ap_code,
-                           nachfragemodellcode=model,
-                           quellaktivitaetcode=origin_code,
-                           zielaktivitaetcode=dest_code)
+                           demandmodelcode=model,
+                           origactivitycode=origin_code,
+                           destactivitycode=dest_code)
             rows.append(row)
         self.add_rows(rows)
 
 
-class Aktivitaetenkette(VisumTable):
-    name = 'Aktivitätenketten'
-    code = 'AKTIVITAETENKETTE'
-    _cols = 'CODE;NAME;NACHFRAGEMODELLCODE;AKTIVCODES'
+class Activitychain(VisumTable):
+    name = 'Activitychains'
+    code = 'ACTCHAIN'
+    _cols = 'CODE;NAME;DEMANDMODELCODE;ACTIVITYCODES'
     _pkey = 'CODE'
 
     def create_tables(self,
@@ -727,7 +727,7 @@ class Aktivitaetenkette(VisumTable):
         for ac_code, ac in activity_chains.iterrows():
             row = self.Row(code=ac_code,
                            name=ac_code,
-                           nachfragemodellcode=model,
-                           aktivcodes=ac.Sequence)
+                           demandmodelcode=model,
+                           activitycodes=ac.Sequence)
             rows.append(row)
         self.add_rows(rows)

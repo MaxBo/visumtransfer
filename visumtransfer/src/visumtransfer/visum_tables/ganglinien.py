@@ -83,7 +83,7 @@ class Ganglinie(VisumTable):
             for pg_code, pg in personengruppe.df.iterrows():
                 row_visem_ganglinie = visem_ganglinie.Row(
                     pgruppencode=pg_code, gangliniennr=nr)
-                if not pg['NACHFRAGEMODELLCODE'] == 'VisemGeneration':
+                if not pg['DEMANDMODELCODE'] == 'VisemGeneration':
                     row_visem_ganglinie.aktpaarcode = ap_code
                 rows_visem_nachfrageganglinien.append(row_visem_ganglinie)
 

@@ -315,7 +315,7 @@ class VisemDemandModel:
 
         # add userdefined attributes for personsgroups
         pg = Personengruppe()
-        pg._defaults['NACHFRAGEMODELLCODE'] = model_code
+        pg._defaults['DEMANDMODELCODE'] = model_code
         vt.tables['PersonGroups'] = pg
         self.add_general_pgr_attributes(pg, userdef1, userdef2)
 

@@ -854,21 +854,21 @@ class Matrix(VisumTable):
 
     def add_logsum_matrices(self,
                             demand_strata: 'Nachfrageschicht',
-                            actchains: 'Aktivitaetenkette',
+                            actchains: 'Activitychain',
                             matrix_range='Logsums',
                             ):
         """Add logsum matrices for each person group and main activity"""
 
         self.set_category(matrix_range)
-        ketten = {ac_code: act['AKTIVCODES'].split(',')[1: -1]
+        ketten = {ac_code: act['ACTIVITYCODES'].split(',')[1: -1]
                   for ac_code, act
                   in actchains.df.iterrows()}  # type: Mapping[str, List[str]]
         pgr_activities = defaultdict(set)  # type: Mapping[Tuple[str, str], set]
         for ds_code, ds in demand_strata.df.iterrows():
             pgr = ds['PGRUPPENCODES']
-            nachfragemodellcode = ds['NACHFRAGEMODELLCODE']
-            if nachfragemodellcode in ('VisemGGR', 'Pendler'):
-                activities = pgr_activities[(nachfragemodellcode, pgr)]
+            demandmodelcode = ds['DEMANDMODELCODE']
+            if demandmodelcode in ('VisemGGR', 'Pendler'):
+                activities = pgr_activities[(demandmodelcode, pgr)]
                 new_activities = ketten[ds['AKTKETTENCODE']]
                 for activity in new_activities:
                     activities.add(activity)

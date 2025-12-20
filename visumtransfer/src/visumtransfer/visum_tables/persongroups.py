@@ -4,14 +4,14 @@ from typing import List
 import pandas as pd
 from collections import defaultdict
 from .matrizen import Matrix
-from .activities import Aktivitaet
+from .activities import Activity
 from visumtransfer.visum_table import VisumTable
 
 
 class Personengruppe(VisumTable):
     name = 'Personengruppen'
     code = 'PERSONENGRUPPE'
-    _cols = 'CODE;NAME;NACHFRAGEMODELLCODE'
+    _cols = 'CODE;NAME;DEMANDMODELCODE'
 
     def __init__(self, mode='+'):
         super().__init__(mode=mode)
@@ -20,7 +20,7 @@ class Personengruppe(VisumTable):
 
     def add_group(self, code: str, model_code: str, **kwargs):
         row = self.Row(code=code,
-                       nachfragemodellcode=model_code,
+                       demandmodelcode=model_code,
                        **kwargs)
         self.groups.append(row)
 
@@ -66,7 +66,7 @@ class Personengruppe(VisumTable):
     def create_groups_destmode(self,
                                groups_generation: pd.DataFrame,
                                trip_chain_rates: pd.DataFrame,
-                               activities: Aktivitaet,
+                               activities: Activity,
                                model_code: str,
                                tc_categories: List[str],
                                category: str,

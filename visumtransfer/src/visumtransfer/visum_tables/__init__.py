@@ -54,9 +54,9 @@ from .persongroups import (
 )
 
 from .activities import (
-    Aktivitaet,
-    Aktivitaetenkette,
-    Aktivitaetenpaar,
+    Activity,
+    Activitychain,
+    Activitypair,
 )
 
 from .nachfrageschicht import (

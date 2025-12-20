@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from .persongroups import Personengruppe
-from .activities import Aktivitaet, Aktivitaetenkette
+from .activities import Activity, Activitychain
 from visumtransfer.visum_table import VisumTable
 
 
 class Nachfrageschicht(VisumTable):
     name = 'Nachfrageschichten'
     code = 'NACHFRAGESCHICHT'
-    _cols = 'CODE;NAME;NACHFRAGEMODELLCODE;AKTKETTENCODE;PGRUPPENCODES;NSEGSET;MOBILITAETSRATE;TARIFMATRIX;MAINACTCODE'
+    _cols = 'CODE;NAME;DEMANDMODELCODE;AKTKETTENCODE;PGRUPPENCODES;NSEGSET;MOBILITAETSRATE;TARIFMATRIX;MAINACTCODE'
 
     def create_tables_gd(self,
                          personengruppe: Personengruppe,
-                         aktivitaet: Aktivitaet,
-                         aktivitaetenkette: Aktivitaetenkette,
+                         aktivitaet: Activity,
+                         aktivitaetenkette: Activitychain,
                          nsegset: str = 'O,F,M,P,R',
                          model: str = 'VisemGGR',
                          category: str = 'ZielVMWahl'):
@@ -26,7 +26,7 @@ class Nachfrageschicht(VisumTable):
             for ac_code, mobilitaetsrate in personengruppe.gd_codes[pgr_code]:
                 dstratcode = ':'.join((pgr_code, ac_code))
                 # get the main activity of the person group
-                sequence = aktivitaetenkette.df.loc[ac_code, 'AKTIVCODES']
+                sequence = aktivitaetenkette.df.loc[ac_code, 'ACTIVITYCODES']
                 main_act_code = aktivitaet.get_main_activity(ac_hierarchy, sequence)
                 # take the tarifmatrix defined for the main activity
                 tarifmatrix = aktivitaet.df.loc[main_act_code, 'TARIFMATRIX']
@@ -39,7 +39,7 @@ class Nachfrageschicht(VisumTable):
 
                 row = self.Row(code=dstratcode,
                                name=dstratcode,
-                               nachfragemodellcode=model,
+                               demandmodelcode=model,
                                pgruppencodes=pgr_code,
                                aktkettencode=ac_code,
                                mainactcode=main_act_code,
