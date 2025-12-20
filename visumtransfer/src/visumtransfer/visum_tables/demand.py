@@ -4,21 +4,21 @@ import pandas as pd
 from visumtransfer.visum_table import VisumTable
 
 
-class Modus(VisumTable):
-    name = 'Modi'
-    code = 'MODUS'
-    _cols = 'CODE;NAME;VSYSSET;AUSTAUSCHBAR'
+class Mode(VisumTable):
+    name = 'Modes'
+    code = 'MODE'
+    _cols = 'CODE;NAME;TSYSSET;INTERCHANGEABLE'
 
 
-class Nachfragemodell(VisumTable):
-    name = 'Nachfragemodelle'
-    code = 'NACHFRAGEMODELL'
-    _cols = 'CODE;NAME;TYP;MODESET'
+class Demandmodel(VisumTable):
+    name = 'Demandmodels'
+    code = 'DEMANDMODEL'
+    _cols = 'CODE;NAME;TYPE;MODESET'
 
 
-class Strukturgr(VisumTable):
-    name = 'Strukturgrößen'
-    code = 'STRUKTURGROESSE'
+class StructuralProp(VisumTable):
+    name = 'Structural properties'
+    code = 'STRUCTURALPROP'
     _cols = 'CODE;NAME;DEMANDMODELCODE'
 
     def create_tables(self,
@@ -37,24 +37,24 @@ class Strukturgr(VisumTable):
         self.add_rows(rows)
 
 
-class Strukturgroessenwert(VisumTable):
-    name = 'Strukturgrößenwerte'
-    code = 'STRUKTURGROESSENWERT'
-    _cols = 'BEZNR;STRUKTURGROESSENCODE;WERT'
+class StructuralPropValues(VisumTable):
+    name = 'Structural property values'
+    code = 'STRUCTURALPROPVALUES'
+    _cols = 'ZONENO;STRUCTURALPROPCODE;VALUE'
     _longformat = True
     _mode = ''
 
 
-class PersonengruppeJeBezirk(VisumTable):
-    name = 'Personengruppe je Bezirk'
-    code = 'PERSONENGRUPPEJEBEZIRK'
-    _cols = 'BEZNR;PERSONGROUPCODE;ANZPERSONEN'
+class PersonGroupPerZone(VisumTable):
+    name = 'Person group per zone'
+    code = 'PERSONGROUPPERZONE'
+    _cols = 'ZONENO;PERSONGROUPCODE;NUMPERSONS'
     _longformat = True
     _mode = ''
 
 
-class Nachfragebeschreibung(VisumTable):
-    name = 'Nachfragebeschreibungen'
-    code = 'NACHFRAGEBESCHREIBUNG'
-    _cols = 'DSEGCODE;NACHFRAGEGLNR;MATRIX'
-    _defaults = {'NACHFRAGEGLNR': 1}
+class DemandDescription(VisumTable):
+    name = 'Demand Description'
+    code = 'DEMANDDESCRIPTION'
+    _cols = 'DSEGCODE;DEMANDTIMESERIESNO;MATRIXREF'
+    _defaults = {'DEMANDTIMESERIESNO': 1}

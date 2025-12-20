@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from .persongroups import Personengruppe
+from .persongroups import PersonGroup
 from .activities import Activity, Activitychain
 from visumtransfer.visum_table import VisumTable
 
 
-class Nachfrageschicht(VisumTable):
-    name = 'Nachfrageschichten'
-    code = 'NACHFRAGESCHICHT'
-    _cols = 'CODE;NAME;DEMANDMODELCODE;AKTKETTENCODE;PGRUPPENCODES;NSEGSET;MOBILITAETSRATE;TARIFMATRIX;MAINACTCODE'
+class DemandStratum(VisumTable):
+    name = 'DemandStrata'
+    code = 'DEMANDSTRATUM'
+    _cols = 'CODE;NAME;DEMANDMODELCODE;ACTIVITYCHAINCODE;PERSONGROUPCODES;DSEGSET;MOBILITYRATE;TARIFMATRIX;MAINACTCODE'
 
     def create_tables_gd(self,
-                         personengruppe: Personengruppe,
+                         personengruppe: PersonGroup,
                          aktivitaet: Activity,
                          aktivitaetenkette: Activitychain,
-                         nsegset: str = 'O,F,M,P,R',
+                         dsegset: str = 'O,F,M,P,R',
                          model: str = 'VisemGGR',
                          category: str = 'ZielVMWahl'):
         ac_hierarchy = aktivitaet.get_hierarchy()
@@ -23,7 +23,7 @@ class Nachfrageschicht(VisumTable):
         pgroups['TARIFMATRIX'].fillna('', inplace=True)
         pg_gd = pgroups.loc[pgroups['CATEGORY'] == category]
         for pgr_code, gd in pg_gd.iterrows():
-            for ac_code, mobilitaetsrate in personengruppe.gd_codes[pgr_code]:
+            for ac_code, mobilityrate in personengruppe.gd_codes[pgr_code]:
                 dstratcode = ':'.join((pgr_code, ac_code))
                 # get the main activity of the person group
                 sequence = aktivitaetenkette.df.loc[ac_code, 'ACTIVITYCODES']
@@ -40,11 +40,11 @@ class Nachfrageschicht(VisumTable):
                 row = self.Row(code=dstratcode,
                                name=dstratcode,
                                demandmodelcode=model,
-                               pgruppencodes=pgr_code,
-                               aktkettencode=ac_code,
+                               persongroupcodes=pgr_code,
+                               activitychaincode=ac_code,
                                mainactcode=main_act_code,
-                               nsegset=nsegset,
-                               mobilitaetsrate=mobilitaetsrate,
+                               dsegset=dsegset,
+                               mobilityrate=mobilityrate,
                                tarifmatrix=tarifmatrix,
                                )
                 rows.append(row)

@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from typing import Dict
 from collections import defaultdict
-from .basis import UserDefinedAttribute, UserDefinedGroup
-from .matrizen import Matrix
+from .base import UserDefinedAttribute, UserDefinedGroup
+from .matrices import Matrix
 from visumtransfer.visum_table import VisumTable
 
 
@@ -113,40 +113,40 @@ class Activity(VisumTable):
             objid='AKTIVITAET',
             name='TotalTrips',
             formula='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="Activity_"+[CODE]: Mat[SUMME])',
+            'Mat[CODE]="Activity_"+[CODE]: Mat[SUM])',
             comment='Gesamtzahl der Wege'
         )
         userdef.add_formula_attribute(
             objid='AKTIVITAET',
             name='TotalTrips_MR',
             formula='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="MR_Activity_"+[CODE]: Mat[SUMME])',
+            'Mat[CODE]="MR_Activity_"+[CODE]: Mat[SUM])',
             comment='Gesamtzahl der Wege von Wohnung aus Modellierungsraum'
         )
         userdef.add_formula_attribute(
             objid='AKTIVITAET',
             name='TotalTrips_HB',
             formula='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="HB_Activity_"+[CODE]: Mat[SUMME])',
+            'Mat[CODE]="HB_Activity_"+[CODE]: Mat[SUM])',
             comment='Gesamtzahl der Wege von Wohnung aus im Gesamtraum'
         )
         userdef.add_formula_attribute(
             objid='AKTIVITAET',
             name='Pkm_Total',
             formula='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="VL_Activity_"+[CODE]: Mat[SUMME])',
+            'Mat[CODE]="VL_Activity_"+[CODE]: Mat[SUM])',
         )
         userdef.add_formula_attribute(
             objid='AKTIVITAET',
             name='Pkm_Modellierungsraum',
             formula='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="MR_VL_Activity_"+[CODE]: Mat[SUMME])',
+            'Mat[CODE]="MR_VL_Activity_"+[CODE]: Mat[SUM])',
         )
         userdef.add_formula_attribute(
             objid='AKTIVITAET',
             name='MeanTripDistance',
             formula='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="MR_VL_Activity_"+[CODE]: Mat[SUMME]) / [TotalTrips_MR]',
+            'Mat[CODE]="MR_VL_Activity_"+[CODE]: Mat[SUM]) / [TotalTrips_MR]',
         )
         userdef.add_data_attribute(
             objid='AKTIVITAET',
@@ -155,7 +155,7 @@ class Activity(VisumTable):
         userdef.add_data_attribute(
             objid='AKTIVITAET',
             name='WEIGHT_SWT',
-            comment='Gewicht Startwartezeit für Aktivität',
+            comment='Weight Startwaitingtime for Activity',
             defaultvalue=1,
         )
 
@@ -178,7 +178,7 @@ class Activity(VisumTable):
             name = t.NAME
 
             matrices.set_category('Activities')
-            no = matrices.add_daten_matrix(
+            no = matrices.add_data_matrix(
                 code=f'Activity_{code}',
                 name=f'Gesamtzahl der Wege zu Aktivität {name}',
                 activitycode=code,
@@ -188,7 +188,7 @@ class Activity(VisumTable):
             )
 
             matrices.set_category('VL_Activities')
-            nr_vl = matrices.add_formel_matrix(
+            nr_vl = matrices.add_formula_matrix(
                 code=f'VL_Activity_{code}',
                 name=f'Fahrleistung Aktivität {name}',
                 formula=f'Matrix([CODE] = "Activity_{code}") * '
@@ -201,7 +201,7 @@ class Activity(VisumTable):
 
             if not t.ISHOMEACTIVITY:
                 matrices.set_category('Activities_Homebased')
-                no = matrices.add_daten_matrix(
+                no = matrices.add_data_matrix(
                     code=f'HB_Activity_{code}',
                     name=f'Gesamtzahl der Wege von der Wohnung zu Aktivität {name}',
                     activitycode=code,
@@ -210,7 +210,7 @@ class Activity(VisumTable):
                 )
 
                 matrices.set_category('VL_Activities_Homebased')
-                nr_vl = matrices.add_formel_matrix(
+                nr_vl = matrices.add_formula_matrix(
                     code=f'HB_VL_Activity_{code}',
                     name=f'Fahrleistung Wohnung-Aktivität {name}',
                     formula=f'Matrix([CODE] = "HB_Activity_{code}") * '
@@ -221,7 +221,7 @@ class Activity(VisumTable):
                 )
 
                 matrices.set_category('Activities_Modellierungsraum')
-                no = matrices.add_formel_matrix(
+                no = matrices.add_formula_matrix(
                     code=f'MR_Activity_{code}',
                     name=f'Gesamtzahl der Wege aus dem Modellierungsraum zur Aktivität {name}',
                     formula=f'Matrix([CODE] = "HB_Activity_{code}") * '
@@ -232,7 +232,7 @@ class Activity(VisumTable):
                 )
 
                 matrices.set_category('VL_Activities_Modellierungsraum')
-                nr_vl = matrices.add_formel_matrix(
+                nr_vl = matrices.add_formula_matrix(
                     code=f'MR_VL_Activity_{code}',
                     name=f'Fahrleistung Wohnung(im Modellierungsraum)-Aktivität {name}',
                     formula=f'Matrix([CODE] = "HB_VL_Activity_{code}") * '
@@ -247,18 +247,18 @@ class Activity(VisumTable):
                 'BEZIRK',
                 userdefinedgroupname=gr_dist_wo,
                 name=f'Distance_WohnOrt_{code}',
-                formula=f'[MATZEILENSUMME({nr_vl:d})] / [MATZEILENSUMME({no:d})]',
+                formula=f'[MATROWSUM({nr_vl:d})] / [MATROWSUM({no:d})]',
             )
             userdef.add_formula_attribute(
                 'BEZIRK',
                 userdefinedgroupname=gr_dist_act,
                 name=f'Distance_AktOrt_{code}',
-                formula=f'[MATSPALTENSUMME({nr_vl:d})] / [MATSPALTENSUMME({no:d})]',
+                formula=f'[MATCOLSUM({nr_vl:d})] / [MATCOLSUM({no:d})]',
             )
 
             #  Wege und Verkehrsleistung nach Oberbezirk
             matrices.set_category('Activities_OBB')
-            obb_nr = matrices.add_daten_matrix(
+            obb_nr = matrices.add_data_matrix(
                 code=f'Activity_OBB_{code}',
                 name=f'Oberbezirks-Matrix Aktivität {name}',
                 activitycode=code,
@@ -267,7 +267,7 @@ class Activity(VisumTable):
                 destactivityset=t.AKTIVITAETSET,
             )
             matrices.set_category('VL_Activities_OBB')
-            vl_obb_nr = matrices.add_daten_matrix(
+            vl_obb_nr = matrices.add_data_matrix(
                 code=f'Activity_VL_OBB_{code}',
                 name=f'Oberbezirks-Matrix VL Aktivität {name}',
                 activitycode=code,
@@ -280,15 +280,15 @@ class Activity(VisumTable):
                 'OBERBEZIRK',
                 userdefinedgroupname=gr_dist_wo,
                 name=f'Distance_WohnOrt_{code}',
-                formula=f'[MATZEILENSUMME({vl_obb_nr:d})] / '
-                f'[MATZEILENSUMME({obb_nr:d})]',
+                formula=f'[MATROWSUM({vl_obb_nr:d})] / '
+                f'[MATROWSUM({obb_nr:d})]',
             )
             userdef.add_formula_attribute(
                 'OBERBEZIRK',
                 userdefinedgroupname=gr_dist_act,
                 name=f'Distance_AktOrt_{code}',
-                formula=f'[MATSPALTENSUMME({vl_obb_nr:d})] / '
-                f'[MATSPALTENSUMME({obb_nr:d})]',
+                formula=f'[MATCOLSUM({vl_obb_nr:d})] / '
+                f'[MATCOLSUM({obb_nr:d})]',
             )
             self.matrixnummern_activity[code] = no
 
@@ -317,7 +317,7 @@ class Activity(VisumTable):
 
             if t.RSA:
                 matrices.set_category('Commuters')
-                no = matrices.add_daten_matrix(
+                no = matrices.add_data_matrix(
                     code=f'Pendlermatrix_{code}',
                     name=f'Gesamtzahl der PendlerGesamtwege zu Aktivität {name}',
                     activitycode=code,
@@ -330,7 +330,7 @@ class Activity(VisumTable):
                 userdef.add_formula_attribute(
                     objid='BEZIRK',
                     attid=f'ZONE_ACTUAL_TRIPS_{code}',
-                    formula=f'[MATSPALTENSUMME({no:d})]',
+                    formula=f'[MATCOLSUM({no:d})]',
                     code=f'Trips_actual_to {code}',
                     name=f'Actual Trips to Zone for Activity {code}',
                     userdefinedgroupname=gr_rsa,
@@ -386,7 +386,7 @@ class Activity(VisumTable):
                 )
                 converged_attributes.append(attid)
 
-                matrices.add_daten_matrix(
+                matrices.add_data_matrix(
                     code=f'Pendlermatrix_OBB_{code}',
                     name=f'Oberbezirks-Matrix Pendleraktivität {name}',
                     activitycode=code,
@@ -425,7 +425,7 @@ class Activity(VisumTable):
         for code, t in self.df.iterrows():
             if t.CALCDESTMODE:
                 name = t.NAME
-                matrices.add_daten_matrix(
+                matrices.add_data_matrix(
                     code=f'PJT_{code}',
                     name=f'Empfundene Reisezeit für Hauptaktivität {name}',
                     matrixtype='Skim',
@@ -463,7 +463,7 @@ class Activity(VisumTable):
         for code, t in self.df.iterrows():
             if t.CALCDESTMODE:
                 name = t.NAME
-                matrices.add_daten_matrix(
+                matrices.add_data_matrix(
                     code=f'PARKING_{code}',
                     name=f'Parkwiderstand für Hauptaktivität {name}',
                     aktivcode=code,
@@ -504,7 +504,7 @@ class Activity(VisumTable):
                 str_name = f'Wege mit Verkehrsmittel {mode_code} der für Aktivität {code}'
                 obb_matrix_ref = f'[CODE]="OBB_Activity_{code}_{mode_code}"'\
                     if t.ISHOMEACTIVITY else None
-                no = matrices.add_daten_matrix(
+                no = matrices.add_data_matrix(
                     code=f'Activity_{code}_{mode_code}',
                     name=str_name,
                     modecode=mode_code,
@@ -517,15 +517,15 @@ class Activity(VisumTable):
                     'BEZIRK',
                     userdefinedgroupname=gr_ms_act,
                     name=f'MS_{mode_code}_Act_{code}',
-                    formula=f'[MATSPALTENSUMME({no:d})] / '
-                    f'[MATSPALTENSUMME({ges:d})]',
+                    formula=f'[MATCOLSUM({no:d})] / '
+                    f'[MATCOLSUM({ges:d})]',
                 )
 
                 if t.ISHOMEACTIVITY:
                     # add output Oberbezirks-Matrix
                     str_name = f'OBB-Wege mit Verkehrsmittel {mode_code}'
                     f'für Aktivität {code}'
-                    nr_obb = matrices.add_daten_matrix(
+                    nr_obb = matrices.add_data_matrix(
                         code=f'OBB_Activity_{code}_{mode_code}',
                         name=str_name,
                         modecode=mode_code,
@@ -539,8 +539,8 @@ class Activity(VisumTable):
                         'OBERBEZIRK',
                         userdefinedgroupname=gr_ms_home,
                         name=f'MS_Home_Mode_{mode_code}',
-                        formula=f'[MATSPALTENSUMME({nr_obb:d})] / '
-                        f'[MATSPALTENSUMME({ges:d})]',
+                        formula=f'[MATCOLSUM({nr_obb:d})] / '
+                        f'[MATCOLSUM({ges:d})]',
                     )
 
                     ges = self.matrixnummer_activity_w
@@ -548,15 +548,15 @@ class Activity(VisumTable):
                         'BEZIRK',
                         userdefinedgroupname=gr_ms_home,
                         name=f'MS_Home_Mode_{mode_code}',
-                        formula=f'[MATSPALTENSUMME({no:d})] / '
-                        f'[MATSPALTENSUMME({ges:d})]',
+                        formula=f'[MATCOLSUM({no:d})] / '
+                        f'[MATCOLSUM({ges:d})]',
                     )
 
                     # add Verkehrsleistung
                     matrices.set_category('VL_Activities')
                     formula = f'Matrix([CODE]="Activity_{code}_{mode_code}") '\
                         f'* Matrix([CODE] = "KM")'
-                    nr_vl = matrices.add_formel_matrix(
+                    nr_vl = matrices.add_formula_matrix(
                         code=f'VL_Activity_{code}_{mode_code}',
                         name=f'Verkehrsleistung Aktivität {code} mit {mode_code}',
                         modecode=mode_code,
@@ -566,7 +566,7 @@ class Activity(VisumTable):
                         initmatrix=0,
                     )
                     matrices.set_category('VL_Activities_OBB')
-                    nr_obb_vl = matrices.add_daten_matrix(
+                    nr_obb_vl = matrices.add_data_matrix(
                         code=f'OBB_VL_Activity_{code}_{mode_code}',
                         name=f'OBB-Verkehrsleistung Aktivität {code} mit {mode_code}',
                         modecode=mode_code,
@@ -578,15 +578,15 @@ class Activity(VisumTable):
                         'OBERBEZIRK',
                         userdefinedgroupname=gr_dist,
                         name=f'Distance_Home_{mode_code}',
-                        formula=f'[MATZEILENSUMME({nr_obb_vl:d})] / '
-                        f'[MATZEILENSUMME({nr_obb:d})]',
+                        formula=f'[MATROWSUM({nr_obb_vl:d})] / '
+                        f'[MATROWSUM({nr_obb:d})]',
                     )
                     userdef.add_formula_attribute(
                         'BEZIRK',
                         userdefinedgroupname=gr_dist,
                         name=f'Distance_Home_{mode_code}',
-                        formula=f'[MATZEILENSUMME({nr_vl:d})] / '
-                        f'[MATZEILENSUMME({no:d})]',
+                        formula=f'[MATROWSUM({nr_vl:d})] / '
+                        f'[MATROWSUM({no:d})]',
                     )
 
         # Add User Defined Attributes for the trips

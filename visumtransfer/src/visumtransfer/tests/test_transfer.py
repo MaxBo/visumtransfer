@@ -9,8 +9,8 @@ from visumtransfer.visum_table import (VisumTable,
                                        Version)
 from visumtransfer.visum_attributes import VisumAttributes
 from visumtransfer.visum_tables import (create_userdefined_table,
-                                        Tabellendefinition,
-                                        BenutzerdefiniertesAttribut,
+                                        TableDefinition,
+                                        UserDefinedAttribute,
                                         Network)
 
 
@@ -26,7 +26,7 @@ def dataframe() -> pd.DataFrame:
 def df_zones() -> pd.DataFrame:
     df = pd.DataFrame(data=np.array([(2, 'A-Stadt', 3),
                                      (4, 'B-Dorf', 4)]),
-                      columns=['NO', 'NAME', 'TYPNR'])
+                      columns=['NO', 'NAME', 'TYPENO'])
     return df
 
 
@@ -156,8 +156,8 @@ class TestVisumTransfer:
 
     def test_userdef_table(self, visum_tables):
         """Test a userdefined table"""
-        tabledef = Tabellendefinition(mode='+')
-        userdef = BenutzerdefiniertesAttribut(mode='+')
+        tabledef = TableDefinition(mode='+')
+        userdef = UserDefinedAttribute(mode='+')
 
         TBL = create_userdefined_table('AAA',
                                        cols_types={'Col1': 'Double',

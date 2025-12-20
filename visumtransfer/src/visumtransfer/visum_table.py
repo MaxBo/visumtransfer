@@ -366,7 +366,7 @@ class Version(VisumTable):
     code = 'VERSION'
     _cols = 'VERSNR;FILETYPE;LANGUAGE;UNIT'
     _defaults = {
-        'VERSNR': 10.0,
+        'VERSNR': 15.0,
         'LANGUAGE': 'ENG',
         'FILETYPE': 'Demand',
         'UNIT': 'KM',

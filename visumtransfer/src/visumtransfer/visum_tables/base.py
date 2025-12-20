@@ -119,22 +119,22 @@ class UserDefinedAttribute(VisumTable):
 
 
 
-class Verkehrssystem(VisumTable):
-    name = 'Verkehrssysteme'
-    code = 'VSYS'
+class TSys(VisumTable):
+    name = 'Transport Systems'
+    code = 'TSYS'
 
-    _cols = 'CODE;TYP'
-
-
-class Oberbezirk(VisumTable):
-    name = 'Oberbezirke'
-    code = 'OBERBEZIRK'
-    _cols = 'NO;XKOORD;YKOORD'
+    _cols = 'CODE;TYPE'
 
 
-class Bezirke(VisumTable):
-    name = 'Bezirke'
-    code = 'BEZIRK'
+class Mainzone(VisumTable):
+    name = 'Mainzones'
+    code = 'MAINZONE'
+    _cols = 'NO;XCOORD;YCOORD'
+
+
+class Zone(VisumTable):
+    name = 'Zones'
+    code = 'ZONE'
     _cols = 'NO'
 
     def read_pgr(self, fn):

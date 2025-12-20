@@ -1,56 +1,55 @@
-from .ov import (
-    Haltepunkt,
-    Haltestellenbereich,
-    Haltestelle,
-    HaltestellenbereichsUebergangsgehzeiten,
-    HaltestellenZuTarifzonen,
-    Linie,
-    Linienroute,
-    Linienroutenelement,
-    Fahrzeitprofil,
-    Fahrzeitprofilelement,
-    Fahrplanfahrt,
-    Fahrplanfahrtabschnitt,
-    Fahrplanfahrtelement,
-    Fahrplanfahrtkoppelabschnitt,
-    Fahrplanfahrtkoppelabschnittselement,
-    Fahrzeugeinheiten,
-    Fahrzeugkombinationen,
-    FahrzeugkombinationsElemente,
-    FahrkartenartZuTarifsystemNSeg,
-    Oberlinie,
-    Systemroute,
-    SystemroutenVerlaeufe,
+from .put import (
+    StopPoint,
+    StopArea,
+    Stop,
+    TransferWalkTimeStopArea,
+    StopToFareZone,
+    Line,
+    LineRoute,
+    LineRouteItem,
+    TimeProfile,
+    TimeProfileItem,
+    VehJourney,
+    VehJourneySection,
+    VehJourneyItem,
+    VehJourneyCoupleSection,
+    VehJourneyCoupleSectionItem,
+    VehUnit,
+    VehComb,
+    VehUnitToVehComb,
+    TicketTypeToDSegFareSystem,
+    MainLine,
+    SysRoute,
+    SysRouteItem,
 )
 
-from .netz import (
-    Punkt,
-    Zwischenpunkt,
-    Abbieger,
-    Anbindung,
-    Gebiete,
-    Knoten,
-    POI1,
-    Strecke,
-    Streckenpolygone,
-    Screenlinepolygon,
+from .network import (
+    Point,
+    EdgeItem,
+    Turn,
+    Connector,
+    Territory,
+    Node,
+    Link,
+    LinkPoly,
+    ScreenlinePoly,
 )
 
-from .basis import (
+from .base import (
     Network,
     UserDefinedGroup,
     UserDefinedAttribute,
-    Verkehrssystem,
-    Bezirke,
-    Oberbezirk,
+    TSys,
+    Zone,
+    Mainzone,
 )
 
-from .matrizen import (
+from .matrices import (
     Matrix
 )
 
 from .persongroups import (
-    Personengruppe
+    PersonGroup
 )
 
 from .activities import (
@@ -59,28 +58,28 @@ from .activities import (
     Activitypair,
 )
 
-from .nachfrageschicht import (
-    Nachfrageschicht,
+from .demandstratum import (
+    DemandStratum,
 )
 
 from .demand import (
-    Nachfragebeschreibung,
-    Nachfragemodell,
-    PersonengruppeJeBezirk,
-    Strukturgr,
-    Strukturgroessenwert,
-    Modus,
+    DemandDescription,
+    Demandmodel,
+    PersonGroupPerZone,
+    StructuralProp,
+    StructuralPropValues,
+    Mode,
 )
 
-from .ganglinien import (
-    Ganglinie,
-    Ganglinienelement,
-    Nachfrageganglinie,
-    Nachfragesegment,
-    VisemGanglinie,
+from .timeseries import (
+    TimeSeries,
+    TimeSeriesItem,
+    DemandTimeSeries,
+    DemandSegment,
+    VisemTimeSeries,
 )
 
 from .usertables import (
-    Tabellendefinition,
+    TableDefinition,
     create_userdefined_table,
 )

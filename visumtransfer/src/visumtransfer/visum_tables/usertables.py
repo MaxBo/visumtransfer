@@ -1,12 +1,12 @@
 from typing import Dict
 from visumtransfer.visum_table import VisumTable, MetaClass
-from visumtransfer.visum_tables.basis import BenutzerdefiniertesAttribut
+from .base import UserDefinedAttribute
 
 
-class Tabellendefinition(VisumTable):
-    name = 'Tabellendefinitionen'
-    code = 'TABELLENDEFINITION'
-    _cols = 'NAME;GRUPPE;COMMENT'
+class TableDefinition(VisumTable):
+    name = 'TableDefinitions'
+    code = 'TABLEDEFINITION'
+    _cols = 'NAME;GROUP;COMMENT'
     _pk = 'name'
 
 
@@ -16,8 +16,8 @@ def create_userdefined_table(name: str,
                              col_attrs: Dict[str, str] = {},
                              group: str = '',
                              comment: str = '',
-                             tabledef: Tabellendefinition = None,
-                             userdef: BenutzerdefiniertesAttribut = None) -> VisumTable:
+                             tabledef: TableDefinition = None,
+                             userdef: UserDefinedAttribute = None) -> VisumTable:
     """create a userdefined table"""
     colnames = ['TABELLENDEFINITIONNAME', 'NO'] + [col for col in cols_types.keys()
                                                if not 'formula' in col_attrs.get(col, {})]
@@ -33,8 +33,8 @@ def create_userdefined_table(name: str,
                                              '_pkey': 'NO',
                                                })
 
-    tabledef = Tabellendefinition(mode='+') if tabledef is None else tabledef
-    tabledef.add(name=name, gruppe=group, comment=comment)
+    tabledef = TableDefinition(mode='+') if tabledef is None else tabledef
+    tabledef.add(name=name, group=group, comment=comment)
 
     userdef = BenutzerdefiniertesAttribut(mode='+') if userdef is None else userdef
     for col, dtype in cols_types.items():

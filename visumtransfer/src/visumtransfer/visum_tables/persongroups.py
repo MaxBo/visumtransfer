@@ -3,14 +3,14 @@
 from typing import List
 import pandas as pd
 from collections import defaultdict
-from .matrizen import Matrix
+from .matrices import Matrix
 from .activities import Activity
 from visumtransfer.visum_table import VisumTable
 
 
-class Personengruppe(VisumTable):
-    name = 'Personengruppen'
-    code = 'PERSONENGRUPPE'
+class PersonGroup(VisumTable):
+    name = 'PersonGroups'
+    code = 'PERSONGROUP'
     _cols = 'CODE;NAME;DEMANDMODELCODE'
 
     def __init__(self, mode='+'):
@@ -110,13 +110,13 @@ class Personengruppe(VisumTable):
             act_code = tc['code_tc']
             act_sequence = tc['Sequence']
             tc_name = tc['NAME']
-            mobilitaetsrate = tc['rate']
+            mobilityrate = tc['rate']
             main_act = activities.get_main_activity(act_hierarchy, act_sequence)
             code = '_'.join((gd_code, main_act))
             # if the the group occurs the first time ...
             if code not in self.gd_codes:
                 #  create it and add it to self.gd_codes
-                self.gd_codes[code] = [(act_code, mobilitaetsrate)]
+                self.gd_codes[code] = [(act_code, mobilityrate)]
                 name = f'{tc_name} mit Hauptaktivität {main_act}'
                 groups_constants = tc['GROUPS_CONSTANTS']
                 gr_split = groups_constants.split(',')
@@ -150,7 +150,7 @@ class Personengruppe(VisumTable):
             else:
                 # otherwise just append the activity chain
                 # to the chains the persons makes
-                self.gd_codes[code].append((act_code, mobilitaetsrate))
+                self.gd_codes[code].append((act_code, mobilityrate))
 
     def create_df_from_group_list(self):
         df = self.df_from_array(self.groups)
@@ -180,7 +180,7 @@ class Personengruppe(VisumTable):
             str_name = f'Wege der {gr.CATEGORY}-Gruppe {gr.NAME}'
             code = f'{prefix}{gr.name}'
             pgrset = ','.join(sorted(detailed_groups.index))
-            matrices.add_daten_matrix(
+            matrices.add_data_matrix(
                 code=code,
                 name=str_name,
                 modeset=','.join(sorted(modes['code'])),
@@ -191,7 +191,7 @@ class Personengruppe(VisumTable):
             formel_vl = f'Matrix([CODE]="{code}") * Matrix([CODE]="KM")'
             vl_name = f'Verkehrsleistung der {gr.CATEGORY}-Gruppe {gr.NAME}'
 
-            matrices.add_formel_matrix(
+            matrices.add_formula_matrix(
                 code=vl_code,
                 formula=formel_vl,
                 name=vl_name,
@@ -206,7 +206,7 @@ class Personengruppe(VisumTable):
                 str_name = f'Wege mit Verkehrsmittel {mode_name} der {gr.CATEGORY}-Gruppe {gr.NAME}'
                 code = f'{prefix}{gr.name}_{mode.code}'
                 pgrset = ','.join(sorted(detailed_groups.index))
-                matrices.add_daten_matrix(
+                matrices.add_data_matrix(
                     code=code,
                     name=str_name,
                     modecode=mode.code,
@@ -217,7 +217,7 @@ class Personengruppe(VisumTable):
                 vl_code = f'VL_{code}'
                 formel_vl = f'Matrix([CODE]="{code}") * Matrix([CODE]="KM")'
                 vl_name = f'Verkehrsleistung mit Verkehrsmittel {mode_name} der {gr.CATEGORY}-Gruppe {gr.NAME}'
-                matrices.add_formel_matrix(
+                matrices.add_formula_matrix(
                     code=vl_code,
                     formula=formel_vl,
                     name=vl_name,
