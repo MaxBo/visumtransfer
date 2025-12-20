@@ -345,8 +345,8 @@ class Activity(VisumTable):
                 )
 
                 # Ziel-Wege je Bezirk
-                formula = f'[SG_{code}] / [NETWORK\SUM:BEZIRKE\SG_{code}] * '\
-                    f'[NETWORK\SUM:BEZIRKE\ZONE_ACTUAL_TRIPS_{code}]'
+                formula = fr'[SG_{code}] / [NETWORK\SUM:BEZIRKE\SG_{code}] * '\
+                    fr'[NETWORK\SUM:BEZIRKE\ZONE_ACTUAL_TRIPS_{code}]'
                 userdef.add_formula_attribute(
                     objid='BEZIRK',
                     attid=f'ZONE_TARGET_TRIPS_{code}',
@@ -372,8 +372,8 @@ class Activity(VisumTable):
                 # converged
                 threshold_min = 0.95
                 threshold_max = 1.05
-                formula = f'[MIN:BEZIRKE\ZONE_KF_{code}] < {threshold_min} | '\
-                    f'[MAX:BEZIRKE\ZONE_KF_{code}] > {threshold_max}'
+                formula = fr'[MIN:BEZIRKE\ZONE_KF_{code}] < {threshold_min} | '\
+                    fr'[MAX:BEZIRKE\ZONE_KF_{code}] > {threshold_max}'
                 attid = f'NOT_CONVERGED_{code}'
                 userdef.add_formula_attribute(
                     objid='NETWORK',

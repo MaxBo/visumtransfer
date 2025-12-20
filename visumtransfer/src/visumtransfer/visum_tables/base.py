@@ -32,7 +32,7 @@ class UserDefinedGroup(VisumTable):
 
 class UserDefinedAttribute(VisumTable):
     name = 'Userdefined Attributes'
-    code = 'USERDEFINEDATTRIBUTE'
+    code = 'USERATTDEF'
 
     _cols = ('OBJID;ATTID;CODE;NAME;VALUETYPE;MINVALUE;MAXVALUE;'
     'DEFAULTVALUE;DEFAULTSTRINGVALUE;COMMENT;MAXSTRINGLENGTH;NUMDECPLACES;'
@@ -109,7 +109,7 @@ class UserDefinedAttribute(VisumTable):
         attid = attid or code or name
         code = code or name
         row = self.Row(objid=objid,
-                       datasourcetype='DATEN',
+                       datasourcetype='DATA',
                        name=name,
                        attid=attid,
                        code=code,

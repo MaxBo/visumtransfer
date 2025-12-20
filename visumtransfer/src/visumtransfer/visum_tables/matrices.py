@@ -135,7 +135,7 @@ class Matrix(VisumTable):
         self.add(no=no,
                  code=code,
                  name=name,
-                 datasourcetype='DATEN',
+                 datasourcetype='DATA',
                  loadmatrix=loadmatrix,
                  matrixfolder=matrixfolder,
                  filename=filename,
@@ -831,8 +831,8 @@ class Matrix(VisumTable):
                               matrixtype='Demand',
                               loadmatrix=1,
                               matrixfolder='Pendler')
-        formula = 'Matrix([CODE]="Pendlermatrix_OBB") * [SUM:PGRUPPEN\ERWERBSTAETIGE] '\
-            '/ MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB"))'
+        formula = r'Matrix([CODE]="Pendlermatrix_OBB") * [SUM:PGRUPPEN\ERWERBSTAETIGE] '\
+            r'/ MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB"))'
         self.add_data_matrix(
             code='Pendlermatrix_OBB_Gesamt',
             name='Pendlermatrix_OBB incl Nicht-SVB-Beschäftigte',
