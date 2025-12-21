@@ -41,11 +41,11 @@ def create_userdefined_table(name: str,
         attrs = col_attrs.get(col, {})
         if 'formula' in attrs:
             datasourcetype = attrs.pop('datasourcetype', None)
-            userdef.add_formel_attribute(objid=tbl_code,
-                                        name=col,
-                                        valuetype=dtype,
-                                        **attrs,
-                                         )
+            userdef.add_formula_attribute(objid=tbl_code,
+                                          name=col,
+                                          valuetype=dtype,
+                                          **attrs,
+                                           )
         else:
             userdef.add_data_attribute(objid=tbl_code,
                                         name=col,
