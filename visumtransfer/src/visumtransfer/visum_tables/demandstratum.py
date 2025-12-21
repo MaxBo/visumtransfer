@@ -8,7 +8,7 @@ from visumtransfer.visum_table import VisumTable
 class DemandStratum(VisumTable):
     name = 'DemandStrata'
     code = 'DEMANDSTRATUM'
-    _cols = 'CODE;NAME;DEMANDMODELCODE;ACTIVITYCHAINCODE;PERSONGROUPCODES;DSEGSET;MOBILITYRATE;TARIFMATRIX;MAINACTCODE'
+    _cols = 'CODE;NAME;DEMANDMODELCODE;ACTIVITYCHAINCODE;PERSONGROUPCODES;DSEGSET;MOBILITAETSRATE;TARIFMATRIX;MAINACTCODE'
 
     def create_tables_gd(self,
                          personengruppe: PersonGroup,
@@ -44,7 +44,7 @@ class DemandStratum(VisumTable):
                                activitychaincode=ac_code,
                                mainactcode=main_act_code,
                                dsegset=dsegset,
-                               mobilityrate=mobilityrate,
+                               mobilitaetsrate=mobilityrate,
                                tarifmatrix=tarifmatrix,
                                )
                 rows.append(row)

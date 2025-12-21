@@ -105,7 +105,7 @@ class VisemDemandModel:
                                      valuetype='LongText',
                                      )
         userdef1.add_data_attribute('DemandStratum',
-                                     'Mobilityrate')
+                                     'Mobilitaetsrate')
         userdef1.add_data_attribute('DemandStratum',
                                      'Tours',
                                      comment='Touren der DemandStratum')
