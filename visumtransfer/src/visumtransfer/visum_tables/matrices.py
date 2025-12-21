@@ -66,11 +66,11 @@ class Matrix(VisumTable):
              'MODECODE;MODESET;PERSONGROUPSET;PERSONGROUPCODE;ACTIVITYCODE;'
              'ORIGACTIVITYSET;DESTACTIVITYSET;'
              'INITMATRIX;SAVEMATRIX;LOADMATRIX;MATRIXFOLDER;'
-             'CALIBRATIONCODE;NACHFRMODELLCODE;CATEGORY;OBB_MATRIX_REF')
+             'CALIBRATIONCODE;DMODELCODE;CATEGORY;OBB_MATRIX_REF')
 
     _defaults = {'NUMDECPLACES': 2,
-                 'MATRIXTYPE': 'Nachfrage',
-                 'OBJECTTYPEREF': 'Bezirk',
+                 'MATRIXTYPE': 'Demand',
+                 'OBJECTTYPEREF': 'Zone',
                  'INITMATRIX': 0,
                  'SAVEMATRIX': 0,
                  'LOADMATRIX': 0,
@@ -304,7 +304,7 @@ class Matrix(VisumTable):
                 fromtime='',
                 totime='',
                 timeref='Departuretime',
-                # moduscode='O',
+                # modecode='O',
             )
 
         dsegcode = 'O'
@@ -317,7 +317,7 @@ class Matrix(VisumTable):
             fromtime='',
             totime='',
             timeref='Departuretime',
-            #modecodee='O',
+            #modecode='O',
         )
         self.add_data_matrix(
             code='FFZ',
@@ -396,6 +396,8 @@ class Matrix(VisumTable):
                                     defaultvalue=3)
         userdef.add_data_attribute('Network', 'DistanceKorrFaktor_OV',
                                     defaultvalue=-1.5)
+        userdef.add_data_attribute('Network', 'COST_PER_KM_PKW',
+                                    defaultvalue=0.15)
 
         self.add_formula_matrix(
             code='DistanzKorrektur_OV',
@@ -479,31 +481,31 @@ class Matrix(VisumTable):
         self.add_data_matrix(code='TFUSS', name='tFuss',
                               matrixtype='Skim',
                               dsegcode='F',
-                            modecode='F',
+                              modecode='F',
                               savematrix=savematrix)
         self.add_data_matrix(code='TRAD', name='tRad',
                               matrixtype='Skim',
                               dsegcode='R',
-                            modecode='R',
+                              modecode='R',
                               savematrix=savematrix)
         self.add_data_matrix(code='TTC_boxcox',
                               name='tAkt Pkw BoxCox-Transformiert',
                               matrixtype='Skim',
                               dsegcode='P',
-                            modecode='P',
+                              modecode='P',
                               savematrix=savematrix)
 
         self.add_data_matrix(code='TOL',
                               name='Maut PG',
                               matrixtype='Skim',
                               dsegcode='PG',
-                            modecode='P',
+                              modecode='P',
                               savematrix=savematrix)
 
         userdef.add_formula_attribute(
-            objid='Bezirk',
+            objid='Zone',
             name='Binnendistanz_area',
-            formula='SQRT([FLAECHEKM2]) / 3',
+            formula='SQRT([AREAKM2]) / 3',
             comment='geschätzte Binnendistanz in km',
         )
 
@@ -519,13 +521,11 @@ class Matrix(VisumTable):
         self.add_formula_matrix(code='SFUSS', name='sFuss',
                                matrixtype='Skim',
                                dsegcode='F',
-                             modecode='F',
+                               modecode='F',
                                formula='Matrix([CODE] = "TFUSS") * 4.5 / 60')
 
         # Reiseweite
-        formula = ('Matrix([CODE] = "DIS" & [DSEGCODE] = "PG")')
-        #formula = ('Min (Matrix([CODE] = "DIS" & [DSEGCODE] = "PG") : '
-                  #'Matrix([CODE] = "DIS" & [DSEGCODE] = "R"))')
+        formula = ('Matrix([CODE] = "DIS" & [DSEGCODE] = "P")')
 
         self.add_formula_matrix(code='KM', name='Reiseweite',
                                matrixtype='Skim',
@@ -558,7 +558,7 @@ class Matrix(VisumTable):
                               loadmatrix=loadmatrix,
                               matrixtype='Demand',
                               dsegcode='P',
-                            modecode='P',
+                              modecode='P',
                               savematrix=savematrix,
                               obb_matrix_ref='[CODE]="Visem_OBB_P"',
                               matrixfolder='Analysefall',
@@ -572,39 +572,39 @@ class Matrix(VisumTable):
                               matrixfolder='Wiver',
                               matrixtype='Demand',
                               dsegcode='P_W',
-                            modecode='P_W')
+                              modecode='P_W')
         self.add_data_matrix(code='Lieferfahrzeuge', name='Lieferfahrzeuge',
                               loadmatrix=loadmatrix,
                               matrixfolder='Wiver',
                               matrixtype='Demand',
                               dsegcode='LKW_S',
-                            modecode='LKW_S')
+                              modecode='LKW_S')
         self.add_data_matrix(code='Lkw_bis_12to',
                               name='Lkw zw. 3,5 und 12 to',
                               matrixfolder='Wiver',
                               loadmatrix=loadmatrix,
                               matrixtype='Demand',
                               dsegcode='LKW_L',
-                            modecode='LKW_L')
+                              modecode='LKW_L')
         self.add_data_matrix(code='Lkw_über_12to', name='Lkw > 3,5 to',
                               loadmatrix=loadmatrix,
                               matrixfolder='Wiver',
                               matrixtype='Demand',
                               dsegcode='LKW_XL',
-                            modecode='LKW_XL')
+                              modecode='LKW_XL')
         self.add_data_matrix(code='FernverkehrPkw',
                               name='Pkw-Fernverkehr',
                               loadmatrix=loadmatrix,
                               matrixtype='Demand',
                               dsegcode='P_ex',
-                            modecode='P_ex',
+                              modecode='P_ex',
                               matrixfolder='Fernverkehr')
         self.add_data_matrix(code='FernverkehrLkw',
                               name='Lkw-Fernverkehr',
                               loadmatrix=loadmatrix,
                               matrixtype='Demand',
                               dsegcode='Lkw_ex',
-                            modecode='Lkw_ex',
+                              modecode='Lkw_ex',
                               matrixfolder='Fernverkehr')
 
         ## Summen Schwerverkehr und Kfz bis 3.5 to
@@ -631,7 +631,7 @@ class Matrix(VisumTable):
                                name='Kfz bis 3,5 to',
                                matrixtype='Demand',
                                dsegcode='PG',
-                             modecode='P')
+                               modecode='P')
 
     def add_ov_demand(self, savematrix=0, loadmatrix=1):
         """Add PrT Demand Matrices"""
@@ -639,7 +639,7 @@ class Matrix(VisumTable):
         self.add_data_matrix(code='Visem_O', name='ÖPNV',
                               matrixtype='Demand',
                               dsegcode='O',
-                            modecode='O',
+                              modecode='O',
                               savematrix=savematrix,
                               obb_matrix_ref='[CODE]="Visem_OBB_O"',
                               matrixfolder='Analysefall',
@@ -649,7 +649,7 @@ class Matrix(VisumTable):
                               loadmatrix=loadmatrix,
                               matrixtype='Demand',
                               dsegcode='O_ex',
-                            modecode='O',
+                              modecode='O',
                               matrixfolder='Fernverkehr')
 
     def add_other_demand_matrices(self,
@@ -686,7 +686,7 @@ class Matrix(VisumTable):
                                   name=matname,
                                   loadmatrix=loadmatrix,
                                   matrixtype='Demand',
-                                modecode=code,
+                                  modecode=code,
                                   dsegcode=code,
                                   savematrix=savematrix,
                                   obb_matrix_ref=f'[CODE]="Visem_OBB_{code}"',
@@ -703,7 +703,7 @@ class Matrix(VisumTable):
                                   name=name,
                                   loadmatrix=loadmatrix,
                                   matrixtype='Demand',
-                                  moduscode=code,
+                                  modecode=code,
                                   objecttyperef='Mainzone')
 
         # ÖV-Fahrten Schüler für Standi
@@ -760,14 +760,14 @@ class Matrix(VisumTable):
                                    name=matname,
                                    formula=formula,
                                    matrixtype='Demand',
-                                modecodeode=code,
+                                   modecode=code,
                                    obb_matrix_ref=f'[CODE]="{matcode_obb}"',
                                    )
             self.add_data_matrix(code=matcode_obb,
                                   name=name,
                                   loadmatrix=0,
                                   matrixtype='Demand',
-                               modecodeode=code,
+                                  modecode=code,
                                   objecttyperef='Mainzone')
 
         # Verkehrsleistung Standi
@@ -784,14 +784,14 @@ class Matrix(VisumTable):
                                    name=matcode,
                                    formula=formula,
                                    matrixtype='Demand',
-                                modecodeode=mode_code,
+                                   modecode=mode_code,
                                    obb_matrix_ref=f'[CODE]="{matcode_obb}"',
                                    )
             self.add_data_matrix(code=matcode_obb,
                                   name=name,
                                   loadmatrix=0,
                                   matrixtype='Demand',
-                                  moduscode=mode_code,
+                                  modecode=mode_code,
                                   objecttyperef='Mainzone')
 
     def add_ov_haupt_ap_demand_matrices(self,
@@ -805,7 +805,7 @@ class Matrix(VisumTable):
             self.add_data_matrix(code=matcode,
                                   loadmatrix=loadmatrix,
                                   matrixtype='Demand',
-                              modecodecode='O',
+                                  modecode='O',
                                   savematrix=savematrix,
                                   )
 
@@ -883,7 +883,7 @@ class Matrix(VisumTable):
                     loadmatrix=0,
                     savematrix=0,
                     initmatrix=1,
-                    nachfrmodellcode=nmc,
+                    dmodelcode=nmc,
                     persongroupcode=pgr,
                     activitycode=activity,
                 )

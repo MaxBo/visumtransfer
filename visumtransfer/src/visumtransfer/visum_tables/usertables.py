@@ -19,11 +19,11 @@ def create_userdefined_table(name: str,
                              tabledef: TableDefinition = None,
                              userdef: UserDefinedAttribute = None) -> VisumTable:
     """create a userdefined table"""
-    colnames = ['TABELLENDEFINITIONNAME', 'NO'] + [col for col in cols_types.keys()
+    colnames = ['TABLEDEFINITIONNAME', 'NO'] + [col for col in cols_types.keys()
                                                if not 'formula' in col_attrs.get(col, {})]
     tbl_name = f'Tabelleneinträge: {name}'
     tbl_code = f'TABLEENTRIES_{name}'
-    defaults['TABELLENDEFINITIONNAME'] = name
+    defaults['TABLEDEFINITIONNAME'] = name
     defaults['NO'] = None
 
     cls = MetaClass(tbl_code, (VisumTable, ), {'name': tbl_name,
@@ -36,7 +36,7 @@ def create_userdefined_table(name: str,
     tabledef = TableDefinition(mode='+') if tabledef is None else tabledef
     tabledef.add(name=name, group=group, comment=comment)
 
-    userdef = BenutzerdefiniertesAttribut(mode='+') if userdef is None else userdef
+    userdef = UserDefinedAttribute(mode='+') if userdef is None else userdef
     for col, dtype in cols_types.items():
         attrs = col_attrs.get(col, {})
         if 'formula' in attrs:
@@ -47,7 +47,7 @@ def create_userdefined_table(name: str,
                                         **attrs,
                                          )
         else:
-            userdef.add_daten_attribute(objid=tbl_code,
+            userdef.add_data_attribute(objid=tbl_code,
                                         name=col,
                                         valuetype=dtype,
                                         **attrs,

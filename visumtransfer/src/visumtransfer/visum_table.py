@@ -240,7 +240,7 @@ class VisumTable(metaclass=MetaClass):
     def tablename(self) -> str:
         """get the english tablename"""
         visum_attributes = VisumTables().visum_attributes
-        tables = visum_attributes.tables.reset_index().set_index('Long(ENG)')
+        tables = visum_attributes.tables.reset_index().set_index('Plural(ENG)')
         try:
             row = tables.loc[self.name]
         except KeyError:
@@ -252,10 +252,20 @@ class VisumTable(metaclass=MetaClass):
         visum_attributes = VisumTables().visum_attributes
         attrs = visum_attributes.attributes
         try:
-            row = attrs.loc[self.tablename, colname]
+            row = attrs.loc[self.tablename, colname.upper()]
         except KeyError:
             return False
         return row.ValueType == 'bool'
+
+    def column_exists(self, colname: str) -> bool:
+        """"""
+        visum_attributes = VisumTables().visum_attributes
+        attrs = visum_attributes.attributes
+        try:
+            row = attrs.loc[self.tablename, colname.upper()]
+        except KeyError:
+            return False
+        return True
 
     def write_block_header(self, fobj: WriteLine):
         """Write header for block to `fobj`"""

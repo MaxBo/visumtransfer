@@ -43,7 +43,7 @@ class VisemDemandModel:
 
     def create_transfer(self, params: Params, modification_number: int):
 
-        nsegcodes = ['O'] # , 'AboA', 'AboJ', 'AboS']
+        dsegcodes = ['O'] # , 'AboA', 'AboJ', 'AboS']
 
         vt = VisumTransfer.new_transfer()
 
@@ -79,8 +79,11 @@ class VisemDemandModel:
 
         self.add_strukturgroessen(params.activities, model_code, vt)
 
+        dsegs = self.add_nsegs_pkw_sv()
+        vt.tables['DemandSegment'] = dsegs
+
         # Kenngrößenmatrizen
-        self.add_skim_matrices(matrices, params, userdef1, nsegcodes)
+        self.add_skim_matrices(matrices, params, userdef1, dsegcodes)
 
         acts = self.add_activities(userdefgroups, userdef1, userdef2, matrices,
                                    params, model_code, vt)
@@ -168,20 +171,20 @@ class VisemDemandModel:
                                       )
 
         ns.create_tables_gd(personengruppe=pg,
-                            aktivitaet=acts,
-                            aktivitaetenkette=ak,
+                            activity=acts,
+                            activitychain=ak,
                             model=model_code,
                             category='ZielVMWahl')
         ns.create_tables_gd(personengruppe=pg,
-                            aktivitaet=acts,
-                            aktivitaetenkette=ak,
+                            activity=acts,
+                            activitychain=ak,
                             model=model_code,
                             category='ZielVMWahl_RSA')
         vt.tables['DemandStratum'] = ns
 
         # Nachfragematrizen
-        matrices.add_iv_demand(loadmatrix=1)
-        matrices.add_ov_demand(loadmatrix=1)
+        #matrices.add_iv_demand(loadmatrix=1)
+        #matrices.add_ov_demand(loadmatrix=1)
         matrices.add_other_demand_matrices(params, loadmatrix=0)
         matrices.add_commuter_matrices()
 
@@ -209,7 +212,7 @@ class VisemDemandModel:
                           matrices: Matrix,
                           params: Params,
                           userdef1: UserDefinedAttribute,
-                          nsegcodes: DemandSegment):
+                          dsegcodes: DemandSegment):
         """add skim matrices"""
         matrices.set_category('General')
         matrices.add_data_matrix('Diagonal',
@@ -220,7 +223,7 @@ class VisemDemandModel:
                                   category='General',
                                   matrixtype='Skim',
                                   loadmatrix=0)
-        matrices.add_ov_kg_matrices(params, userdef1, nsegcodes=nsegcodes)
+        matrices.add_ov_kg_matrices(params, userdef1, dsegcodes=dsegcodes)
         matrices.add_iv_kg_matrices(userdef1)
 
     def add_logsum_matrices(self,
@@ -256,28 +259,28 @@ class VisemDemandModel:
                 ls_matname,
                 category='Accessibility',
                 matrixtype='Skim',
-                nachfrmodellcode=model,
+                dmodelcode=model,
                 persongroupcode=row.persongroupcode,
                 activitycode=row.activitycode)
             no = matrices.add_formula_matrix(
                 row.matname_accessibility,
                 category='Accessibility',
                 matrixtype='Skim',
-                nachfrmodellcode=model,
+                dmodelcode=model,
                 persongroupcode=row.persongroupcode,
                 activitycode=row.activitycode,
                 formula=f'EXP(Matrix([CODE] = "{ls_matname}")) * TO[{row.potential}]',
             )
-            userdefined.add_formula_attribute('BEZIRK',
+            userdefined.add_formula_attribute('ZONE',
                                              row.zone_attribute,
                                              formula=f'LN([MATROWSUM({no})])',
                                              userdefinedgroupname=gr_acc)
-        userdefined.add_formula_attribute('BEZIRK',
+        userdefined.add_formula_attribute('ZONE',
                                          'Anteil_Studis',
                                          formula='[NUMPERSONS(ST)]/([NUMPERSONS(ASUMME)])',
                                          userdefinedgroupname=gr_popstruct,
                                          )
-        userdefined.add_formula_attribute('BEZIRK',
+        userdefined.add_formula_attribute('ZONE',
                                          'Anteil_Erwerbstaetige',
                                          formula='([NUMPERSONS(VZ)]+[NUMPERSONS(TZ)])/([NUMPERSONS(ASUMME)])',
                                          userdefinedgroupname=gr_popstruct,
@@ -430,7 +433,7 @@ class VisemDemandModel:
                                      valuetype='Bool')
         userdef1.add_data_attribute('Activity', 'Composite_Activities',
                                      valuetype='Text')
-        userdef1.add_data_attribute('Activity', 'Aktivitaetset',
+        userdef1.add_data_attribute('Activity', 'Activityset',
                                      valuetype='Text')
         userdef1.add_data_attribute('Activity',
                                      code='CalcDestMode',
@@ -454,13 +457,13 @@ class VisemDemandModel:
                                      'während Kalibrierung')
         # spezifische Attribute für die Verkehrsmittelwahl
         userdef1.add_data_attribute(
-            objid='AKTIVITAET',
+            objid='ACTIVITY',
             name='ZIELWAHL_FUNKTION_MATRIXCODES',
             valuetype='LongText',
             comment='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
         )
         userdef1.add_data_attribute(
-            objid='AKTIVITAET',
+            objid='ACTIVITY',
             name='TARIFMATRIX',
             valuetype='LongText',
             comment='Name einer speziellen Tarifmatrix, '
@@ -484,7 +487,7 @@ class VisemDemandModel:
                              model_code: str,
                              vt: VisumTransfer):
         """Add Table Strukturgrößen"""
-        sg = Strukturgr()
+        sg = StructuralProp()
         sg.create_tables(activities, model=model_code, suffix='')
         vt.tables['Strukturgr'] = sg
 
@@ -494,7 +497,7 @@ class VisemDemandModel:
                          mode_set: str,
                          v: VisumTransfer):
         """add the demand model with code and name and mode_set"""
-        model = Nachfragemodell()
+        model = Demandmodel()
         model.add(code=model_code,
                   name=model_name,
                   type='VISEM',
@@ -669,7 +672,7 @@ class VisemDemandModel:
         m = mode.code
         userdef1.add_data_attribute(
             'PERSONGROUP', f'BASECONST_{m}', valuetype='Double',
-          comment=f'Konstante für Verkehrsmittel {mode.name}',
+            comment=f'Konstante für Verkehrsmittel {mode.name}',
             userdefinedgroupname=gr_coeff,
         )
         userdef1.add_data_attribute(
@@ -679,14 +682,14 @@ class VisemDemandModel:
         )
         userdef1.add_data_attribute(
             'PERSONGROUP', f'TARGET_MS_{m}', valuetype='Double',
-        commentntar=f'Ziel-ModalSplit für Verkehrsmittel {mode.name}',
+            comment=f'Ziel-ModalSplit für Verkehrsmittel {mode.name}',
             userdefinedgroupname=gr_ms,
         )
         userdef1.add_data_attribute(
             objid='PERSONGROUP',
             name=f'KF_CONST_{m}',
             defaultvalue=0,
-        commentntar=f'Korrektur der Konstante bei Kalibrierung für {mode.name}',
+            comment=f'Korrektur der Konstante bei Kalibrierung für {mode.name}',
             userdefinedgroupname=gr_coeff,
         )
 
@@ -780,7 +783,7 @@ class VisemDemandModel:
                                      userdefinedgroupname='Bevölkerungsstruktur')
         formula = f'[Pkw_Personengruppen] / [NUMPERSONS({pgr_summe})] * 1000'
         userdef1.add_formula_attribute('Zone', 'Motorisierung', formula=formula,
-                                      benutzerdefiniertergruppenname='Bevölkerungsstruktur')
+                                      userdefinedgroupname='Bevölkerungsstruktur')
 
         comment = 'Pkw nach Pkw-Verfügbarkeit'
 
@@ -803,15 +806,15 @@ class VisemDemandModel:
         userdef1.add_data_attribute('Mainzone', 'BF_OBB_ERWERBST', defaultvalue=0.0)
         userdef1.add_data_attribute('Mainzone', 'BF_OBB_PKW', defaultvalue=0.0)
         userdef1.add_formula_attribute('Mainzone', 'EINWOHNER',
-                                      formula=r'[SUM:BEZIRKE\SG_EINWOHNER]')
+                                      formula=r'[SUM:ZONES\ZP_EINWOHNER]')
         userdef1.add_formula_attribute('Mainzone', 'SGB2_EMPFAENGER',
                                       formula='[ARBEITSLOSE]*2.5')
         userdef1.add_formula_attribute('Mainzone', 'MODELLIERUNGSRAUM',
-                                      formula=r'[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+                                      formula=r'[SUM:ZONES\MODELLIERUNGSRAUM]>0')
         userdef1.add_formula_attribute('Mainzone', 'CALIBRATION_ERWERBSTAETIGKEIT',
-                                      formula=r'[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+                                      formula=r'[SUM:ZONES\MODELLIERUNGSRAUM]>0')
         userdef1.add_formula_attribute('Mainzone', 'CALIBRATION_PKWVERFUEGBARKEIT',
-                                      formula=r'[SUM:BEZIRKE\MODELLIERUNGSRAUM]>0')
+                                      formula=r'[SUM:ZONES\MODELLIERUNGSRAUM]>0')
 
         return tbl_model, tbl_ca
 
@@ -830,6 +833,14 @@ class VisemDemandModel:
         matrices.add_ov_demand()
         v.tables['Matrizen'] = matrices
         v.write(fn=v.get_modification(modification_number, self.modifications))
+
+    def add_nsegs_pkw_sv(self) -> DemandSegment:
+        """add nsegs"""
+        # DemandSegmente
+        nseg = DemandSegment()
+        nseg.add(code='SV', name='Schwerverkehr',mode='L')
+        nseg.add(code='PG', name='Kfz bis 3,5 to',mode='P')
+        return nseg
 
     def add_nsegs_userdefined(self, modification_no: int, dsegcodes_put: List[str]):
         vt = VisumTransfer.new_transfer()
@@ -850,9 +861,9 @@ class VisemDemandModel:
                                      defaultvalue=0.15)
         userdef0.add_data_attribute('Network', 'MINUS_ONE', defaultvalue=-1)
 
-        # VSys-Attribute
-        userdef0.add_data_attribute('VSys', 'VSYS_TRAVELTIME_BONUS', defaultvalue=1.0)
-        userdef0.add_data_attribute('VSys', 'VSYS_MALUS', defaultvalue=6.0)
+        # TSys-Attribute
+        userdef0.add_data_attribute('TSys', 'VSYS_TRAVELTIME_BONUS', defaultvalue=1.0)
+        userdef0.add_data_attribute('TSys', 'VSYS_MALUS', defaultvalue=6.0)
 
         # Mode-Attribute
         userdef0.add_data_attribute('Mode', 'BASEMODE', valuetype='Bool', defaultvalue=0)
@@ -870,11 +881,11 @@ class VisemDemandModel:
         nseg.add(code='B_P', name='Pkw-Wirtschaftsverkehr', mode='P')
         nseg.add(code='B_Li', name='Lieferfahrzeug', mode='P')
         nseg.add(code='B_L1', name='Lkw bis 12 to', mode=mode_lkw)
-        nseg.add(code='B_L2', name='Lkw 12-40 to', modus=mode_lkw)
-        nseg.add(code='LkwFern', name='Lkw Fernverkehr',modes=mode_lkw)
-        nseg.add(code='PkwFern', name='Pkw Fernverkehr',modes='P')
+        nseg.add(code='B_L2', name='Lkw 12-40 to', mode=mode_lkw)
+        nseg.add(code='LkwFern', name='Lkw Fernverkehr',mode=mode_lkw)
+        nseg.add(code='PkwFern', name='Pkw Fernverkehr',mode='P')
         nseg.add(code='SV', name='Schwerverkehr',modes=mode_lkw)
-        nseg.add(code='PG', name='Kfz bis 3,5 to',modes='P')
+        nseg.add(code='PG', name='Kfz bis 3,5 to',mode='P')
 
         for dsegcode in dsegcodes_put:
             nseg.add(code=dsegcode,modes='O')
@@ -963,7 +974,7 @@ if __name__ == '__main__':
                           )
 
     params = dm.get_params(param_excel_fp)
-    #dm.add_nsegs_userdefined(modification_no=5, nsegcodes_put=['O'])
+    #dm.add_nsegs_userdefined(modification_no=5, dsegcodes_put=['O'])
     dm.create_transfer(params, modification_number=options.mod_number)
     #dm.create_transfer_constants(params, modification_no=7)
     #dm.create_transfer_target_values(params, modification_no=8)

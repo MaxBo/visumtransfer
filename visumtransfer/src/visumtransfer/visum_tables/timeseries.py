@@ -82,7 +82,7 @@ class TimeSeries(VisumTable):
             # Personengruppen
             for pg_code, pg in persongroups.df.iterrows():
                 row_visem_ganglinie = visem_timeseries.Row(
-              persongroupcodeencode=pg_code, timeseriesno=no)
+                    persongroupcode=pg_code, timeseriesno=no)
                 if not pg['DEMANDMODELCODE'] == 'VisemGeneration':
                     row_visem_ganglinie.activitypaircode = ap_code
                 rows_visem_nachfrageganglinien.append(row_visem_ganglinie)
