@@ -37,6 +37,8 @@ from .netz import (
 )
 
 from .basis import (
+    Netz,
+    BenutzerdefinierteGruppe,
     BenutzerdefiniertesAttribut,
     Verkehrssystem,
     Bezirke,
@@ -47,17 +49,27 @@ from .matrizen import (
     Matrix
 )
 
-from .demand import (
+from .persongroups import (
+    Personengruppe
+)
+
+from .activities import (
     Aktivitaet,
     Aktivitaetenkette,
     Aktivitaetenpaar,
+)
+
+from .nachfrageschicht import (
+    Nachfrageschicht,
+)
+
+from .demand import (
     Nachfragebeschreibung,
     Nachfragemodell,
-    Nachfrageschicht,
-    Personengruppe,
     PersonengruppeJeBezirk,
     Strukturgr,
     Strukturgroessenwert,
+    Modus,
 )
 
 from .ganglinien import (
@@ -66,4 +78,9 @@ from .ganglinien import (
     Nachfrageganglinie,
     Nachfragesegment,
     VisemGanglinie,
+)
+
+from .usertables import (
+    Tabellendefinition,
+    create_userdefined_table,
 )

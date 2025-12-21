@@ -2,9 +2,9 @@
 
 import xarray as xr
 import pandas as pd
-from .demand import Nachfragebeschreibung, Personengruppe
-from visumtransfer.params import Params
-from visumtransfer.visum_table import (VisumTable)
+from .demand import Nachfragebeschreibung
+from .persongroups import Personengruppe
+from visumtransfer.visum_table import VisumTable
 
 
 
@@ -35,7 +35,9 @@ class Ganglinie(VisumTable):
     _defaults = {'WERTETYP': 'Anteile'}
 
     def create_tables(self,
-                      params: Params,
+                      activitypairs: pd.DataFrame,
+                      time_series: pd.DataFrame,
+                      ap_timeseries: pd.DataFrame,
                       ganglinienelement: Ganglinienelement,
                       nachfrageganglinie: Nachfrageganglinie,
                       visem_ganglinie: VisemGanglinie,
@@ -47,15 +49,12 @@ class Ganglinie(VisumTable):
         rows_ganglinienelement = []
         rows_nachfrageganglinien = []
         rows_visem_nachfrageganglinien = []
-        aps = params.activitypairs
-        time_series = params.time_series
-        ap_timeseries_recarray = params.activitypair_time_series
-        ap_timeseries = pd.DataFrame.from_records(ap_timeseries_recarray,
-                                                  index=['index', 'activitypair'])
+        ap_timeseries = ap_timeseries\
+            .reset_index()\
+            .set_index(['index', 'activitypair'])
 
-        for a, ap in enumerate(aps):
+        for a, ap in activitypairs.iterrows():
             ap_code = ap['code']
-            ap_tuple = ap_code.split('_')
             idx = ap['idx']
             nr = idx + start_idx
             row = self.Row(nr=nr, name=ap_code)
@@ -68,10 +67,10 @@ class Ganglinie(VisumTable):
 
             # Ganglinie
             ap_timeserie = ap_timeseries.iloc[idx]
-            for ts in time_series:
+            for t, ts in time_series.iterrows():
                 from_hour = ts['from_hour']
                 to_hour = ts['to_hour']
-                anteil = ap_timeserie[from_hour:to_hour].sum()
+                anteil = ap_timeserie.iloc[from_hour:to_hour].sum()
                 if anteil:
                     row_ganglinienelement = ganglinienelement.Row(
                         gangliniennr=nr,
@@ -81,9 +80,9 @@ class Ganglinie(VisumTable):
                     rows_ganglinienelement.append(row_ganglinienelement)
 
             # Personengruppen
-            for pg in personengruppe.table:
+            for pg_code, pg in personengruppe.df.iterrows():
                 row_visem_ganglinie = visem_ganglinie.Row(
-                    pgruppencode=pg['CODE'], gangliniennr=nr)
+                    pgruppencode=pg_code, gangliniennr=nr)
                 if not pg['NACHFRAGEMODELLCODE'] == 'VisemGeneration':
                     row_visem_ganglinie.aktpaarcode = ap_code
                 rows_visem_nachfrageganglinien.append(row_visem_ganglinie)
@@ -120,14 +119,14 @@ class Nachfragesegment(VisumTable):
 
         for hap in ds_ganglinie.hap:
             hap_name = hap.lab_hap.values
-            mat_code = 'Visem_OV_{}'.format(hap_name)
+            mat_code = f'Visem_OV_{hap_name}'
 
-            nsg_code = 'OV_{}'.format(hap_name)
-            nseg_name = 'OV {}'.format(hap_name)
+            nsg_code = f'OV_{hap_name}'
+            nseg_name = f'OV {hap_name}'
 
             hap_id = hap.hap.values
             nachfr_gl_nr = gl_nr = hap_id + start_idx
-            gl_name = 'OV_{}'.format(hap_name)
+            gl_name = f'OV_{hap_name}'
             rows_ganglinie.append(ganglinie.Row(nr=gl_nr, name=gl_name))
 
             row_nachfrageganglinie = nachfrageganglinie.Row(
@@ -149,7 +148,7 @@ class Nachfragesegment(VisumTable):
                         gewicht=stunde)
                     rows_ganglinienelement.append(row_ganglinienelement)
 
-            matrix_descr = 'MATRIX([CODE]="{}")'.format(mat_code)
+            matrix_descr = f'MATRIX([CODE]="{mat_code}")'
             rows_nseg.append(self.Row(code=nsg_code,
                                       name=nseg_name,
                                       modus=modus))

@@ -1,61 +1,61 @@
 import json
-import tables
 import pandas as pd
 import openpyxl
-from numpy import recarray
 from typing import List
 
 
 class Params:
-    modes: tables.Table
-    gg: recarray
-    gd: recarray
-    g_cali: recarray
-    g_pkw: recarray
-    activities: recarray
-    activity_parking: recarray
-    activitypairs: recarray
-    activitypair_time_series: recarray
-    time_series: recarray
-    trip_chain_rates: recarray
-    validation_activities: recarray
-    validation_activities_hauptweg: recarray
-    validation_modes: recarray
-
-    activities_rsa: recarray
-    activitypairs_rsa: recarray
-    gd_rsa: recarray
-    trip_chain_rates_rsa: recarray
+    modes: pd.DataFrame
+    group_definitions: pd.DataFrame
+    groups_generation: pd.DataFrame
+    activities: pd.DataFrame
+    activity_parking: pd.DataFrame
+    activitypairs: pd.DataFrame
+    activitypair_time_series: pd.DataFrame
+    time_series: pd.DataFrame
+    trip_chain_rates: pd.DataFrame
+    validation_activities: pd.DataFrame
+    validation_activities_hauptweg: pd.DataFrame
+    trip_chain_rates_rsa: pd.DataFrame
+    accessibilities: pd.DataFrame
     """"""
     attr2tablename = dict(
-        gg='groups.groups_generation',
-        gd='groups.groups_dest_mode',
-        g_cali='groups.groups_calibration',
-        g_pkw='groups.groups_pkwverf',
-        activities='activities.activities',
-        activity_parking='activities.activity_parking',
-        activitypairs='activities.activitypairs',
-        activitypair_time_series='activities.activitypair_time_series',
-        time_series='activities.time_series',
-        trip_chain_rates='activities.trip_chain_rates',
-        validation_activities='activities.validation_activities',
-        validation_activities_hauptweg='activities.hauptweg',
-        validation_modes='groups.validation_mode',
-        modes='modes.modes',
-        activities_rsa='activities.rsa',
-        activitypairs_rsa='activities.activitypairs_rsa',
-        gd_rsa='groups.groups_dest_mode_rsa',
-        trip_chain_rates_rsa='acts.trip_chain_rates_rsa',
+        group_definitions='group_definitions',
+        groups_generation='groups_generation',
+        activities='activities',
+        activity_parking='activity_parking',
+        activitypairs='activitypairs',
+        activitypair_time_series='activitypair_time_series',
+        time_series='time_series',
+        trip_chain_rates='trip_chain_rates',
+        validation_activities='validation_activities',
+        validation_activities_hauptweg='validation_hauptweg',
+        modes='modes',
+        trip_chain_rates_rsa='trip_chain_rates_rsa',
+        accessibilities='accessibilities',
     )
 
-    def __init__(self, h5: tables.File):
-        for k, v in self.attr2tablename.items():
-            node_name = '/{}'.format(v.replace('.', '/'))
-            node = h5.get_node(node_name)
-            setattr(self, k, node[:])
+    def __init__(self, excel_fp: str):
+        """ Read tables from """
+        self.dataframes = {}
+        with pd.ExcelFile(excel_fp) as excel:
+
+            for k, v in self.attr2tablename.items():
+                #  excel-sheetnames may be only 30 letters long
+                sheet_name = v[:30]
+                df = pd.read_excel(excel, sheet_name,
+                                   keep_default_na=False)
+                for colname in df.columns:
+                    try:
+                        converted = pd.to_numeric(df[colname])
+                        df[colname] = converted
+                    except ValueError:
+                        pass
+                self.dataframes[k] = df
+                setattr(self, k, df)
 
     @property
-    def mode_set(self):
+    def mode_set(self) -> str:
         modes = self.modes['code']
         return ','.join(modes)
 
@@ -68,8 +68,7 @@ class Params:
                 pass
             for k, v in self.attr2tablename.items():
                 if keys is None or k in keys:
-                    recarray = getattr(self, k)
-                    df = pd.DataFrame(recarray)
+                    df = getattr(self, k)
                     for col_name in df.columns:
                         col = df[col_name]
                         if col.dtype.char == 'O' and isinstance(col[0], bytes):
@@ -83,36 +82,8 @@ class Params:
                         pass
                     df.to_excel(excel, sheet_name=sheet_name)
 
-    @classmethod
-    def from_excel(cls, excel_fp: str) -> 'Params':
-        """read params-file from excel"""
-        self = cls.__new__(cls)
-        self.dataframes = {}
-        with pd.ExcelFile(excel_fp) as excel:
-
-            for k, v in cls.attr2tablename.items():
-                sheet_name = v.replace('.', '_')[:30]
-                df = pd.read_excel(excel, sheet_name,
-                                   keep_default_na=False)
-                for colname in df.columns:
-                    try:
-                        converted = pd.to_numeric(df[colname])
-                        df.loc[:, colname] = converted
-                    except ValueError:
-                        pass
-
-                self.dataframes[k] = df
-                recarray = df.to_records()
-                setattr(self, k, recarray)
-        return self
-
-    def __repr__(self):
+    def __repr__(self) -> str:
         tbls = json.dumps(self.attr2tablename, indent=2)
         #return tbls
         return f'Params-object with the following tables: {tbls}'
 
-
-def read_params(param_file):
-    with tables.open_file(param_file, 'a') as h5:
-        params = Params(h5)
-    return params
