@@ -812,9 +812,9 @@ class VisemDemandModel:
         userdef1.add_formula_attribute('Mainzone', 'MODELLIERUNGSRAUM',
                                       formula=r'[SUM:ZONES\MODELLIERUNGSRAUM]>0')
         userdef1.add_formula_attribute('Mainzone', 'CALIBRATION_ERWERBSTAETIGKEIT',
-                                      formula=r'[SUM:ZONES\MODELLIERUNGSRAUM]>0')
+                                      formula=r'TableLookup(ZONE Z: Z[OBB_OCCUPATION]=[NO]: Z[MODELLIERUNGSRAUM])')
         userdef1.add_formula_attribute('Mainzone', 'CALIBRATION_PKWVERFUEGBARKEIT',
-                                      formula=r'[SUM:ZONES\MODELLIERUNGSRAUM]>0')
+                                      formula=r'TableLookup(ZONE Z: Z[OBB_CARS]=[NO]: Z[MODELLIERUNGSRAUM])')
 
         return tbl_model, tbl_ca
 
