@@ -79,8 +79,8 @@ class VisemDemandModel:
 
         self.add_strukturgroessen(params.activities, model_code, vt)
 
-        dsegs = self.add_nsegs_pkw_sv()
-        vt.tables['DemandSegment'] = dsegs
+        #dsegs = self.add_nsegs_pkw_sv()
+        #vt.tables['DemandSegment'] = dsegs
 
         # Kenngrößenmatrizen
         self.add_skim_matrices(matrices, params, userdef1, dsegcodes)
@@ -183,8 +183,8 @@ class VisemDemandModel:
         vt.tables['DemandStratum'] = ns
 
         # Nachfragematrizen
-        #matrices.add_iv_demand(loadmatrix=1)
-        #matrices.add_ov_demand(loadmatrix=1)
+        matrices.add_iv_demand(loadmatrix=0)
+        matrices.add_ov_demand(loadmatrix=0)
         matrices.add_other_demand_matrices(params, loadmatrix=0)
         matrices.add_commuter_matrices()
 
