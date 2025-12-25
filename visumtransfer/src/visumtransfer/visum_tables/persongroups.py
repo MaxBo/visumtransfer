@@ -115,29 +115,20 @@ class PersonGroup(VisumTable):
                              if gr in pgr_in_output_categories]
             grcodes_output = ','.join(sorted(groups_output))
 
-            # get the tarifmatrix of the main-activity
-            tarifmatrix_main_act = activities.df.loc[main_act, 'TARIFMATRIX']
-
-            # if a special Tarifmatrix exists for a PersonGroups
-            # (like Senionrenticket), use this instead
+            # get the first Tarifmatrix for the PersonGroups
+            # (like Senionrenticket)
             for group in gr_split:
                 tarifmatrix_pgr = self.df.loc[group, 'TARIFMATRIX']
                 if tarifmatrix_pgr:
                     break
-            tarifmatrix = tarifmatrix_pgr or tarifmatrix_main_act
+
+            # use special activity-tarifmatrix, else the persongroup-matrix
+            tarifmatrix = tarifmatrix_pgr or ''
 
             dstratcode = ':'.join((gd_code, ac_code))
             # get the main activity of the person group
             sequence = activitychains.df.loc[ac_code, 'ACTIVITYCODES']
             main_act_code = activities.get_main_activity(act_hierarchy, sequence)
-            # take the tarifmatrix defined for the main activity
-            tarifmatrix = activities.df.loc[main_act_code, 'TARIFMATRIX']
-            for group_code in tc['GROUPS_CONSTANTS'].split(','):
-                # if there is a special tarifmatrix defined for a persongroup,
-                # take this one instead of the activity-Tarifmatrix
-                tarifmatrix = self.df.loc[group_code,
-                                                    'TARIFMATRIX'] or tarifmatrix
-
 
             row = dstrats.Row(code=dstratcode,
                            name=dstrat_name,
