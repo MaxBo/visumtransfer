@@ -326,6 +326,8 @@ class VisumTable(metaclass=MetaClass):
 
     def add_df(self, df: pd.DataFrame):
         """Add a pandas Dataframe"""
+        if df.empty:
+            return
         df.columns = df.columns.str.upper()
         df = df\
             .reset_index()\
