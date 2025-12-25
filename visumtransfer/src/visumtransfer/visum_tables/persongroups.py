@@ -107,7 +107,7 @@ class PersonGroup(VisumTable):
 
             #  create it and add demand stratum
             
-            name = f'{tc_name} mit Hauptaktivität {main_act}'
+            dstrat_name = f'{tc_name} mit Hauptaktivität {main_act}'
             groups_constants = tc['GROUPS_CONSTANTS']
             gr_split = groups_constants.split(',')
             groups_output = [gr
@@ -140,7 +140,7 @@ class PersonGroup(VisumTable):
 
 
             row = dstrats.Row(code=dstratcode,
-                           name=name,
+                           name=dstrat_name,
                            demandmodelcode=model_code,
                            persongroupcodes=gd_code,
                            activitychaincode=ac_code,

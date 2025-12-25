@@ -153,12 +153,14 @@ class VisemDemandModel:
             userdef1.add_data_attribute('DemandStratum',
                                          f'Factor_Cost_{m}',
                                          valuetype='Double',
+                                         defaultvalue=1.0,
                                          comment=f'Kostenfaktor {m}',
                                          userdefinedgroupname=gr_coeff,
                                          )
             userdef1.add_data_attribute('DemandStratum',
                                          f'Factor_Time_{m}',
                                          valuetype='Double',
+                                         defaultvalue=1.0,
                                          comment=f'Zeitfaktor {m}',
                                          userdefinedgroupname=gr_coeff,
                                          )
@@ -670,17 +672,24 @@ class VisemDemandModel:
 
         m = mode.code
         userdef1.add_data_attribute(
-            'PERSONGROUP', f'BASECONST_{m}', valuetype='Double',
+            'PERSONGROUP',
+            f'BASECONST_{m}',
+            valuetype='Double',
             comment=f'Konstante für Verkehrsmittel {mode.name}',
             userdefinedgroupname=gr_coeff,
         )
         userdef1.add_data_attribute(
-            'DemandStratum', f'CONST_{m}', valuetype='Double',
+            'DemandStratum',
+            f'CONST_{m}',
+            valuetype='Double',
+            defaultvalue=0, 
             comment=f'Konstante für Verkehrsmittel {mode.name}',
             userdefinedgroupname=gr_coeff,
         )
         userdef1.add_data_attribute(
-            'PERSONGROUP', f'TARGET_MS_{m}', valuetype='Double',
+            'PERSONGROUP',
+            f'TARGET_MS_{m}',
+            valuetype='Double',
             comment=f'Ziel-ModalSplit für Verkehrsmittel {mode.name}',
             userdefinedgroupname=gr_ms,
         )
