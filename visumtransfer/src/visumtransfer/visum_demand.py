@@ -153,14 +153,6 @@ class VisemDemandModel:
                                          comment=f'Kostenfaktor {m}',
                                          userdefinedgroupname=gr_coeff,
                                          )
-            formula = f'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Factor_Cost_{m}])'
-            userdef1.add_formula_attribute('Persongroup',
-                                          f'Factor_Cost_{m}_MainAct',
-                                          formula=formula,
-                                          valuetype='Double',
-                                          comment=f'Kostenfaktor {m} der Hauptaktivität',
-                                          userdefinedgroupname=gr_coeff,
-                                          )
             userdef1.add_data_attribute('Persongroup',
                                          f'Factor_Time_{m}',
                                          valuetype='Double',
@@ -168,14 +160,6 @@ class VisemDemandModel:
                                          comment=f'Zeitfaktor {m}',
                                          userdefinedgroupname=gr_coeff,
                                          )
-            formula = f'TableLookup(ACTIVITY Act, Act[CODE]=[MAIN_ACT], Act[Factor_Time_{m}])'
-            userdef1.add_formula_attribute('Persongroup',
-                                          f'Factor_Time_{m}_MainAct',
-                                          formula=formula,
-                                          valuetype='Double',
-                                          comment='Zeitfaktor {m} der Hauptaktivität',
-                                          userdefinedgroupname=gr_coeff,
-                                          )
 
         # Nachfragematrizen
         matrices.add_iv_demand(loadmatrix=0)
