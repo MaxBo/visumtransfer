@@ -4,7 +4,8 @@ from typing import List
 import pandas as pd
 from collections import defaultdict
 from .matrices import Matrix
-from .activities import Activity
+from .activities import Activity, Activitychain
+from .demandstratum import DemandStratum
 from visumtransfer.visum_table import VisumTable
 
 
@@ -63,15 +64,18 @@ class PersonGroup(VisumTable):
         df['CATEGORY'] = new_category
         return df
 
-    def create_groups_destmode(self,
+    def create_demand_strata(self,
                                groups_generation: pd.DataFrame,
                                trip_chain_rates: pd.DataFrame,
                                activities: Activity,
+                               activitychains: Activitychain, 
+                               dstrats: DemandStratum, 
                                model_code: str,
                                tc_categories: List[str],
                                category: str,
                                category_generation: str,
                                output_categories: List[str] = [],
+                               dsegset: str = 'O,F,M,P,R',
                                ):
         """Create the Groups for the Destination and Model modelling"""
         pgr_in_categories = self.df.loc[self.df['CATEGORY'].isin(tc_categories)].index
@@ -97,27 +101,30 @@ class PersonGroup(VisumTable):
             gr_tc = ','.join(sorted([gr for gr in gr_split]))
             trip_chain_rates.loc[idx, 'gr_tc'] = gr_tc
 
-        trip_chain_rates.rename(columns={'code': 'code_tc',}, inplace=True)
         tcs = pgr_generation.reset_index().merge(trip_chain_rates, on='gr_tc')
         assert len(tcs), f'No matching tripchains found for categories {tc_categories}'
 
         act_hierarchy = activities.get_hierarchy()
 
         # loop over all tripchains in the groups
+        rows = []
         for _, tc in tcs.iterrows():
             gg_code = tc['PGRCODES']
             gd_code = tc['PGRCODES']
-            act_code = tc['code_tc']
+            act_chain_code = tc['code_tc']
             act_sequence = tc['Sequence']
             tc_name = tc['NAME']
             mobilityrate = tc['rate']
-            main_act = activities.get_main_activity(act_hierarchy, act_sequence)
-            code = '_'.join((gd_code, main_act))
+            mainact_code = activities.get_main_activity(act_hierarchy, act_sequence)
+            pgr_code = '_'.join((gd_code, mainact_code))
+            dstratcode = ':'.join((gd_code, act_chain_code))
+            
             # if the the group occurs the first time ...
-            if code not in self.gd_codes:
+            if pgr_code not in self.gd_codes:
                 #  create it and add it to self.gd_codes
-                self.gd_codes[code] = [(act_code, mobilityrate)]
-                name = f'{tc_name} mit Hauptaktivität {main_act}'
+                self.gd_codes[pgr_code] = [(act_chain_code, mobilityrate)]
+                pgr_name = f'{tc_name} mit Hauptaktivität {mainact_code}'
+                dstrat_name = f'{tc_name}, Wegekette {act_chain_code}'
                 groups_constants = tc['GROUPS_CONSTANTS']
                 gr_split = groups_constants.split(',')
                 groups_output = [gr
@@ -125,32 +132,44 @@ class PersonGroup(VisumTable):
                                  if gr in pgr_in_output_categories]
                 grcodes_output = ','.join(sorted(groups_output))
 
-                # get the tarifmatrix of the main-activity
-                tarifmatrix_main_act = activities.df.loc[main_act, 'TARIFMATRIX']
-
-                # if a special Tarifmatrix exists for a PersonGroups
-                # (like Senionrenticket), use this instead
+                # get the first Tarifmatrix for the PersonGroups
+                # (like Senionrenticket)
                 for group in gr_split:
                     tarifmatrix_pgr = self.df.loc[group, 'TARIFMATRIX']
                     if tarifmatrix_pgr:
                         break
-                tarifmatrix = tarifmatrix_pgr or tarifmatrix_main_act
 
+                # use special activity-tarifmatrix, else the persongroup-matrix
+                tarifmatrix = tarifmatrix_pgr or ''
+            
                 self.add_group(
                     category=category,
                     model_code=model_code,
-                    code=code,
-                    name=name,
+                    code=pgr_code,
+                    name=pgr_name,
                     groups_constants=groups_constants,
                     groups_output=grcodes_output,
                     group_generation=gg_code,
-                    main_act=main_act,
+                    main_act=mainact_code,
                     tarifmatrix=tarifmatrix,
                 )
             else:
                 # otherwise just append the activity chain
                 # to the chains the persons makes
-                self.gd_codes[code].append((act_code, mobilityrate))
+                self.gd_codes[pgr_code].append((act_chain_code, mobilityrate))
+
+
+            row = dstrats.Row(code=dstratcode,
+                           name=pgr_name,
+                           demandmodelcode=model_code,
+                           persongroupcodes=pgr_code,
+                           activitychaincode=act_chain_code,
+                           mainactcode=mainact_code,
+                           dsegset=dsegset,
+                           mobilityrate=mobilityrate,
+                           )
+            rows.append(row)
+        dstrats.add_rows(rows)
 
     def create_df_from_group_list(self):
         df = self.df_from_array(self.groups)
