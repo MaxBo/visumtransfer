@@ -610,12 +610,6 @@ class Activity(VisumTable):
             userdef.add_data_attribute(
                 'ACTIVITY',
                 userdefinedgroupname=gr_coeff,
-                name=f'const_{mode.code}',
-                defaultvalue=0,
-            )
-            userdef.add_data_attribute(
-                'ACTIVITY',
-                userdefinedgroupname=gr_coeff,
                 name=f'baseconst_{mode.code}',
                 comment=f'Verkehrsmittelspezifische Basis-Konstante {mode.bezeichnung}',
                 defaultvalue=0,
