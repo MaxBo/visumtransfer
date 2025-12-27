@@ -65,18 +65,18 @@ class PersonGroup(VisumTable):
         return df
 
     def create_demand_strata(self,
-                               groups_generation: pd.DataFrame,
-                               trip_chain_rates: pd.DataFrame,
-                               activities: Activity,
-                               activitychains: Activitychain, 
-                               dstrats: DemandStratum, 
-                               model_code: str,
-                               tc_categories: List[str],
-                               category: str,
-                               category_generation: str,
-                               output_categories: List[str] = [],
-                               dsegset: str = 'O,F,M,P,R',
-                               ):
+                             groups_generation: pd.DataFrame,
+                             trip_chain_rates: pd.DataFrame,
+                             activities: Activity,
+                             activitychains: Activitychain,
+                             dstrats: DemandStratum,
+                             model_code: str,
+                             tc_categories: List[str],
+                             category: str,
+                             category_generation: str,
+                             output_categories: List[str] = [],
+                             dsegset: str = 'O,F,M,P,R',
+                             ):
         """Create the Groups for the Destination and Model modelling"""
         pgr_in_categories = self.df.loc[self.df['CATEGORY'].isin(tc_categories)].index
         pgr_in_output_categories = self.df.loc[self.df['CATEGORY'].isin(
@@ -118,7 +118,7 @@ class PersonGroup(VisumTable):
             mainact_code = activities.get_main_activity(act_hierarchy, act_sequence)
             pgr_code = '_'.join((gd_code, mainact_code))
             dstratcode = ':'.join((gd_code, act_chain_code))
-            
+
             # if the the group occurs the first time ...
             if pgr_code not in self.gd_codes:
                 #  create it and add it to self.gd_codes
@@ -141,7 +141,7 @@ class PersonGroup(VisumTable):
 
                 # use special activity-tarifmatrix, else the persongroup-matrix
                 tarifmatrix = tarifmatrix_pgr or ''
-            
+
                 self.add_group(
                     category=category,
                     model_code=model_code,
@@ -158,16 +158,15 @@ class PersonGroup(VisumTable):
                 # to the chains the persons makes
                 self.gd_codes[pgr_code].append((act_chain_code, mobilityrate))
 
-
             row = dstrats.Row(code=dstratcode,
-                           name=pgr_name,
-                           demandmodelcode=model_code,
-                           persongroupcodes=pgr_code,
-                           activitychaincode=act_chain_code,
-                           mainactcode=mainact_code,
-                           dsegset=dsegset,
-                           mobilityrate=mobilityrate,
-                           )
+                              name=pgr_name,
+                              demandmodelcode=model_code,
+                              persongroupcodes=pgr_code,
+                              activitychaincode=act_chain_code,
+                              mainactcode=mainact_code,
+                              dsegset=dsegset,
+                              mobilityrate=mobilityrate,
+                              )
             rows.append(row)
         dstrats.add_rows(rows)
 
@@ -182,7 +181,6 @@ class PersonGroup(VisumTable):
         """
         Add Output Matrices for PersonGroups
         """
-        matrices.set_category('Demand_Pgr')
         df_groups_output = self.df['GROUPS_OUTPUT'].str.split(',', expand=True)
         df_groups_output.columns = [f'group{i}'
                                     for i in df_groups_output.columns]
@@ -199,6 +197,8 @@ class PersonGroup(VisumTable):
             str_name = f'Wege der {gr.CATEGORY}-Gruppe {gr.NAME}'
             code = f'{prefix}{gr.name}'
             pgrset = ','.join(sorted(detailed_groups.index))
+
+            matrices.set_category('Demand_Pgr')
             matrices.add_data_matrix(
                 code=code,
                 name=str_name,
@@ -225,6 +225,7 @@ class PersonGroup(VisumTable):
                 str_name = f'Wege mit Verkehrsmittel {mode_name} der {gr.CATEGORY}-Gruppe {gr.NAME}'
                 code = f'{prefix}{gr.name}_{mode.code}'
                 pgrset = ','.join(sorted(detailed_groups.index))
+                matrices.set_category('Modes_Demand_Pgr')
                 matrices.add_data_matrix(
                     code=code,
                     name=str_name,
