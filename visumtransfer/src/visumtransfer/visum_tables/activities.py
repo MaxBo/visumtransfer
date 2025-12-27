@@ -144,8 +144,14 @@ class Activity(VisumTable):
         userdef.add_formula_attribute(
             objid='ACTIVITY',
             name='MeanTripDistance',
-            formula='TableLookup(MATRIX Mat: '
-            'Mat[CODE]="MR_VL_Activity_"+[CODE]: Mat[SUM]) / [TotalTrips_MR]',
+            comment='Mittlere Wegelänge HomeBased-Wege im Modellierungsraum',
+            formula='[Pkm_Modellierungsraum] / [TotalTrips_MR]',
+        )
+        userdef.add_formula_attribute(
+            objid='ACTIVITY',
+            name='MeanTripDistance_AllTrips',
+            comment='Mittlere Wegelänge Alle Wege',
+            formula='[Pkm_Total] / [TotalTrips]',
         )
         userdef.add_data_attribute(
             objid='ACTIVITY',
@@ -617,35 +623,35 @@ class Activity(VisumTable):
                 'ACTIVITY',
                 userdefinedgroupname=gr_coeff,
                 name=f'KF_CONST_{mode.code}',
-              comment=f'Korrekturfaktor für Kalibrierung MS {mode.bezeichnung}',
+                comment=f'Korrekturfaktor für Kalibrierung MS {mode.bezeichnung}',
                 defaultvalue=0,
             )
             userdef.add_formula_attribute(
                 'ACTIVITY',
                 userdefinedgroupname=gr_trips,
                 name=f'Trips_{mode.code}',
-              comment=f'Wege {mode.bezeichnung}',
+                comment=f'Wege {mode.bezeichnung}',
                 formula=formel_trips_mode.format(m=mode.code)
             )
             userdef.add_formula_attribute(
                 'ACTIVITY',
                 userdefinedgroupname=gr_ms,
                 name=f'MS_{mode.code}',
-              comment=f'Modal Split modelliert {mode.bezeichnung}',
+                comment=f'Modal Split modelliert {mode.bezeichnung}',
                 formula=formel_ms.format(m=mode.code)
             )
             userdef.add_data_attribute(
                 'ACTIVITY',
                 userdefinedgroupname=gr_coeff,
                 name=f'FACTOR_TIME_{mode.code}',
-              comment=f'Faktor Reisezeitkoeffizient {mode.bezeichnung}',
+                comment=f'Faktor Reisezeitkoeffizient {mode.bezeichnung}',
                 defaultvalue=1,
             )
             userdef.add_data_attribute(
                 'ACTIVITY',
                 userdefinedgroupname=gr_coeff,
                 name=f'FACTOR_COST_{mode.code}',
-              comment=f'Faktor Kostenkoeffizient {mode.bezeichnung}',
+                comment=f'Faktor Kostenkoeffizient {mode.bezeichnung}',
                 defaultvalue=1,
             )
 
