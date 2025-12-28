@@ -67,7 +67,7 @@ class VisemDemandModel:
         matrices = Matrix()
 
         pgr_summe = params.group_definitions.loc[
-            (params.group_definitions['category'] == 'agegroup') &
+            (params.group_definitions['category'] == 'total') &
             (params.group_definitions['id_in_category'] == -1),
             'code'].iloc[0]
         tbl_model, tbl_ca = self.add_params_persongrupmodel(
