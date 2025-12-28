@@ -259,6 +259,10 @@ class VisemDemandModel:
                                               row.zone_attribute,
                                               formula=f'LN([MATROWSUM({no})])',
                                               userdefinedgroupname=gr_acc)
+            userdefined.add_data_attribute('ZONE',
+                                           row.balance_attribute,
+                                           comment=f'Balancing Factor for Accessibility',
+                                           userdefinedgroupname=gr_acc)
         userdefined.add_formula_attribute('ZONE',
                                           'Anteil_Studis',
                                           formula='[NUMPERSONS(ST)]/([NUMPERSONS(ASUMME)])',
