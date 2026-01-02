@@ -469,7 +469,8 @@ class VisumTransfer:
             fobj.writeln(f'* {self.user}')
             fobj.writeln(f'* {self.date}')
             for table in self.tables.values():
-                table.write_block(fobj)
+                if table: # write only tables with rows
+                    table.write_block(fobj)
 
     def prepend(self, fn: str):
         """Prepend tables after the VERSION-section to the existing transfer file `fn`"""
