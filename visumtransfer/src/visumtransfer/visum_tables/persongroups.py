@@ -118,13 +118,13 @@ class PersonGroup(VisumTable):
             mainact_code = activities.get_main_activity(act_hierarchy, act_sequence)
             pgr_code = '_'.join((gd_code, mainact_code))
             dstratcode = ':'.join((gd_code, act_chain_code))
+            pgr_name = f'{tc_name} mit Hauptaktivität {mainact_code}'
+            dstrat_name = f'{tc_name}, Wegekette {act_chain_code}'
 
             # if the the group occurs the first time ...
             if pgr_code not in self.gd_codes:
                 #  create it and add it to self.gd_codes
                 self.gd_codes[pgr_code] = [(act_chain_code, mobilityrate)]
-                pgr_name = f'{tc_name} mit Hauptaktivität {mainact_code}'
-                dstrat_name = f'{tc_name}, Wegekette {act_chain_code}'
                 groups_constants = tc['GROUPS_CONSTANTS']
                 gr_split = groups_constants.split(',')
                 groups_output = [gr
@@ -159,7 +159,7 @@ class PersonGroup(VisumTable):
                 self.gd_codes[pgr_code].append((act_chain_code, mobilityrate))
 
             row = dstrats.Row(code=dstratcode,
-                              name=pgr_name,
+                              name=dstrat_name,
                               demandmodelcode=model_code,
                               persongroupcodes=pgr_code,
                               activitychaincode=act_chain_code,
