@@ -128,12 +128,16 @@ class VisemDemandModel:
         userdef1.add_data_attribute('DemandStratum',
                                     'Trips',
                                     comment='Wege der Nachfrageschicht')
+
+        gr_trips = 'Wege'
         userdef1.add_data_attribute('PersonGroup',
                                     'Tours_Generated',
-                                    comment='erzeugte Touren der Personengruppe')
+                                    comment='erzeugte Touren der Personengruppe',
+                                    userdefinedgroupname=gr_trips)
         userdef1.add_data_attribute('PersonGroup',
                                     'Trips_Generated',
-                                    comment='erzeugte Wege der Personengruppe')
+                                    comment='erzeugte Wege der Personengruppe',
+                                    userdefinedgroupname=gr_trips)
 
         gr_coeff = 'Koeffizienten'
         for m in params.mode_set.split(','):
