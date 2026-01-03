@@ -822,7 +822,8 @@ class VisemDemandModel:
         userdef1.add_formula_attribute('Mainzone', 'SGB2_EMPFAENGER',
                                        formula='[ARBEITSLOSE]*2.5')
         userdef1.add_formula_attribute('Mainzone', 'MODELLIERUNGSRAUM',
-                                       formula=r'[SUM:ZONES\MODELLIERUNGSRAUM]>0')
+                                       formula=r'[SUM:ZONES\MODELLIERUNGSRAUM]>0',
+                                       valuetype='Bool',)
         userdef1.add_formula_attribute('Mainzone', 'CALIBRATION_ERWERBSTAETIGKEIT',
                                        formula=r'TableLookup(ZONE Z: Z[OBB_OCCUPATION]=[NO]: Z[MODELLIERUNGSRAUM])')
         userdef1.add_formula_attribute('Mainzone', 'CALIBRATION_PKWVERFUEGBARKEIT',
