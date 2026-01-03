@@ -129,8 +129,8 @@ class VisemDemandModel:
                                     'Trips',
                                     comment='Wege der Nachfrageschicht')
         userdef1.add_data_attribute('PersonGroup',
-                                    'Tours',
-                                    comment='Touren der Personengruppe')
+                                    'Tours_Generated',
+                                    comment='erzeugte Touren der Personengruppe')
         userdef1.add_data_attribute('PersonGroup',
                                     'Trips_Generated',
                                     comment='erzeugte Wege der Personengruppe')
@@ -643,6 +643,20 @@ class VisemDemandModel:
             formula='[Km]/[Persons]',
             comment=f'Wege Pro Person',
             userdefinedgroupname=gr_dist,
+        )
+        userdef2.add_formula_attribute(
+            objid='PERSONGROUP',
+            name=f'Trips_generated_per_Person',
+            formula='[Trips_Generated]/[Persons]',
+            comment=f'erzeugte Wege Pro Person',
+            userdefinedgroupname=gr_trips,
+        )
+        userdef2.add_formula_attribute(
+            objid='PERSONGROUP',
+            name=f'Tours_generated_per_Person',
+            formula='[Tours_Generated]/[Persons]',
+            comment=f'erzeugte Touren Pro Person',
+            userdefinedgroupname=gr_trips,
         )
 
     def add_mode_specific_pgr_attributes(self,
