@@ -826,11 +826,17 @@ class Matrix(VisumTable):
                              matrixtype='Demand',
                              loadmatrix=1,
                              matrixfolder='Pendler')
+        self.add_data_matrix(code='Pendlerkorrektur_OBB',
+                             name='Pendlerkorrektur auf Oberbezirksebene',
+                             objecttyperef='Mainzone',
+                             matrixtype='Skim',
+                             loadmatrix=1,
+                             matrixfolder='Pendler')
         self.add_data_matrix(code='Pendlerkorrektur',
                              name='Pendlerkorrektur auf Bezirksebene',
                              objecttyperef='Zone',
                              matrixtype='Skim',
-                             loadmatrix=1,
+                             obb_matrix_ref=f'[CODE]="Pendlerkorrektur_OBB"',
                              matrixfolder='Pendler')
         formula = r'Matrix([CODE]="Pendlermatrix_OBB") * [SUM:PERSONGROUPS\ERWERBSTAETIGE] '\
             r'/ MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB"))'
