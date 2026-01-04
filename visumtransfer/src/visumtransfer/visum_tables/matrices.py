@@ -14,7 +14,7 @@ class MatrixCategories(dict):
         'General': 5,
         'Visem_Demand': 20,
         'Visem_OV_Stunden': 30,
-        'Other_Demand': 90,
+        'Other_Demand': 70,
         'OV_Demand': 100,
         'DestinationChoiceSkims': 108,
         'IV_Skims': 150,
@@ -650,7 +650,8 @@ class Matrix(VisumTable):
                              matrixfolder='Analysefall',
                              )
         self.set_category('OV_Demand')
-        self.add_data_matrix(code='FernverkehrBahn', name='Fernverkehr Bahn',
+        code_fv = 'FernverkehrBahn'
+        self.add_data_matrix(code=code_fv, name='Fernverkehr Bahn',
                              loadmatrix=loadmatrix,
                              matrixtype='Demand',
                              dsegcode='O_ex',
@@ -667,10 +668,24 @@ class Matrix(VisumTable):
 
             dsegs.add(code=dsegcode, name=ts_name, mode=modecode)
 
+            code_region = dsegcode
             self.add_data_matrix(
-                code=dsegcode,
+                code=code_region,
                 matrixtype='Demand',
                 name=f'ÖV-Nachfrage {ts_name}',
+                day=1,
+                fromtime=fromtime,
+                totime=totime,
+                timeref='Departuretime',
+                modecode='O',
+            )
+            formula = f'''Matrix([CODE]="{code_region}") + Matrix([CODE]="{code_fv}") * {ts.Ganglinie_OVFern}'''
+            code = f'{dsegcode} incl. Fernverkehr'
+            self.add_formula_matrix(
+                code=code,
+                formula=formula,
+                matrixtype='Demand',
+                name=f'ÖV-Nachfrage {ts_name} incl. Fernverkehr',
                 dsegcode=dsegcode,
                 day=1,
                 fromtime=fromtime,
