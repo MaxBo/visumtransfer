@@ -172,7 +172,8 @@ class VisemDemandModel:
 
         # Nachfragematrizen
         matrices.add_iv_demand(loadmatrix=0)
-        matrices.add_ov_demand(loadmatrix=0)
+        dsegs = DemandSegment()
+        matrices.add_ov_demand(params, dsegs=dsegs, loadmatrix=0)
         matrices.add_other_demand_matrices(params, loadmatrix=0)
         matrices.add_commuter_matrices()
 
@@ -184,6 +185,7 @@ class VisemDemandModel:
                                         model=model_code)
 
         # add matrices later
+        vt.tables['DemandSegments'] = dsegs
         vt.tables['Matrizen'] = matrices
         vt.tables['BenutzerdefinierteAttribute2'] = userdef2
 
@@ -839,14 +841,6 @@ class VisemDemandModel:
         v.tables['Matrizen'] = matrices
         v.write(fn=v.get_modification(modification_number, self.modifications))
 
-    def write_modification_ov_matrices(self, modification_number: int):
-        v = VisumTransfer.new_transfer()
-
-        matrices = Matrix()
-        matrices.add_ov_demand()
-        v.tables['Matrizen'] = matrices
-        v.write(fn=v.get_modification(modification_number, self.modifications))
-
     def add_nsegs_pkw_sv(self) -> DemandSegment:
         """add nsegs"""
         # DemandSegmente
@@ -992,4 +986,3 @@ if __name__ == '__main__':
     #dm.create_transfer_constants(params, modification_no=7)
     #dm.create_transfer_target_values(params, modification_no=8)
     #dm.write_modification_iv_matrices(modification_number=9)
-    #dm.write_modification_ov_matrices(modification_number=10)

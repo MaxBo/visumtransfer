@@ -634,7 +634,11 @@ class Matrix(VisumTable):
                                 dsegcode='PG',
                                 modecode='P')
 
-    def add_ov_demand(self, savematrix=0, loadmatrix=1):
+    def add_ov_demand(self,
+                      params,
+                      dsegs: 'DemandSegment',
+                      savematrix=0,
+                      loadmatrix=1):
         """Add PrT Demand Matrices"""
         self.set_category('Visem_Demand')
         self.add_data_matrix(code='Visem_O', name='ÖPNV',
@@ -652,6 +656,28 @@ class Matrix(VisumTable):
                              dsegcode='O_ex',
                              modecode='O',
                              matrixfolder='Fernverkehr')
+
+        # ÖV-Time-Matrices
+        modecode = 'O'
+        for idx, ts in params.time_series.iterrows():
+            ts_name = ts.name_long
+            dsegcode = f'{modecode}_{ts.from_hour:02d}{ts.to_hour:02d}'
+            fromtime = self.get_timestring(ts.from_hour)
+            totime = self.get_timestring(ts.to_hour)
+
+            dsegs.add(code=dsegcode, name=ts_name, mode=modecode)
+
+            self.add_data_matrix(
+                code=dsegcode,
+                matrixtype='Demand',
+                name=f'ÖV-Nachfrage {ts_name}',
+                dsegcode=dsegcode,
+                day=1,
+                fromtime=fromtime,
+                totime=totime,
+                timeref='Departuretime',
+                modecode='O',
+            )
 
     def add_other_demand_matrices(self,
                                   params: Params,
