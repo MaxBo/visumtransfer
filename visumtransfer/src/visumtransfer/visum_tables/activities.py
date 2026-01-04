@@ -660,28 +660,18 @@ class Activity(VisumTable):
                       userdef: UserDefinedAttribute,
                       ):
         """
-        add Korrekturfaktoren für Logsum-Formeln auf Oberbezirksebene
-        Dieser werden dann auf Bezirksebene übertragen und im
+        add Korrekturfaktoren für Widerstandsempfindlichkeit auf Bezirksebene je Aktivität
         Zielwahlmodell zur Korrektur der Wegelängen verwendet
         """
         gr_kf_ls = 'Zielwahl-Parameter'
         userdefgroups.add(name=gr_kf_ls, description='Parameter des Zielwahl-Modells')
 
-        reference_column = 'OBB_Kreis'
-        formula = 'TableLookup(MAINZONE OBB, OBB[NO]=[{col}], OBB[KF_LOGSUM_{a}])'
         for code, t in self.df.iterrows():
-            if not t.ISHOMEACTIVITY:
+            if t.CALCDESTMODE:
                 userdef.add_data_attribute(
-                    'MAINZONE',
-                    f'kf_logsum_{code}',
-                    defaultvalue=1,
-                    userdefinedgroupname=gr_kf_ls,
-                )
-
-                userdef.add_formula_attribute(
                     'ZONE',
-                    f'kf_logsum_{code}',
-                    formula=formula.format(col=reference_column, a=code),
+                    f'impedance_sensitivity_{code}',
+                    defaultvalue=1,
                     userdefinedgroupname=gr_kf_ls,
                 )
 
