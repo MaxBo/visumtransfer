@@ -885,7 +885,8 @@ class Matrix(VisumTable):
                              matrixtype='Skim',
                              obb_matrix_ref=f'[CODE]="Pendlerkorrektur_OBB"',
                              matrixfolder='Pendler')
-        formula = r'Matrix([CODE]="Pendlermatrix_OBB") * MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB_ARB") '\
+        formula = r'Matrix([CODE]="Pendlermatrix_OBB") * '\
+            r'MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB_ARB")) '\
             r'/ MATRIXSUM(Matrix([CODE] = "Pendlermatrix_OBB"))'
         self.add_formula_matrix(
             code='Pendlermatrix_OBB_Gesamt',
