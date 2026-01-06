@@ -37,9 +37,8 @@ def visum_tables():
 
 
 @pytest.fixture
-def visum_attribute_file() -> str:
-    return os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                        'attributes.h5')
+def visum_attribute_folder() -> str:
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)))
 
 
 @pytest.fixture
@@ -84,7 +83,7 @@ class TestVisumAttributes:
             excel_file=visum_attribute_excelfile)
 
     def test_get_attribute(self, visum_attribute_file):
-        visum_attributes = VisumAttributes.from_hdf(visum_attribute_file)
+        visum_attributes = VisumAttributes.from_parquet(visum_attribute_folder)
         tables = visum_attributes.tables.reset_index().set_index('Plural(ENG)')
         row = tables.loc['Zones']
         assert row.Name == 'Zone'
@@ -92,6 +91,7 @@ class TestVisumAttributes:
 
 class TestVisumTransfer:
     """"""
+
     def test_add_rows(self, dataframe):
         """test adding rows to the DataFrame"""
         tbl = DummyTable(mode='+')

@@ -1,7 +1,7 @@
 recordclass
 openpyxl
-tables>=3.10
+pyarrow
 pandas>=2.3
 numpy>=2.4
 xarray>=2025
-spipy>=1.16
+scipy>=1.16

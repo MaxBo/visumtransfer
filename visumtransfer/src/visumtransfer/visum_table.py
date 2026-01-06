@@ -31,11 +31,11 @@ class VisumTables:
     @classmethod
     def add_visum_attributes(cls):
         """add visum attributes"""
-        fn_attrs_h5 = os.path.join(os.path.dirname(__file__), 'attributes.h5')
+        folder = os.path.join(os.path.dirname(__file__))
         try:
-            cls.visum_attributes = VisumAttributes.from_hdf(fn_attrs_h5)
+            cls.visum_attributes = VisumAttributes.from_parquet(folder)
         except IOError:
-            cls.visum_attributes = VisumAttributes.from_excel(fn_attrs_h5)
+            cls.visum_attributes = VisumAttributes.from_excel(folder)
 
 
 class WriteLine:
