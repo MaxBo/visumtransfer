@@ -1,4 +1,4 @@
-recordclass
+recordclass<0.24
 openpyxl
 pyarrow
 pandas>=2.3,<3
