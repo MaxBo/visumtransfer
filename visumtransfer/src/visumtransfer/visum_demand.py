@@ -14,6 +14,7 @@ from visumtransfer.visum_tables import (
     UserDefinedGroup,
     UserDefinedAttribute,
     Demandmodel,
+    Mode,
     StructuralProp,
     Activity,
     PersonGroup,
@@ -63,6 +64,8 @@ class VisemDemandModel:
         model_code = 'VisemGGR'
         model_name = 'Visem Ziel- und Verkehrsmittelwahlmodell'
         self.add_demand_model(model_code, model_name, params.mode_set, vt)
+
+        self.add_modes(vt, userdef1)
 
         matrices = Matrix()
 
@@ -140,6 +143,37 @@ class VisemDemandModel:
                                     userdefinedgroupname=gr_trips)
 
         gr_coeff = 'Koeffizienten'
+        self.add_coefficients(params, userdef1, gr_coeff)
+
+        # Nachfragematrizen
+        matrices.add_iv_demand(loadmatrix=0)
+        dsegs = DemandSegment()
+        matrices.add_ov_demand(params, dsegs=dsegs, loadmatrix=0)
+        matrices.add_other_demand_matrices(params, loadmatrix=0)
+        matrices.add_commuter_matrices()
+
+        # Erreichbarkeiten
+        self.add_accessibility_matrices(matrices,
+                                        params,
+                                        userdefgroups,
+                                        userdef2,
+                                        model=model_code)
+
+        # add matrices later
+        vt.tables['DemandSegments'] = dsegs
+        vt.tables['Matrizen'] = matrices
+        vt.tables['BenutzerdefinierteAttribute2'] = userdef2
+
+        #  Skip adding logsum-Matrices
+        if False:
+            self.add_logsum_matrices(activitychains, dstrats, vt)
+
+        self.add_ganglinien(pg, params, vt)
+
+        fn = vt.get_modification(modification_number, self.modifications)
+        vt.write(fn=fn)
+
+    def add_coefficients(self, params, userdef1, gr_coeff):
         for m in params.mode_set.split(','):
             userdef1.add_data_attribute('Mainzone',
                                         f'CONST_ORIGIN_{m}',
@@ -169,34 +203,6 @@ class VisemDemandModel:
                                         comment=f'Zeitfaktor {m}',
                                         userdefinedgroupname=gr_coeff,
                                         )
-
-        # Nachfragematrizen
-        matrices.add_iv_demand(loadmatrix=0)
-        dsegs = DemandSegment()
-        matrices.add_ov_demand(params, dsegs=dsegs, loadmatrix=0)
-        matrices.add_other_demand_matrices(params, loadmatrix=0)
-        matrices.add_commuter_matrices()
-
-        # Erreichbarkeiten
-        self.add_accessibility_matrices(matrices,
-                                        params,
-                                        userdefgroups,
-                                        userdef2,
-                                        model=model_code)
-
-        # add matrices later
-        vt.tables['DemandSegments'] = dsegs
-        vt.tables['Matrizen'] = matrices
-        vt.tables['BenutzerdefinierteAttribute2'] = userdef2
-
-        #  Skip adding logsum-Matrices
-        if False:
-            self.add_logsum_matrices(activitychains, dstrats, vt)
-
-        self.add_ganglinien(pg, params, vt)
-
-        fn = vt.get_modification(modification_number, self.modifications)
-        vt.write(fn=fn)
 
     def add_skim_matrices(self,
                           matrices: Matrix,
@@ -455,6 +461,8 @@ class VisemDemandModel:
                                     comment='Korrekturfaktor für LogSum der Aktivität, '
                                     'während Kalibrierung')
         # spezifische Attribute für die Verkehrsmittelwahl
+        userdef1.add_data_attribute('Activity', 'MatrixCode_PuT', valuetype='LongText')
+        userdef1.add_data_attribute('Activity', 'MatrixCode_Parking', valuetype='LongText')
         userdef1.add_data_attribute(
             objid='ACTIVITY',
             name='ZIELWAHL_FUNKTION_MATRIXCODES',
@@ -849,6 +857,36 @@ class VisemDemandModel:
         nseg.add(code='PG', name='Kfz bis 3,5 to', mode='P')
         return nseg
 
+    def add_modes(self, vt: VisumTransfer, userdef1: UserDefinedAttribute):
+        '''add mode attributes and modes'''
+        userdef1.add_data_attribute('Mode',
+                                    'MatrixCode_TravelTime',
+                                    valuetype='LongText')
+        userdef1.add_data_attribute('Mode',
+                                    'MatrixCode_TravelCost',
+                                    valuetype='LongText')
+
+        # modes
+        new_modes = Mode()
+        new_modes.add(code='V', name='Virtuell', tsysset='R', interchangeable=False)
+        vt.tables['NewModes'] = new_modes
+
+        modes = Mode(mode='*')
+        modes.add_cols(['MatrixCode_TravelTime', 'MatrixCode_TravelCost', 'BaseMode'])
+        modes.add(code='F', matrixcode_traveltime='TFUSS')
+        modes.add(code='R', matrixcode_traveltime='TRAD')
+        modes.add(code='O',
+                  matrixcode_traveltime='PJT_All',
+                  matrixcode_travelcost='SINGLETICKET')
+        modes.add(code='M',
+                  matrixcode_traveltime='TTC_boxcox',
+                  matrixcode_travelcost='PkwKosten',
+                  basemode=True)
+        modes.add(code='P',
+                  matrixcode_traveltime='TTC_boxcox',
+                  matrixcode_travelcost='PkwKosten')
+        vt.tables['Modes'] = modes
+
     def add_nsegs_userdefined(self, modification_no: int, dsegcodes_put: List[str]):
         vt = VisumTransfer.new_transfer()
         userdef0 = UserDefinedAttribute()
@@ -893,6 +931,7 @@ class VisemDemandModel:
         nseg.add(code='PkwFern', name='Pkw Fernverkehr', mode='P')
         nseg.add(code='SV', name='Schwerverkehr', modes=mode_lkw)
         nseg.add(code='PG', name='Kfz bis 3,5 to', mode='P')
+        nseg.add(code='V', name='virtuelle Aktivitäten', mode='V')
 
         for dsegcode in dsegcodes_put:
             nseg.add(code=dsegcode, modes='O')

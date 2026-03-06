@@ -164,9 +164,10 @@ class VisumTable(metaclass=MetaClass):
                 df.loc[is_na, colname] = ''
             if self.is_bool(colname):
                 column = df[colname]
-                is_na = ~column.isna()
+                is_na = column.isna()
                 df[colname] = column.fillna('')
-                df.loc[is_na, colname] = column.loc[is_na].astype(int)
+                if is_na.any():
+                    df.loc[is_na, colname] = column.loc[is_na].astype(int)
         return df
 
     def define_row(self):
