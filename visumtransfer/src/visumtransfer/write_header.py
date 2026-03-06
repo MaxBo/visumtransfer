@@ -21,7 +21,7 @@ $VISION
 * Tabelle: Versionsblock
 *
 $VERSION:VERSNR;FILETYPE;LANGUAGE
-10;Trans;DEU
+15;Trans;ENG
 
     """
     file.write(header)

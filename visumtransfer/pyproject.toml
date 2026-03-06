@@ -28,4 +28,8 @@ requires-python = ">=3.7"
 version = {attr = "visumtransfer.__version__"}
 
 [tool.setuptools.package-data]
-'visumtransfer' = ['attributes.h5']
+'visumtransfer' = [
+    'tables.parquet',
+    'attributes.parquet',
+    'relations.parquet',
+    ]

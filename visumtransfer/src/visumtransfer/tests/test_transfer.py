@@ -9,9 +9,9 @@ from visumtransfer.visum_table import (VisumTable,
                                        Version)
 from visumtransfer.visum_attributes import VisumAttributes
 from visumtransfer.visum_tables import (create_userdefined_table,
-                                        Tabellendefinition,
-                                        BenutzerdefiniertesAttribut,
-                                        Netz)
+                                        TableDefinition,
+                                        UserDefinedAttribute,
+                                        Network)
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def dataframe() -> pd.DataFrame:
 def df_zones() -> pd.DataFrame:
     df = pd.DataFrame(data=np.array([(2, 'A-Stadt', 3),
                                      (4, 'B-Dorf', 4)]),
-                      columns=['NO', 'NAME', 'TYPNR'])
+                      columns=['NO', 'NAME', 'TYPENO'])
     return df
 
 
@@ -37,9 +37,8 @@ def visum_tables():
 
 
 @pytest.fixture
-def visum_attribute_file() -> str:
-    return os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                        'attributes.h5')
+def visum_attribute_folder() -> str:
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)))
 
 
 @pytest.fixture
@@ -59,7 +58,7 @@ class DummyTable(VisumTable):
 class Bezirke(VisumTable):
     name = 'Bezirke'
     code = 'BEZIRK'
-    _cols = 'NR'
+    _cols = 'NO'
 
 
 class TestVisumTableCreation:
@@ -84,14 +83,15 @@ class TestVisumAttributes:
             excel_file=visum_attribute_excelfile)
 
     def test_get_attribute(self, visum_attribute_file):
-        visum_attributes = VisumAttributes.from_hdf(visum_attribute_file)
-        tables = visum_attributes.tables.reset_index().set_index('Plural(DEU)')
-        row = tables.loc['Bezirke']
+        visum_attributes = VisumAttributes.from_parquet(visum_attribute_folder)
+        tables = visum_attributes.tables.reset_index().set_index('Plural(ENG)')
+        row = tables.loc['Zones']
         assert row.Name == 'Zone'
 
 
 class TestVisumTransfer:
     """"""
+
     def test_add_rows(self, dataframe):
         """test adding rows to the DataFrame"""
         tbl = DummyTable(mode='+')
@@ -156,8 +156,8 @@ class TestVisumTransfer:
 
     def test_userdef_table(self, visum_tables):
         """Test a userdefined table"""
-        tabledef = Tabellendefinition(mode='+')
-        userdef = BenutzerdefiniertesAttribut(mode='+')
+        tabledef = TableDefinition(mode='+')
+        userdef = UserDefinedAttribute(mode='+')
 
         TBL = create_userdefined_table('AAA',
                                        cols_types={'Col1': 'Double',
@@ -165,9 +165,9 @@ class TestVisumTransfer:
                                                    'Col3': 'LongText',
                                                    'Col12': 'Double', },
                                        defaults={'COL2': 42, },
-                                       col_attrs={'Col1': {'minwert': 0,
-                                                           'maxwert': 1, },
-                                                  'Col12': {'formel': '[Col1]*[Col2]',
+                                       col_attrs={'Col1': {'minvalue': 0,
+                                                           'maxvalue': 1, },
+                                                  'Col12': {'formula': '[Col1]*[Col2]',
                                                             }, },
                                        tabledef=tabledef,
                                        userdef=userdef)
@@ -175,7 +175,7 @@ class TestVisumTransfer:
         tbl = TBL(mode='')
         tbl.add_row(tbl.Row(col1=0.33, col3='Hallo'))
         tbl.add_row(tbl.Row(col1=0.2, col2=4, col3='Hallo'))
-        tbl.add_row(tbl.Row(nr=4, col1=0.2, col2=4, col3='Hallo'))
+        tbl.add_row(tbl.Row(no=4, col1=0.2, col2=4, col3='Hallo'))
         tbl.add_row(tbl.Row(col1=0.2, col2=4, col3='Hallo'))
 
         print(tabledef.df)
@@ -190,10 +190,10 @@ class TestVisumTransfer:
         vt.write(os.path.join(folder, 'a.tra'))
 
     def test_netz(self):
-        netz = Netz(new_cols=['A', 'B'])
-        netz.add_row(netz.Row(a=4, b=7))
-        print(netz.df)
+        network = Network(new_cols=['A', 'B'])
+        network.add_row(network.Row(a=4, b=7))
+        print(network.df)
         with pytest.raises(ValueError):
-            netz.add_row(netz.Row(a=7, b=9))
-        assert netz.df.loc[0, 'A'] == 4
-        assert netz.df.loc[0, 'B'] == 7
+            network.add_row(network.Row(a=7, b=9))
+        assert network.df.loc[0, 'A'] == 4
+        assert network.df.loc[0, 'B'] == 7

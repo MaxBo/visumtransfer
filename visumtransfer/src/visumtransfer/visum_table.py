@@ -31,11 +31,11 @@ class VisumTables:
     @classmethod
     def add_visum_attributes(cls):
         """add visum attributes"""
-        fn_attrs_h5 = os.path.join(os.path.dirname(__file__), 'attributes.h5')
+        folder = os.path.join(os.path.dirname(__file__))
         try:
-            cls.visum_attributes = VisumAttributes.from_hdf(fn_attrs_h5)
+            cls.visum_attributes = VisumAttributes.from_parquet(folder)
         except IOError:
-            cls.visum_attributes = VisumAttributes.from_excel(fn_attrs_h5)
+            cls.visum_attributes = VisumAttributes.from_excel(folder)
 
 
 class WriteLine:
@@ -240,7 +240,7 @@ class VisumTable(metaclass=MetaClass):
     def tablename(self) -> str:
         """get the english tablename"""
         visum_attributes = VisumTables().visum_attributes
-        tables = visum_attributes.tables.reset_index().set_index('Long(DEU)')
+        tables = visum_attributes.tables.reset_index().set_index('Plural(ENG)')
         try:
             row = tables.loc[self.name]
         except KeyError:
@@ -252,10 +252,20 @@ class VisumTable(metaclass=MetaClass):
         visum_attributes = VisumTables().visum_attributes
         attrs = visum_attributes.attributes
         try:
-            row = attrs.loc[self.tablename, colname]
+            row = attrs.loc[self.tablename, colname.upper()]
         except KeyError:
             return False
         return row.ValueType == 'bool'
+
+    def column_exists(self, colname: str) -> bool:
+        """"""
+        visum_attributes = VisumTables().visum_attributes
+        attrs = visum_attributes.attributes
+        try:
+            row = attrs.loc[self.tablename, colname.upper()]
+        except KeyError:
+            return False
+        return True
 
     def write_block_header(self, fobj: WriteLine):
         """Write header for block to `fobj`"""
@@ -316,6 +326,8 @@ class VisumTable(metaclass=MetaClass):
 
     def add_df(self, df: pd.DataFrame):
         """Add a pandas Dataframe"""
+        if df.empty:
+            return
         df.columns = df.columns.str.upper()
         df = df\
             .reset_index()\
@@ -366,8 +378,8 @@ class Version(VisumTable):
     code = 'VERSION'
     _cols = 'VERSNR;FILETYPE;LANGUAGE;UNIT'
     _defaults = {
-        'VERSNR': 10.0,
-        'LANGUAGE': 'DEU',
+        'VERSNR': 15.0,
+        'LANGUAGE': 'ENG',
         'FILETYPE': 'Demand',
         'UNIT': 'KM',
     }
@@ -457,7 +469,8 @@ class VisumTransfer:
             fobj.writeln(f'* {self.user}')
             fobj.writeln(f'* {self.date}')
             for table in self.tables.values():
-                table.write_block(fobj)
+                if table: # write only tables with rows
+                    table.write_block(fobj)
 
     def prepend(self, fn: str):
         """Prepend tables after the VERSION-section to the existing transfer file `fn`"""

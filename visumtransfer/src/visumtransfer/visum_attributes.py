@@ -8,14 +8,14 @@ from . import wingdbstub
 
 class VisumAttributes:
     """
-    Store the contents of the attribute.xlsx-file in an hdf5-file
+    Store the contents of the attribute.xlsx-file in parquet-files
     purpose is to automatically create the VisumTable classes
     """
     @classmethod
     def from_excel(cls,
-                   h5file: str,
+                   folder: str,
                    visum_version: int = 2023,
-                   language='Deu',
+                   language='Eng',
                    excel_file: str = None):
 
         self = super().__new__(cls)
@@ -40,26 +40,25 @@ class VisumAttributes:
         visum_version = os.path.split(executable_backup)[-1]
         sys.executable = sys.executable.replace(visum_version, "Python\\pythonw.exe")
         try:
-            self.tables.to_hdf(h5file, 'tables', format='t', complevel=2)
-            self.attributes.to_hdf(h5file, 'attributes', format='t',
-                                   complevel=2, mode='a')
-            self.relations.to_hdf(h5file, 'relations', format='t',
-                                  complevel=2, mode='a')
+            self.tables.to_parquet(os.path.join(folder, 'tables.parquet'), engine="pyarrow")
+            self.attributes.to_parquet(os.path.join(folder, 'attributes.parquet'), engine="pyarrow")
+            self.relations.to_parquet(os.path.join(folder, 'relations.parquet'), engine="pyarrow")
         finally:
             sys.executable = executable_backup
 
         self.set_index()
+        return self
 
     @classmethod
-    def from_hdf(cls, h5file):
+    def from_parquet(cls, folder):
         self = super().__new__(cls)
         executable_backup = sys.executable
         visum_version = os.path.split(executable_backup)[-1]
         sys.executable = sys.executable.replace(visum_version, "Python\\pythonw.exe")
         try:
-            self.tables = pd.read_hdf(h5file, 'tables')
-            self.attributes = pd.read_hdf(h5file, 'attributes')
-            self.relations = pd.read_hdf(h5file, 'relations')
+            self.tables = pd.read_parquet(os.path.join(folder, 'tables.parquet'), engine="pyarrow")
+            self.attributes = pd.read_parquet(os.path.join(folder, 'attributes.parquet'), engine="pyarrow")
+            self.relations = pd.read_parquet(os.path.join(folder, 'relations.parquet'), engine="pyarrow")
         finally:
             sys.executable = executable_backup
         self.set_index()
@@ -68,7 +67,7 @@ class VisumAttributes:
     def set_index(self):
         """set the shortGerman-name as index"""
         attrs = self.attributes.reset_index()
-        attrs['col'] = attrs['AttributeShort(DEU)'].str.upper()
+        attrs['col'] = attrs['AttributeShort(ENG)'].str.upper()
         is_empty = attrs['col'].isna()
         attrs.loc[is_empty, 'col'] = attrs.loc[is_empty,
                                                'AttributeID'].str.upper()

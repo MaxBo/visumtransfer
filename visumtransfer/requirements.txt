@@ -1,5 +1,7 @@
-recordclass
+recordclass<0.24
 openpyxl
-xarray
-tables
-pandas>=1.5
+pyarrow
+pandas>=2.3,<3
+numpy>=1.26,<2
+xarray>=2025
+scipy
