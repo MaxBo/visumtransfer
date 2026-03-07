@@ -465,9 +465,9 @@ class VisemDemandModel:
         userdef1.add_data_attribute('Activity', 'MatrixCode_Parking', valuetype='LongText')
         userdef1.add_data_attribute(
             objid='ACTIVITY',
-            name='ZIELWAHL_FUNKTION_MATRIXCODES',
+            name='ZIELWAHL_FUNKTION',
             valuetype='LongText',
-            comment='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
+            comment='Matrix/Attribut, die in die Zielwahl-Funktion einfliessen',
         )
 
         acts.create_tables(params.activities, model=model_code, suffix='')
@@ -608,7 +608,7 @@ class VisemDemandModel:
         )
         userdef1.add_data_attribute(
             objid='PERSONGROUP',
-            name='ZIELWAHL_FUNKTION_MATRIXCODES',
+            name='ZIELWAHL_FUNKTION',
             valuetype='LongText',
             comment='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
         )
@@ -616,7 +616,7 @@ class VisemDemandModel:
                      'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
                      'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'GROUP_GENERATION',
                      'MAIN_ACT', 'PERSONS', 'FAKTOR_ERWERBSTAETIGKEIT', 'TARIFMATRIX',
-                     'ZIELWAHL_FUNKTION_MATRIXCODES'])
+                     'ZIELWAHL_FUNKTION'])
 
         # Wege Gesamt und Verkehrsleistung der Gruppe
         formula = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUM])'
