@@ -612,11 +612,18 @@ class VisemDemandModel:
             valuetype='LongText',
             comment='Codes der Matrizen, die in die Zielwahl-Funktion einfliessen',
         )
+        userdef1.add_data_attribute(
+            objid='PERSONGROUP',
+            name='LS_MOD',
+            valuetype='Double',
+            comment='Multiplikative Anpassung der LogSum-Zielwahl-Parameter der Personengruppe',
+            defaultvalue=1.0,
+        )
         pg.add_cols(['CATEGORY', 'CODEPART', 'NAMEPART',
                      'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
                      'GROUPS_CONSTANTS', 'GROUPS_OUTPUT', 'GROUP_GENERATION',
                      'MAIN_ACT', 'PERSONS', 'FAKTOR_ERWERBSTAETIGKEIT', 'TARIFMATRIX',
-                     'ZIELWAHL_FUNKTION'])
+                     'ZIELWAHL_FUNKTION', 'LS_MOD'])
 
         # Wege Gesamt und Verkehrsleistung der Gruppe
         formula = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]: Mat[SUM])'
