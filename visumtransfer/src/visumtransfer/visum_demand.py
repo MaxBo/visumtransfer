@@ -618,6 +618,7 @@ class VisemDemandModel:
             valuetype='Double',
             comment='Multiplikative Anpassung der LogSum-Zielwahl-Parameter der Personengruppe',
             defaultvalue=1.0,
+            canbeempty=0
         )
         pg.add_cols(['CATEGORY', 'CODEPART', 'NAMEPART',
                      'CALIBRATION_HIERARCHY', 'ID_IN_CATEGORY',
@@ -872,11 +873,13 @@ class VisemDemandModel:
         userdef1.add_data_attribute('Mode',
                                     'MatrixCode_TravelCost',
                                     valuetype='LongText')
+        userdef1.add_data_attribute('Mode', 'BASEMODE',
+                                    valuetype='Bool', defaultvalue=0)
 
         # modes
-        new_modes = Mode()
-        new_modes.add(code='V', name='Virtuell', tsysset='R', interchangeable=False)
-        vt.tables['NewModes'] = new_modes
+        #new_modes = Mode()
+        #new_modes.add(code='V', name='Virtuell', tsysset='R', interchangeable=False)
+        #vt.tables['NewModes'] = new_modes
 
         modes = Mode(mode='*')
         modes.add_cols(['MatrixCode_TravelTime', 'MatrixCode_TravelCost', 'BaseMode'])

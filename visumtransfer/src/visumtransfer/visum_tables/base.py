@@ -5,7 +5,6 @@ import pandas as pd
 from visumtransfer.visum_table import VisumTable
 
 
-
 class Network(VisumTable):
     name = 'Network'
     code = 'NETWORK'
@@ -35,8 +34,8 @@ class UserDefinedAttribute(VisumTable):
     code = 'USERATTDEF'
 
     _cols = ('OBJID;ATTID;CODE;NAME;VALUETYPE;MINVALUE;MAXVALUE;'
-    'DEFAULTVALUE;DEFAULTSTRINGVALUE;COMMENT;MAXSTRINGLENGTH;NUMDECPLACES;'
-    'DATASOURCETYPE;FORMULA;CROSSSECTIONLOGIC;USERDEFINEDGROUPNAME')
+             'DEFAULTVALUE;DEFAULTSTRINGVALUE;COMMENT;MAXSTRINGLENGTH;NUMDECPLACES;'
+             'DATASOURCETYPE;FORMULA;CROSSSECTIONLOGIC;USERDEFINEDGROUPNAME;CANBEEMPTY')
 
     _pkey = 'OBJID;ATTID'
 
@@ -49,13 +48,13 @@ class UserDefinedAttribute(VisumTable):
                  }
 
     def add_formula_attribute(self,
-                             objid: str,
-                             name: str,
-                             formula: str,
-                             attid: str=None,
-                             code: str=None,
-                             userdefinedgroupname: str=None,
-                             **kwargs):
+                              objid: str,
+                              name: str,
+                              formula: str,
+                              attid: str = None,
+                              code: str = None,
+                              userdefinedgroupname: str = None,
+                              **kwargs):
         """
         add formula-attribute
 
@@ -85,12 +84,12 @@ class UserDefinedAttribute(VisumTable):
                  **kwargs)
 
     def add_data_attribute(self,
-                            objid: str,
-                            name: str,
-                            attid: str=None,
-                            code: str=None,
-                            userdefinedgroupname: str=None,
-                            **kwargs):
+                           objid: str,
+                           name: str,
+                           attid: str = None,
+                           code: str = None,
+                           userdefinedgroupname: str = None,
+                           **kwargs):
         """
         add Data-Attribute
 
@@ -118,7 +117,6 @@ class UserDefinedAttribute(VisumTable):
         self.add_row(row)
 
 
-
 class TSys(VisumTable):
     name = 'Transport Systems'
     code = 'TSYS'
@@ -144,7 +142,7 @@ class Zone(VisumTable):
         attrs = [f'NumPersons({pg})' for pg in names]
         self._cols = ';'.join(['NO'] + attrs)
 
-        values = r[['vz_id']+list(names)]
+        values = r[['vz_id'] + list(names)]
         self.add_rows(values.tolist())
         self._mode = '*'
 
@@ -158,6 +156,6 @@ class Zone(VisumTable):
                  for sg in names]
         self._cols = ';'.join(['NO'] + list(attrs))
 
-        values = r[['vz_id']+list(names)]
+        values = r[['vz_id'] + list(names)]
         self.add_rows(values.tolist())
         self._mode = '*'
