@@ -667,7 +667,7 @@ class Matrix(VisumTable):
             fromtime = self.get_timestring(ts.from_hour)
             totime = self.get_timestring(ts.to_hour)
 
-            dsegs.add(code=dsegcode, name=ts_name, mode=modecode, nseg_zeitscheibe=True)
+            dsegs.add(code=dsegcode, name=ts_name, mode=modecode, nseg_zeitscheibe=1)
 
             code_region = dsegcode
             self.add_data_matrix(
