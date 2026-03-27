@@ -573,39 +573,39 @@ class Matrix(VisumTable):
                              matrixfolder='Wiver',
                              matrixtype='Demand',
                              dsegcode='P_W',
-                             modecode='P_W')
+                             modecode='P')
         self.add_data_matrix(code='Lieferfahrzeuge', name='Lieferfahrzeuge',
                              loadmatrix=loadmatrix,
                              matrixfolder='Wiver',
                              matrixtype='Demand',
                              dsegcode='LKW_S',
-                             modecode='LKW_S')
+                             modecode='P')
         self.add_data_matrix(code='Lkw_bis_12to',
                              name='Lkw zw. 3,5 und 12 to',
                              matrixfolder='Wiver',
                              loadmatrix=loadmatrix,
                              matrixtype='Demand',
                              dsegcode='LKW_L',
-                             modecode='LKW_L')
+                             modecode='S')
         self.add_data_matrix(code='Lkw_über_12to', name='Lkw > 3,5 to',
                              loadmatrix=loadmatrix,
                              matrixfolder='Wiver',
                              matrixtype='Demand',
                              dsegcode='LKW_XL',
-                             modecode='LKW_XL')
+                             modecode='X')
         self.add_data_matrix(code='FernverkehrPkw',
                              name='Pkw-Fernverkehr',
                              loadmatrix=loadmatrix,
                              matrixtype='Demand',
                              dsegcode='P_ex',
-                             modecode='P_ex',
+                             modecode='P',
                              matrixfolder='Fernverkehr')
         self.add_data_matrix(code='FernverkehrLkw',
                              name='Lkw-Fernverkehr',
                              loadmatrix=loadmatrix,
                              matrixtype='Demand',
                              dsegcode='Lkw_ex',
-                             modecode='Lkw_ex',
+                             modecode='X',
                              matrixfolder='Fernverkehr')
 
         ## Summen Schwerverkehr und Kfz bis 3.5 to
