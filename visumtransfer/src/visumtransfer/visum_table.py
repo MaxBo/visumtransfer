@@ -234,7 +234,8 @@ class VisumTable(metaclass=MetaClass):
                   quoting=csv.QUOTE_NONE,
                   header=False,
                   index=False,
-                  lineterminator='\n')
+                  lineterminator='\n',
+                  encoding='cp1252')
         fobj.writeln('')
 
     @property
@@ -464,7 +465,7 @@ class VisumTransfer:
 
     def write(self, fn: str):
         """Write transfer file to file `fn`"""
-        with open(fn, 'w') as f:
+        with open(fn, 'w', encoding='cp1252') as f:
             fobj = WriteLine(f)
             fobj.writeln('$VISION')
             fobj.writeln(f'* {self.user}')
@@ -476,8 +477,8 @@ class VisumTransfer:
     def prepend(self, fn: str):
         """Prepend tables after the VERSION-section to the existing transfer file `fn`"""
         fn2 = tempfile.mktemp(suffix='.tra')
-        with open(fn, 'r') as f:
-            with open(fn2, 'w') as f2:
+        with open(fn, 'r', encoding='cp1252') as f:
+            with open(fn2, 'w', encoding='cp1252') as f2:
                 found = False
                 while not found:
                     line = f.readline()
@@ -499,7 +500,7 @@ class VisumTransfer:
 
     def append(self, fn: str):
         """Append tables except the VERSION-section to the existing transfer file `fn`"""
-        with open(fn, 'a') as f:
+        with open(fn, 'a', encoding='cp1252') as f:
             fobj = WriteLine(f)
             for table in self.tables.values():
                 #  skip Version when appending to existing tra-file

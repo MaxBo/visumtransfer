@@ -233,10 +233,11 @@ class Matrix(VisumTable):
 
         self.set_category('OV_TimeSeries_Skims')
         for idx, ts in time_series.iterrows():
-            ts_code = ts.code
+            ts_code = f'{ts.code:04d}'
             ts_name = ts.name_long
             fromtime = self.get_timestring(ts.from_hour)
             totime = self.get_timestring(ts.to_hour)
+            desgcode_ts = f'O_{ts_code}'
 
             for dsegcode in dsegcodes:
                 self.add_data_matrix(
@@ -253,6 +254,30 @@ class Matrix(VisumTable):
                     # modecode='O',
                 )
 
+            self.add_data_matrix(
+                code='XADT',
+                matrixtype='Skim',
+                name=f'Erweiterte Anpassungszeit {dsegcode} {ts_name}',
+                filename=f'XADT_{ts_code}',
+                dsegcode=desgcode_ts,
+                fromtime="",
+                totime="",
+                initmatrix=1,
+                timeref='Departuretime',
+            )
+
+            self.add_data_matrix(
+                code='PJT',
+                matrixtype='Skim',
+                name=f'Erweiterte Anpassungszeit {dsegcode} {ts_name}',
+                filename=f'XADT_{ts_code}',
+                dsegcode=desgcode_ts,
+                fromtime="",
+                totime="",
+                initmatrix=1,
+                timeref='Departuretime',
+            )
+
             dsegcode = 'O'
 
             self.add_data_matrix(
@@ -266,21 +291,6 @@ class Matrix(VisumTable):
                 totime=totime,
                 timeref='Departuretime',
                 initmatrix=1,
-                # modecode='O'
-            )
-
-            self.add_data_matrix(
-                code='XADT',
-                matrixtype='Skim',
-                name=f'Erweiterte Anpassungszeit {dsegcode} {ts_name}',
-                filename=f'XADT_{ts_code}',
-                dsegcode=dsegcode,
-                day=1,
-                fromtime=fromtime,
-                totime=totime,
-                initmatrix=1,
-                timeref='Departuretime',
-                # modecode='O',
             )
 
             self.add_data_matrix(
@@ -324,67 +334,8 @@ class Matrix(VisumTable):
 
         dsegcode = 'O'
 
-        self.add_data_matrix(
-            code='PJT',
-            matrixtype='Skim',
-            name=f'Empfundene Reisezeit {dsegcode}',
-            dsegcode=dsegcode,
-            fromtime='',
-            totime='',
-            timeref='Departuretime',
-            #modecode='O',
-        )
-        self.add_data_matrix(
-            code='FFZ',
-            matrixtype='Skim',
-            name=f'Fahrzeugfolgezeit {dsegcode}',
-            dsegcode=dsegcode,
-            fromtime='',
-            totime='',
-            timeref='Departuretime',
-            # moduscode='O',
-        )
-        self.add_data_matrix(
-            code='XADT',
-            matrixtype='Skim',
-            name=f'Erweiterte Anpassungszeit {dsegcode}',
-            dsegcode=dsegcode,
-            fromtime='',
-            totime='',
-            timeref='Departuretime',
-            modecode='O',
-        )
-        self.add_data_matrix(
-            code='ADT',
-            matrixtype='Skim',
-            name=f'Anpassungszeit {dsegcode}',
-            dsegcode=dsegcode,
-            fromtime='',
-            totime='',
-            timeref='Departuretime',
-            modecode='O',
-        )
-        self.add_data_matrix(
-            code='IMP',
-            matrixtype='Skim',
-            name=f'Widerstand {dsegcode}',
-            dsegcode=dsegcode,
-            fromtime='',
-            totime='',
-            timeref='Departuretime',
-            modecode='O',
-        )
-        self.add_data_matrix(
-            code='JRD',
-            matrixtype='Skim',
-            name=f'Reiseweite {dsegcode}',
-            dsegcode=dsegcode,
-            fromtime='',
-            totime='',
-            # initmatrix=1,
-            timeref='Departuretime',
-            modecode='O',
-        )
+
+
 
         self.set_category('OV_TimeSeries_Skims_Formula')
 
@@ -708,13 +659,14 @@ class Matrix(VisumTable):
 
         # ÖV-Time-Matrices
         modecode = 'O'
+        dsegs.add_cols(['NSEG_ZEITSCHEIBE'])
         for idx, ts in params.time_series.iterrows():
             ts_name = ts.name_long
             dsegcode = f'{modecode}_{ts.from_hour:02d}{ts.to_hour:02d}'
             fromtime = self.get_timestring(ts.from_hour)
             totime = self.get_timestring(ts.to_hour)
 
-            dsegs.add(code=dsegcode, name=ts_name, mode=modecode)
+            dsegs.add(code=dsegcode, name=ts_name, mode=modecode, nseg_zeitscheibe=1)
 
             code_region = dsegcode
             self.add_data_matrix(
