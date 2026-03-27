@@ -660,13 +660,14 @@ class Matrix(VisumTable):
 
         # ÖV-Time-Matrices
         modecode = 'O'
+        dsegs.add_cols(['NSEG_ZEITSCHEIBE'])
         for idx, ts in params.time_series.iterrows():
             ts_name = ts.name_long
             dsegcode = f'{modecode}_{ts.from_hour:02d}{ts.to_hour:02d}'
             fromtime = self.get_timestring(ts.from_hour)
             totime = self.get_timestring(ts.to_hour)
 
-            dsegs.add(code=dsegcode, name=ts_name, mode=modecode)
+            dsegs.add(code=dsegcode, name=ts_name, mode=modecode, nseg_zeitscheibe=True)
 
             code_region = dsegcode
             self.add_data_matrix(
