@@ -270,6 +270,20 @@ class Matrix(VisumTable):
             )
 
             self.add_data_matrix(
+                code='XADT',
+                matrixtype='Skim',
+                name=f'Erweiterte Anpassungszeit {dsegcode} {ts_name}',
+                filename=f'XADT_{ts_code}',
+                dsegcode=dsegcode,
+                day=1,
+                fromtime=fromtime,
+                totime=totime,
+                initmatrix=1,
+                timeref='Departuretime',
+                # modecode='O',
+            )
+
+            self.add_data_matrix(
                 code='JRD',
                 matrixtype='Skim',
                 name=f'Reiseweite {dsegcode} {ts_name}',
@@ -334,6 +348,26 @@ class Matrix(VisumTable):
             code='XADT',
             matrixtype='Skim',
             name=f'Erweiterte Anpassungszeit {dsegcode}',
+            dsegcode=dsegcode,
+            fromtime='',
+            totime='',
+            timeref='Departuretime',
+            modecode='O',
+        )
+        self.add_data_matrix(
+            code='ADT',
+            matrixtype='Skim',
+            name=f'Anpassungszeit {dsegcode}',
+            dsegcode=dsegcode,
+            fromtime='',
+            totime='',
+            timeref='Departuretime',
+            modecode='O',
+        )
+        self.add_data_matrix(
+            code='IMP',
+            matrixtype='Skim',
+            name=f'Widerstand {dsegcode}',
             dsegcode=dsegcode,
             fromtime='',
             totime='',
@@ -503,11 +537,25 @@ class Matrix(VisumTable):
                              modecode='P',
                              savematrix=savematrix)
 
+        userdef.add_data_attribute(
+            objid='Zone',
+            name='Binnendistanz_defined',
+            canbeempty=1,
+            comment='gesetzte Binnendistanz in km',
+        )
+
         userdef.add_formula_attribute(
             objid='Zone',
             name='Binnendistanz_area',
             formula='SQRT([AREAKM2]) / 3',
             comment='geschätzte Binnendistanz in km',
+        )
+
+        userdef.add_formula_attribute(
+            objid='Zone',
+            name='Binnendistanz',
+            formula='IF([BINNENDISTANZ_DEFINED]>0:[BINNENDISTANZ_DEFINED]:[BINNENDISTANZ_AREA])',
+            comment='gesetzte oder geschätzte Binnendistanz in km',
         )
 
         self.add_formula_matrix(
