@@ -334,9 +334,6 @@ class Matrix(VisumTable):
 
         dsegcode = 'O'
 
-
-
-
         self.set_category('OV_TimeSeries_Skims_Formula')
 
         self.add_data_matrix(
@@ -463,6 +460,13 @@ class Matrix(VisumTable):
                                  fromtime='',
                                  totime='',
                                  savematrix=savematrix)
+
+        self.add_data_matrix(code='DID',
+                             name=f'Luftlinienweite',
+                             matrixtype='Skim',
+                             dsegcode='PG',
+                             fromtime='',
+                             totime='')
 
         self.add_data_matrix(code='TFUSS', name='tFuss',
                              matrixtype='Skim',
