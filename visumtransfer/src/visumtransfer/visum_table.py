@@ -465,6 +465,10 @@ class VisumTransfer:
 
     def write(self, fn: str):
         """Write transfer file to file `fn`"""
+        # create folder if not exists
+        folder = os.path.split(fn)[0]
+        if folder:
+            os.makedirs(folder, exist_ok=True)
         with open(fn, 'w', encoding='cp1252') as f:
             fobj = WriteLine(f)
             fobj.writeln('$VISION')
