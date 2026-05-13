@@ -267,7 +267,7 @@ class Matrix(VisumTable):
             )
 
             self.add_data_matrix(
-                code='PJT',
+                code='XADT',
                 matrixtype='Skim',
                 name=f'Erweiterte Anpassungszeit {dsegcode} {ts_name}',
                 filename=f'XADT_{ts_code}',
