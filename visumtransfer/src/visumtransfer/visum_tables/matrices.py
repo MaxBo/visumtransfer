@@ -267,7 +267,7 @@ class Matrix(VisumTable):
             )
 
             self.add_data_matrix(
-                code='PJT',
+                code='XADT',
                 matrixtype='Skim',
                 name=f'Erweiterte Anpassungszeit {dsegcode} {ts_name}',
                 filename=f'XADT_{ts_code}',
@@ -333,48 +333,6 @@ class Matrix(VisumTable):
             )
 
         dsegcode = 'O'
-
-        #self.add_data_matrix(
-            #code='PJT',
-            #matrixtype='Skim',
-            #name=f'Empfundene Reisezeit {dsegcode}',
-            #dsegcode=dsegcode,
-            #fromtime='',
-            #totime='',
-            #timeref='Departuretime',
-            ##modecode='O',
-        #)
-        #self.add_data_matrix(
-            #code='FFZ',
-            #matrixtype='Skim',
-            #name=f'Fahrzeugfolgezeit {dsegcode}',
-            #dsegcode=dsegcode,
-            #fromtime='',
-            #totime='',
-            #timeref='Departuretime',
-            ## moduscode='O',
-        #)
-        #self.add_data_matrix(
-            #code='XADT',
-            #matrixtype='Skim',
-            #name=f'Erweiterte Anpassungszeit {dsegcode}',
-            #dsegcode=dsegcode,
-            #fromtime='',
-            #totime='',
-            #timeref='Departuretime',
-            #modecode='O',
-        #)
-        #self.add_data_matrix(
-            #code='JRD',
-            #matrixtype='Skim',
-            #name=f'Reiseweite {dsegcode}',
-            #dsegcode=dsegcode,
-            #fromtime='',
-            #totime='',
-            ## initmatrix=1,
-            #timeref='Departuretime',
-            #modecode='O',
-        #)
 
         self.set_category('OV_TimeSeries_Skims_Formula')
 
@@ -503,6 +461,13 @@ class Matrix(VisumTable):
                                  totime='',
                                  savematrix=savematrix)
 
+        self.add_data_matrix(code='DID',
+                             name=f'Luftlinienweite',
+                             matrixtype='Skim',
+                             dsegcode='PG',
+                             fromtime='',
+                             totime='')
+
         self.add_data_matrix(code='TFUSS', name='tFuss',
                              matrixtype='Skim',
                              dsegcode='F',
@@ -527,11 +492,25 @@ class Matrix(VisumTable):
                              modecode='P',
                              savematrix=savematrix)
 
+        userdef.add_data_attribute(
+            objid='Zone',
+            name='Binnendistanz_defined',
+            canbeempty=1,
+            comment='gesetzte Binnendistanz in km',
+        )
+
         userdef.add_formula_attribute(
             objid='Zone',
             name='Binnendistanz_area',
             formula='SQRT([AREAKM2]) / 3',
             comment='geschätzte Binnendistanz in km',
+        )
+
+        userdef.add_formula_attribute(
+            objid='Zone',
+            name='Binnendistanz',
+            formula='IF([BINNENDISTANZ_DEFINED]>0:[BINNENDISTANZ_DEFINED]:[BINNENDISTANZ_AREA])',
+            comment='gesetzte oder geschätzte Binnendistanz in km',
         )
 
         self.add_formula_matrix(
