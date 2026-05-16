@@ -2,6 +2,6 @@ recordclass<0.24
 openpyxl
 pyarrow
 pandas>=2.3,<3
-numpy>=1.26,<2
+numpy>=2.3,<2.4
 xarray>=2025
-scipy
+
