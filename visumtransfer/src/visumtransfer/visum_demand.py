@@ -146,7 +146,7 @@ class VisemDemandModel:
         self.add_coefficients(params, userdef1, gr_coeff)
 
         # Nachfragematrizen
-        matrices.add_iv_demand(loadmatrix=0)
+        matrices.add_iv_demand(params, loadmatrix=0)
         dsegs = DemandSegment()
         matrices.add_ov_demand(params, dsegs=dsegs, loadmatrix=0)
         matrices.add_other_demand_matrices(params, loadmatrix=0)
