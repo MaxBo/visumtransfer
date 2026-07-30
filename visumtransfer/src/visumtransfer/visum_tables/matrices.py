@@ -554,88 +554,44 @@ class Matrix(VisumTable):
                              matrixtype='Skim',
                              dsegcode='PG')
 
-    def add_iv_demand(self, savematrix=0, loadmatrix=1):
+    def add_iv_demand(self,
+                      params: Params,
+                      savematrix: int = 0,
+                      loadmatrix: int = 1):
         """Add PrT Demand Matrices"""
+        dmats = params.dseg_matrices
+        data_matrices = dmats.loc[dmats.TYPE == 'DATA']
 
-        self.set_category('Visem_Demand')
-        self.add_data_matrix(code='Visem_P', name='Pkw regional',
-                             loadmatrix=loadmatrix,
-                             matrixtype='Demand',
-                             dsegcode='P',
-                             modecode='P',
-                             savematrix=savematrix,
-                             obb_matrix_ref='[CODE]="Visem_OBB_P"',
-                             matrixfolder='Analysefall',
-                             )
+        for i, mat in data_matrices.iterrows():
+            self.set_category(mat.CATEGORY)
+            self.add_data_matrix(code=mat.CODE,
+                                 name=mat.NAME,
+                                 loadmatrix=loadmatrix,
+                                 savematrix=savematrix,
+                                 matrixtype='Demand',
+                                 dsegcode=mat.DSEGCODE,
+                                 modecode=mat.MODECODE,
+                                 obb_matrix_ref=mat.OBB_MATRIX_REF,
+                                 matrixfolder=mat.MATRIXFOLDER,
+                                 )
 
-        self.set_category('Other_Demand')
+        formula_matrices = dmats.loc[dmats.TYPE == 'FORMULA']
 
-        self.add_data_matrix(code='Pkw_Wirtschaftsverkehr',
-                             name='Pkw-Wirtschaftsverkehr',
-                             loadmatrix=loadmatrix,
-                             matrixfolder='Wiver',
-                             matrixtype='Demand',
-                             dsegcode='P_W',
-                             modecode='P')
-        self.add_data_matrix(code='Lieferfahrzeuge', name='Lieferfahrzeuge',
-                             loadmatrix=loadmatrix,
-                             matrixfolder='Wiver',
-                             matrixtype='Demand',
-                             dsegcode='LKW_S',
-                             modecode='P')
-        self.add_data_matrix(code='Lkw_bis_12to',
-                             name='Lkw zw. 3,5 und 12 to',
-                             matrixfolder='Wiver',
-                             loadmatrix=loadmatrix,
-                             matrixtype='Demand',
-                             dsegcode='LKW_L',
-                             modecode='S')
-        self.add_data_matrix(code='Lkw_über_12to', name='Lkw > 3,5 to',
-                             loadmatrix=loadmatrix,
-                             matrixfolder='Wiver',
-                             matrixtype='Demand',
-                             dsegcode='LKW_XL',
-                             modecode='X')
-        self.add_data_matrix(code='FernverkehrPkw',
-                             name='Pkw-Fernverkehr',
-                             loadmatrix=loadmatrix,
-                             matrixtype='Demand',
-                             dsegcode='P_ex',
-                             modecode='P',
-                             matrixfolder='Fernverkehr')
-        self.add_data_matrix(code='FernverkehrLkw',
-                             name='Lkw-Fernverkehr',
-                             loadmatrix=loadmatrix,
-                             matrixtype='Demand',
-                             dsegcode='Lkw_ex',
-                             modecode='X',
-                             matrixfolder='Fernverkehr')
+        for i, mat in formula_matrices.iterrows():
+            self.set_category(mat.CATEGORY)
+            codes = data_matrices.loc[data_matrices.GROUP == mat.CODE, 'CODE']
+            formula = ' + '.join((f'Matrix([CODE]="{nseg}" & [OBJECTTYPEREF]=2)'
+                                  for nseg in codes))
 
-        ## Summen Schwerverkehr und Kfz bis 3.5 to
-        nsegs = ['Lkw_bis_12to',
-                 'Lkw_über_12to',
-                 'FernverkehrLkw']
-        formula = ' + '.join((f'Matrix([CODE]="{nseg}" & [OBJECTTYPEREF]=2)'
-                              for nseg in nsegs))
-        self.add_formula_matrix(code='Schwerverkehr',
-                                formula=formula,
-                                name='Schwerverkehr ohne Busse',
-                                matrixtype='Demand',
-                                dsegcode='SV')
-
-        nsegs = ['Visem_P',
-                 'Pkw_Wirtschaftsverkehr',
-                 'Lieferfahrzeuge',
-                 'FernverkehrPkw',
-                 ]
-        formula = ' + '.join((f'Matrix([CODE]="{nseg}" & [OBJECTTYPEREF]=2)'
-                             for nseg in nsegs))
-        self.add_formula_matrix(code='Kfz_35',
-                                formula=formula,
-                                name='Kfz bis 3,5 to',
-                                matrixtype='Demand',
-                                dsegcode='PG',
-                                modecode='P')
+            self.add_formula_matrix(code=mat.CODE,
+                                    name=mat.NAME,
+                                    matrixtype='Demand',
+                                    dsegcode=mat.DSEGCODE,
+                                    modecode=mat.MODECODE,
+                                    obb_matrix_ref=mat.OBB_MATRIX_REF,
+                                    matrixfolder=mat.MATRIXFOLDER,
+                                    formula=formula,
+                                    )
 
     def add_ov_demand(self,
                       params,
@@ -643,23 +599,9 @@ class Matrix(VisumTable):
                       savematrix=0,
                       loadmatrix=1):
         """Add PrT Demand Matrices"""
-        self.set_category('Visem_Demand')
-        self.add_data_matrix(code='Visem_O', name='ÖPNV',
-                             matrixtype='Demand',
-                             dsegcode='O',
-                             modecode='O',
-                             savematrix=savematrix,
-                             obb_matrix_ref='[CODE]="Visem_OBB_O"',
-                             matrixfolder='Analysefall',
-                             )
-        self.set_category('OV_Demand')
         code_fv = 'FernverkehrBahn'
-        self.add_data_matrix(code=code_fv, name='Fernverkehr Bahn',
-                             loadmatrix=loadmatrix,
-                             matrixtype='Demand',
-                             dsegcode='O_ex',
-                             modecode='O',
-                             matrixfolder='Fernverkehr')
+
+        self.set_category('OV_Demand')
 
         # ÖV-Time-Matrices
         modecode = 'O'
