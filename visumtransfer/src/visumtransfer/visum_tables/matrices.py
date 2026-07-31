@@ -266,18 +266,6 @@ class Matrix(VisumTable):
                 timeref='Departuretime',
             )
 
-            self.add_data_matrix(
-                code='XADT',
-                matrixtype='Skim',
-                name=f'Erweiterte Anpassungszeit {dsegcode} {ts_name}',
-                filename=f'XADT_{ts_code}',
-                dsegcode=desgcode_ts,
-                fromtime="",
-                totime="",
-                initmatrix=1,
-                timeref='Departuretime',
-            )
-
             dsegcode = 'O'
 
             self.add_data_matrix(
