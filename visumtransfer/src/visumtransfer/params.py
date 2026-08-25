@@ -33,6 +33,7 @@ class Params:
         modes='modes',
         trip_chain_rates_rsa='trip_chain_rates_rsa',
         accessibilities='accessibilities',
+        dseg_matrices='DSegMatrices',
     )
 
     def __init__(self, excel_fp: str):
