@@ -211,14 +211,12 @@ class VisemDemandModel:
                           dsegcodes: DemandSegment):
         """add skim matrices"""
         matrices.set_category('General')
-        matrices.add_data_matrix('Diagonal',
-                                 category='General',
-                                 matrixtype='Skim',
-                                 loadmatrix=0)
-        matrices.add_data_matrix('NoDiagonal',
-                                 category='General',
-                                 matrixtype='Skim',
-                                 loadmatrix=0)
+        matrices.add_formula_matrix('Diagonal',
+                                    category='General',
+                                    formula='FROM[NO]=TO[NO]')
+        matrices.add_formula_matrix('NoDiagonal',
+                                    category='General',
+                                    formula='FROM[NO]!=TO[NO]')
         matrices.add_ov_kg_matrices(params, userdef1, dsegcodes=dsegcodes)
         matrices.add_iv_kg_matrices(userdef1)
 
