@@ -624,6 +624,13 @@ class Activity(VisumTable):
             userdef.add_data_attribute(
                 'ACTIVITY',
                 userdefinedgroupname=gr_coeff,
+                name=f'MOD_CONST_{mode.code}',
+                comment=f'Anpassung Verkehrsmittelspezifische Konstante {mode.bezeichnung}',
+                defaultvalue=0,
+            )
+            userdef.add_data_attribute(
+                'ACTIVITY',
+                userdefinedgroupname=gr_coeff,
                 name=f'KF_CONST_{mode.code}',
                 comment=f'Korrekturfaktor für Kalibrierung MS {mode.bezeichnung}',
                 defaultvalue=0,

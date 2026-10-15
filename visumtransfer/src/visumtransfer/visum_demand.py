@@ -146,8 +146,8 @@ class VisemDemandModel:
         self.add_coefficients(params, userdef1, gr_coeff)
 
         # Nachfragematrizen
-        matrices.add_iv_demand(params, loadmatrix=0)
-        dsegs = DemandSegment()
+        dsegs = DemandSegment(mode='')
+        matrices.add_iv_demand(params, dsegs=dsegs, loadmatrix=0)
         matrices.add_ov_demand(params, dsegs=dsegs, loadmatrix=0)
         matrices.add_other_demand_matrices(params, loadmatrix=0)
         matrices.add_commuter_matrices()
@@ -708,6 +708,14 @@ class VisemDemandModel:
         )
         userdef1.add_data_attribute(
             'PERSONGROUP',
+            f'MOD_CONST_{m}',
+            valuetype='Double',
+            defaultvalue=0,
+            comment=f'Anpassung der Konstante für Verkehrsmittel {mode.name}',
+            userdefinedgroupname=gr_coeff,
+        )
+        userdef1.add_data_attribute(
+            'PERSONGROUP',
             f'TARGET_MS_{m}',
             valuetype='Double',
             comment=f'Ziel-ModalSplit für Verkehrsmittel {mode.name}',
@@ -721,7 +729,8 @@ class VisemDemandModel:
             userdefinedgroupname=gr_coeff,
         )
 
-        pg.add_cols([f'BASECONST_{m}', f'CONST_{m}', f'TARGET_MS_{m}', f'KF_CONST_{m}'])
+        pg.add_cols([f'BASECONST_{m}', f'CONST_{m}', f'MOD_CONST_{m}',
+                     f'TARGET_MS_{m}', f'KF_CONST_{m}'])
 
         # Trips by Mode und Modal Split of the Group
         formula = f'TableLookup(MATRIX Mat: Mat[CODE]="Pgr_"+[CODE]+"_{m}": Mat[SUM])'
@@ -975,7 +984,11 @@ class VisemDemandModel:
         v.write(fn=fn)
 
     def create_transfer_constants(self, params: Params, modification_no: int):
-        cols = [f'BASECONST_{mode.code}' for _, mode in params.modes.iterrows()]
+        cols_baseconst = [f'BASECONST_{mode.code}'
+                          for _, mode in params.modes.iterrows()]
+        cols_mod_const = [f'MOD_CONST_{mode.code}'
+                          for _, mode in params.modes.iterrows()]
+        cols = cols_baseconst + cols_mod_const
 
         v = VisumTransfer.new_transfer()
 

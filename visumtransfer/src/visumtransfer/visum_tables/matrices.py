@@ -2,6 +2,7 @@
 
 import datetime
 from collections import defaultdict
+import pandas as pd
 import xarray as xr
 from visumtransfer.params import Params
 from typing import Mapping, List
@@ -15,6 +16,7 @@ class MatrixCategories(dict):
         'Visem_Demand': 20,
         'Visem_OV_Stunden': 30,
         'Other_Demand': 70,
+        'Extern': 90,
         'OV_Demand': 100,
         'DestinationChoiceSkims': 108,
         'IV_Skims': 150,
@@ -544,8 +546,10 @@ class Matrix(VisumTable):
 
     def add_iv_demand(self,
                       params: Params,
+                      dsegs: 'DemandSegment',
                       savematrix: int = 0,
-                      loadmatrix: int = 1):
+                      loadmatrix: int = 1
+                      ):
         """Add PrT Demand Matrices"""
         dmats = params.dseg_matrices
         data_matrices = dmats.loc[dmats.TYPE == 'DATA']
@@ -562,14 +566,19 @@ class Matrix(VisumTable):
                                  obb_matrix_ref=mat.OBB_MATRIX_REF,
                                  matrixfolder=mat.MATRIXFOLDER,
                                  )
+            if not pd.isna(mat.ADD_DSEG):
+                dsegs.add(code=mat.DSEGCODE, name=mat.DSEGCODE, mode=mat.MODECODE)
 
         formula_matrices = dmats.loc[dmats.TYPE == 'FORMULA']
 
         for i, mat in formula_matrices.iterrows():
             self.set_category(mat.CATEGORY)
-            codes = data_matrices.loc[data_matrices.GROUP == mat.CODE, 'CODE']
-            formula = ' + '.join((f'Matrix([CODE]="{nseg}" & [OBJECTTYPEREF]=2)'
-                                  for nseg in codes))
+            codes = dmats.loc[dmats.GROUP == mat.CODE, 'CODE']
+            if mat.FORMULA:
+                formula = mat.FORMULA
+            else:
+                formula = ' + '.join((f'Matrix([CODE]="{nseg}" & [OBJECTTYPEREF]=2)'
+                                      for nseg in codes))
 
             self.add_formula_matrix(code=mat.CODE,
                                     name=mat.NAME,
@@ -580,6 +589,8 @@ class Matrix(VisumTable):
                                     matrixfolder=mat.MATRIXFOLDER,
                                     formula=formula,
                                     )
+            if not pd.isna(mat.ADD_DSEG):
+                dsegs.add(code=mat.DSEGCODE, name=mat.DSEGCODE, mode=mat.MODECODE)
 
     def add_ov_demand(self,
                       params,
@@ -587,7 +598,8 @@ class Matrix(VisumTable):
                       savematrix=0,
                       loadmatrix=1):
         """Add PrT Demand Matrices"""
-        code_fv = 'FernverkehrBahn'
+        dmats = params.dseg_matrices
+        ovextern = dmats.loc[~pd.isna(dmats.OVEXTERN)]
 
         self.set_category('OV_Demand')
 
@@ -613,7 +625,9 @@ class Matrix(VisumTable):
                 timeref='Departuretime',
                 modecode='O',
             )
-            formula = f'''Matrix([CODE]="{code_region}") + Matrix([CODE]="{code_fv}") * {ts.Ganglinie_OVFern}'''
+            formula = f'''Matrix([CODE]="{code_region}")'''
+            for _, dseg in ovextern.iterrows():
+                formula += f''' + Matrix([CODE]="{dseg.CODE}") * {ts.Ganglinie_OVFern}'''
             code = f'{dsegcode} incl. Fernverkehr'
             self.add_formula_matrix(
                 code=code,
