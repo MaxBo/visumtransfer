@@ -574,7 +574,7 @@ class Matrix(VisumTable):
         for i, mat in formula_matrices.iterrows():
             self.set_category(mat.CATEGORY)
             codes = dmats.loc[dmats.GROUP == mat.CODE, 'CODE']
-            if mat.FORMULA:
+            if not pd.isna(mat.FORMULA):
                 formula = mat.FORMULA
             else:
                 formula = ' + '.join((f'Matrix([CODE]="{nseg}" & [OBJECTTYPEREF]=2)'
