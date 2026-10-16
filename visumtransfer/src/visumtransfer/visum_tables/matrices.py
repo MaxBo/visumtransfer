@@ -16,7 +16,7 @@ class MatrixCategories(dict):
         'Visem_Demand': 20,
         'Visem_OV_Stunden': 30,
         'Other_Demand': 70,
-        'Extern': 90,
+        'Extern': 80,
         'OV_Demand': 100,
         'DestinationChoiceSkims': 108,
         'IV_Skims': 150,
