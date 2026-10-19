@@ -467,6 +467,11 @@ class VisemDemandModel:
             valuetype='LongText',
             comment='Matrix/Attribut, die in die Zielwahl-Funktion einfliessen',
         )
+        # special Tarifmatrix of Activity
+        userdef1.add_data_attribute(
+            'ACTIVITY', 'Tarifmatrix', valuetype='LongText',
+            comment='spezielle Tarifmatrix der Aktivität',
+        )
 
         acts.create_tables(params.activities, model=model_code, suffix='')
         acts.add_benutzerdefinierte_attribute(userdef2)

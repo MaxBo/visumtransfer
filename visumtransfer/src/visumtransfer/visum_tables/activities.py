@@ -15,7 +15,7 @@ class Activity(VisumTable):
     _cols = ('CODE;RANK;NAME;DEMANDMODELCODE;ISHOMEACTIVITY;'
              'STRUCTURALPROPCODES;CONSTRAINTDEST;RSA;'
              'COMPOSITE_ACTIVITIES;AUTOCALIBRATE;CALCDESTMODE;ACTIVITYSET;BASE_LS'
-             ';ZIELWAHL_FUNKTION;MATRIXCODE_PUT;MATRIXCODE_PARKING')
+             ';ZIELWAHL_FUNKTION;MATRIXCODE_PUT;MATRIXCODE_PARKING;TARIFMATRIX')
 
     def create_tables(self,
                       activities: pd.DataFrame,
@@ -38,6 +38,7 @@ class Activity(VisumTable):
             row.zielwahl_funktion = a['ZIELWAHL_FUNKTION']
             row.matrixcode_put = a['MATRIXCODE_PUT']
             row.matrixcode_parking = a['MATRIXCODE_PARKING']
+            row.tarifmatrix = a['TARIFMATRIX']
             rows.append(row)
         self.add_rows(rows)
         self.set_activityset()
